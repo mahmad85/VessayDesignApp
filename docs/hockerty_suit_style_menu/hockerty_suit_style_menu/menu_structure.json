@@ -1,0 +1,2133 @@
+{
+  "source_url": "https://www.hockerty.com/en-us/men/tweed-suit/personalize/",
+  "extracted_at": "2026-09-27T07:57:30.785Z",
+  "menu": "Style (config) sidebar",
+  "note": "Hierarchy: category > subcategory > section > option. Most thumbnails are glyphs from Hockerty icon fonts (font + codepoint given), rendered to 256px PNG. shown_in_menu=false means the item exists but is hidden for the current configuration (e.g. vest not added).",
+  "icon_fonts": {
+    "man_jacket": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2",
+    "man_shirt": "https://www.hockerty.com/fonts/man_shirt/man-shirt.woff2",
+    "man_coat": "https://www.hockerty.com/fonts/man_coat/man-coat.woff2",
+    "man_trenchcoat": "https://www.hockerty.com/fonts/man_trenchcoat/man-trenchcoat.woff2",
+    "man_waistcoat": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2",
+    "man_pants": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2",
+    "man_polo": "https://www.hockerty.com/fonts/man_polo/man_polo.woff2",
+    "man_fieldjacket": "https://www.hockerty.com/fonts/man_fieldjacket/man_fieldjacket.woff2"
+  },
+  "categories": [
+    {
+      "category": "JACKET",
+      "subcategories": [
+        {
+          "id": "jacket_style_combined",
+          "label": "STYLE",
+          "short_label": "STYLE",
+          "shown_in_menu": true,
+          "menu_icon": {
+            "font": "man_jacket",
+            "icon_class": "icon_3f",
+            "codepoint": "U+003F",
+            "thumbnail_file": "01_JACKET/01_STYLE/_menu_icon.png",
+            "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+          },
+          "sections": [
+            {
+              "title": "Style",
+              "field": "jacket_style_combined",
+              "options": [
+                {
+                  "label": "Single-breasted 1 button",
+                  "value": "simple_1",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_3e",
+                    "codepoint": "U+003E",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "01_JACKET/01_STYLE/01_Style/01_Single-breasted_1_button.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Single-breasted 2 buttons",
+                  "value": "simple_2",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_3f",
+                    "codepoint": "U+003F",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "01_JACKET/01_STYLE/01_Style/02_Single-breasted_2_buttons.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Single-breasted 3 buttons",
+                  "value": "simple_3",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_40",
+                    "codepoint": "U+0040",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 3,
+                  "thumbnail_file": "01_JACKET/01_STYLE/01_Style/03_Single-breasted_3_buttons.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Double-breasted 2 buttons",
+                  "value": "crossed_2",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_5e",
+                    "codepoint": "U+005E",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 4,
+                  "thumbnail_file": "01_JACKET/01_STYLE/01_Style/04_Double-breasted_2_buttons.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Double-breasted 4 buttons",
+                  "value": "crossed_4",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_60",
+                    "codepoint": "U+0060",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 5,
+                  "thumbnail_file": "01_JACKET/01_STYLE/01_Style/05_Double-breasted_4_buttons.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Double-breasted 6 buttons",
+                  "value": "crossed_6",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_5f",
+                    "codepoint": "U+005F",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 6,
+                  "thumbnail_file": "01_JACKET/01_STYLE/01_Style/06_Double-breasted_6_buttons.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Mandarin",
+                  "value": "mao",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_7b",
+                    "codepoint": "U+007B",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 7,
+                  "thumbnail_file": "01_JACKET/01_STYLE/01_Style/07_Mandarin.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "01_JACKET/01_STYLE/01_Style"
+            },
+            {
+              "title": "Mix & match fabrics",
+              "field": "personalize_fabrics_split",
+              "options": [
+                {
+                  "label": "Same Fabric",
+                  "value": "0",
+                  "price": null,
+                  "selected": true,
+                  "icon": null,
+                  "image_url": "https://d1fufvy4xao6k9.cloudfront.net/images/personalize/multifabric/man/no_multifabric.svg",
+                  "order": 1,
+                  "thumbnail_file": "01_JACKET/01_STYLE/02_Mix_and_match_fabrics/01_Same_Fabric.svg",
+                  "thumbnail_source": "image downloaded from image_url"
+                },
+                {
+                  "label": "Different Fabrics",
+                  "value": "1",
+                  "price": null,
+                  "selected": false,
+                  "icon": null,
+                  "image_url": "https://d1fufvy4xao6k9.cloudfront.net/images/personalize/multifabric/man/multifabric.svg",
+                  "order": 2,
+                  "thumbnail_file": "01_JACKET/01_STYLE/02_Mix_and_match_fabrics/02_Different_Fabrics.svg",
+                  "thumbnail_source": "image downloaded from image_url"
+                }
+              ],
+              "folder": "01_JACKET/01_STYLE/02_Mix_and_match_fabrics"
+            }
+          ],
+          "folder": "01_JACKET/01_STYLE"
+        },
+        {
+          "id": "jacket_fit",
+          "label": "FIT",
+          "short_label": "FIT",
+          "shown_in_menu": true,
+          "menu_icon": {
+            "font": "man_jacket",
+            "icon_class": "icon_62",
+            "codepoint": "U+0062",
+            "thumbnail_file": "01_JACKET/02_FIT/_menu_icon.png",
+            "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+          },
+          "sections": [
+            {
+              "title": "Fit",
+              "field": "jacket_fit",
+              "options": [
+                {
+                  "label": "Slim Fit",
+                  "value": "1",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_62",
+                    "codepoint": "U+0062",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "01_JACKET/02_FIT/01_Slim_Fit.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Regular",
+                  "value": "0",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_61",
+                    "codepoint": "U+0061",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "01_JACKET/02_FIT/02_Regular.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "01_JACKET/02_FIT"
+            }
+          ],
+          "folder": "01_JACKET/02_FIT"
+        },
+        {
+          "id": "jacket_lapel_type_combinated",
+          "label": "LAPEL STYLE",
+          "short_label": "LAPELS",
+          "shown_in_menu": true,
+          "menu_icon": {
+            "font": "man_jacket",
+            "icon_class": "icon_63",
+            "codepoint": "U+0063",
+            "thumbnail_file": "01_JACKET/03_LAPEL_STYLE/_menu_icon.png",
+            "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+          },
+          "sections": [
+            {
+              "title": "Lapel style",
+              "field": "jacket_lapel_type",
+              "options": [
+                {
+                  "label": "Notch",
+                  "value": "standard",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_63",
+                    "codepoint": "U+0063",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "01_JACKET/03_LAPEL_STYLE/01_Lapel_style/01_Notch.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Peak",
+                  "value": "peak",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_64",
+                    "codepoint": "U+0064",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "01_JACKET/03_LAPEL_STYLE/01_Lapel_style/02_Peak.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Shawl",
+                  "value": "round",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_65",
+                    "codepoint": "U+0065",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 3,
+                  "thumbnail_file": "01_JACKET/03_LAPEL_STYLE/01_Lapel_style/03_Shawl.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "01_JACKET/03_LAPEL_STYLE/01_Lapel_style"
+            },
+            {
+              "title": "Lapel Width",
+              "field": "jacket_wide_lapel",
+              "options": [
+                {
+                  "label": "Slim",
+                  "value": "narrow",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_4f",
+                    "codepoint": "U+004F",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "01_JACKET/03_LAPEL_STYLE/02_Lapel_Width/01_Slim.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Standard",
+                  "value": "standard",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_63",
+                    "codepoint": "U+0063",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "01_JACKET/03_LAPEL_STYLE/02_Lapel_Width/02_Standard.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Wide",
+                  "value": "width",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_50",
+                    "codepoint": "U+0050",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 3,
+                  "thumbnail_file": "01_JACKET/03_LAPEL_STYLE/02_Lapel_Width/03_Wide.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "01_JACKET/03_LAPEL_STYLE/02_Lapel_Width"
+            }
+          ],
+          "folder": "01_JACKET/03_LAPEL_STYLE"
+        },
+        {
+          "id": "jacket_pockets_type",
+          "label": "POCKET STYLE",
+          "short_label": "POCKET",
+          "shown_in_menu": true,
+          "menu_icon": {
+            "font": "man_jacket",
+            "icon_class": "icon_6e",
+            "codepoint": "U+006E",
+            "thumbnail_file": "01_JACKET/04_POCKET_STYLE/_menu_icon.png",
+            "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+          },
+          "sections": [
+            {
+              "title": "Pocket style",
+              "field": "jacket_pockets_type",
+              "options": [
+                {
+                  "label": "No pockets",
+                  "value": "0",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_5a",
+                    "codepoint": "U+005A",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "01_JACKET/04_POCKET_STYLE/01_No_pockets.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "With flap",
+                  "value": "2",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_22",
+                    "codepoint": "U+0022",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "01_JACKET/04_POCKET_STYLE/02_With_flap.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Double-welted",
+                  "value": "2a",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_23",
+                    "codepoint": "U+0023",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 3,
+                  "thumbnail_file": "01_JACKET/04_POCKET_STYLE/03_Double-welted.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Patched",
+                  "value": "2b",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_6e",
+                    "codepoint": "U+006E",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 4,
+                  "thumbnail_file": "01_JACKET/04_POCKET_STYLE/04_Patched.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "With flap x3",
+                  "value": "3",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_22",
+                    "codepoint": "U+0022",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 5,
+                  "thumbnail_file": "01_JACKET/04_POCKET_STYLE/05_With_flap_x3.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Double-welted x3",
+                  "value": "3a",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_23",
+                    "codepoint": "U+0023",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 6,
+                  "thumbnail_file": "01_JACKET/04_POCKET_STYLE/06_Double-welted_x3.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Slanted flap",
+                  "value": "2c",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_6c",
+                    "codepoint": "U+006C",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 7,
+                  "thumbnail_file": "01_JACKET/04_POCKET_STYLE/07_Slanted_flap.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Slanted flap x3",
+                  "value": "3c",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_6c",
+                    "codepoint": "U+006C",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 8,
+                  "thumbnail_file": "01_JACKET/04_POCKET_STYLE/08_Slanted_flap_x3.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Double-welted",
+                  "value": "2d",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_6d",
+                    "codepoint": "U+006D",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 9,
+                  "thumbnail_file": "01_JACKET/04_POCKET_STYLE/09_Double-welted.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Double-welted x3",
+                  "value": "3d",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_6d",
+                    "codepoint": "U+006D",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 10,
+                  "thumbnail_file": "01_JACKET/04_POCKET_STYLE/10_Double-welted_x3.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "01_JACKET/04_POCKET_STYLE"
+            }
+          ],
+          "folder": "01_JACKET/04_POCKET_STYLE"
+        },
+        {
+          "id": "jacket_sleeve_buttons_combinated",
+          "label": "SLEEVE BUTTONS",
+          "short_label": "SLEEVE",
+          "shown_in_menu": true,
+          "menu_icon": {
+            "font": "man_jacket",
+            "icon_class": "icon_6a",
+            "codepoint": "U+006A",
+            "thumbnail_file": "01_JACKET/05_SLEEVE_BUTTONS/_menu_icon.png",
+            "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+          },
+          "sections": [
+            {
+              "title": "Sleeve buttons",
+              "field": "jacket_sleeve_buttons",
+              "options": [
+                {
+                  "label": "0",
+                  "value": "0",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_30",
+                    "codepoint": "U+0030",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "01_JACKET/05_SLEEVE_BUTTONS/01_Sleeve_buttons/01_0.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "2",
+                  "value": "2",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_69",
+                    "codepoint": "U+0069",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "01_JACKET/05_SLEEVE_BUTTONS/01_Sleeve_buttons/02_2.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "3",
+                  "value": "3",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_6a",
+                    "codepoint": "U+006A",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 3,
+                  "thumbnail_file": "01_JACKET/05_SLEEVE_BUTTONS/01_Sleeve_buttons/03_3.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "4",
+                  "value": "4",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_6b",
+                    "codepoint": "U+006B",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 4,
+                  "thumbnail_file": "01_JACKET/05_SLEEVE_BUTTONS/01_Sleeve_buttons/04_4.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "01_JACKET/05_SLEEVE_BUTTONS/01_Sleeve_buttons"
+            },
+            {
+              "title": "Buttonholes",
+              "field": "jacket_sleeve_buttonholes",
+              "options": [
+                {
+                  "label": "with buttonholes",
+                  "value": "1",
+                  "price": "10.00",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_41",
+                    "codepoint": "U+0041",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "01_JACKET/05_SLEEVE_BUTTONS/02_Buttonholes/01_with_buttonholes.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "no holes",
+                  "value": "0",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_69",
+                    "codepoint": "U+0069",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "01_JACKET/05_SLEEVE_BUTTONS/02_Buttonholes/02_no_holes.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "01_JACKET/05_SLEEVE_BUTTONS/02_Buttonholes"
+            }
+          ],
+          "folder": "01_JACKET/05_SLEEVE_BUTTONS"
+        },
+        {
+          "id": "jacket_vent",
+          "label": "BACK STYLE",
+          "short_label": "BACK",
+          "shown_in_menu": true,
+          "menu_icon": {
+            "font": "man_jacket",
+            "icon_class": "icon_70",
+            "codepoint": "U+0070",
+            "thumbnail_file": "01_JACKET/06_BACK_STYLE/_menu_icon.png",
+            "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+          },
+          "sections": [
+            {
+              "title": "Back style",
+              "field": "jacket_vent",
+              "options": [
+                {
+                  "label": "ventless",
+                  "value": "0",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_6f",
+                    "codepoint": "U+006F",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "01_JACKET/06_BACK_STYLE/01_ventless.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Center Vent",
+                  "value": "1",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_70",
+                    "codepoint": "U+0070",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "01_JACKET/06_BACK_STYLE/02_Center_Vent.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Side Vents",
+                  "value": "2",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_71",
+                    "codepoint": "U+0071",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 3,
+                  "thumbnail_file": "01_JACKET/06_BACK_STYLE/03_Side_Vents.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "01_JACKET/06_BACK_STYLE"
+            }
+          ],
+          "folder": "01_JACKET/06_BACK_STYLE"
+        },
+        {
+          "id": "jacket_chest_pocket",
+          "label": "BREAST POCKET",
+          "short_label": "BREAST POCKET",
+          "shown_in_menu": true,
+          "menu_icon": {
+            "font": "man_jacket",
+            "icon_class": "icon_21",
+            "codepoint": "U+0021",
+            "thumbnail_file": "01_JACKET/07_BREAST_POCKET/_menu_icon.png",
+            "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+          },
+          "sections": [
+            {
+              "title": "Breast Pocket",
+              "field": "jacket_chest_pocket",
+              "options": [
+                {
+                  "label": "no",
+                  "value": "0",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_4d",
+                    "codepoint": "U+004D",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "01_JACKET/07_BREAST_POCKET/01_no.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "yes",
+                  "value": "1",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_21",
+                    "codepoint": "U+0021",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "01_JACKET/07_BREAST_POCKET/02_yes.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Patched",
+                  "value": "patched_1",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_6e",
+                    "codepoint": "U+006E",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 3,
+                  "thumbnail_file": "01_JACKET/07_BREAST_POCKET/03_Patched.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Patched x2",
+                  "value": "patched_2",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_6e",
+                    "codepoint": "U+006E",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 4,
+                  "thumbnail_file": "01_JACKET/07_BREAST_POCKET/04_Patched_x2.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "01_JACKET/07_BREAST_POCKET"
+            }
+          ],
+          "folder": "01_JACKET/07_BREAST_POCKET"
+        }
+      ],
+      "folder": "01_JACKET"
+    },
+    {
+      "category": "PANTS",
+      "subcategories": [
+        {
+          "id": "pants_chinos",
+          "label": "pants_chinos",
+          "short_label": "pants_chinos",
+          "shown_in_menu": false,
+          "menu_icon": {
+            "font": "man_pants",
+            "icon_class": "icon_32",
+            "codepoint": "U+0032",
+            "thumbnail_file": "02_PANTS/01_Chinos/_menu_icon.png",
+            "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+          },
+          "sections": [
+            {
+              "title": "pants_chinos",
+              "field": "pants_chinos",
+              "options": [
+                {
+                  "label": "pants_chinos_0",
+                  "value": "0",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_32",
+                    "codepoint": "U+0032",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "02_PANTS/01_Chinos/01_pants_chinos_0.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "pants_chinos_1",
+                  "value": "1",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_31",
+                    "codepoint": "U+0031",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "02_PANTS/01_Chinos/02_pants_chinos_1.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "02_PANTS/01_Chinos"
+            }
+          ],
+          "folder": "02_PANTS/01_Chinos"
+        },
+        {
+          "id": "pants_fit",
+          "label": "FIT",
+          "short_label": "FIT",
+          "shown_in_menu": true,
+          "menu_icon": {
+            "font": "man_pants",
+            "icon_class": "icon_32",
+            "codepoint": "U+0032",
+            "thumbnail_file": "02_PANTS/02_FIT/_menu_icon.png",
+            "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+          },
+          "sections": [
+            {
+              "title": "Fit",
+              "field": "pants_fit",
+              "options": [
+                {
+                  "label": "Normal fit",
+                  "value": "normal",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_32",
+                    "codepoint": "U+0032",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "02_PANTS/02_FIT/01_Normal_fit.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Slim Fit",
+                  "value": "fit",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_31",
+                    "codepoint": "U+0031",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "02_PANTS/02_FIT/02_Slim_Fit.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "02_PANTS/02_FIT"
+            }
+          ],
+          "folder": "02_PANTS/02_FIT"
+        },
+        {
+          "id": "pants_length",
+          "label": "LENGTH",
+          "short_label": "LENGTH",
+          "shown_in_menu": true,
+          "menu_icon": {
+            "font": "man_pants",
+            "icon_class": "icon_32",
+            "codepoint": "U+0032",
+            "thumbnail_file": "02_PANTS/03_LENGTH/_menu_icon.png",
+            "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+          },
+          "sections": [
+            {
+              "title": "Length",
+              "field": "pants_length",
+              "options": [
+                {
+                  "label": "Long",
+                  "value": "long",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_32",
+                    "codepoint": "U+0032",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "02_PANTS/03_LENGTH/01_Long.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Bermuda",
+                  "value": "bermuda",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_35",
+                    "codepoint": "U+0035",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "02_PANTS/03_LENGTH/02_Bermuda.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "02_PANTS/03_LENGTH"
+            }
+          ],
+          "folder": "02_PANTS/03_LENGTH"
+        },
+        {
+          "id": "pants_break",
+          "label": "PANTS BOTTOM",
+          "short_label": "PANTS BOTTOM",
+          "shown_in_menu": true,
+          "menu_icon": {
+            "font": "man_pants",
+            "icon_class": "icon_55",
+            "codepoint": "U+0055",
+            "thumbnail_file": "02_PANTS/04_PANTS_BOTTOM/_menu_icon.png",
+            "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+          },
+          "sections": [
+            {
+              "title": "Pants bottom",
+              "field": "pants_break",
+              "options": [
+                {
+                  "label": "No break",
+                  "value": "no",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_54",
+                    "codepoint": "U+0054",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "02_PANTS/04_PANTS_BOTTOM/01_No_break.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Half break",
+                  "value": "half",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_55",
+                    "codepoint": "U+0055",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "02_PANTS/04_PANTS_BOTTOM/02_Half_break.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Full break",
+                  "value": "full",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_56",
+                    "codepoint": "U+0056",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 3,
+                  "thumbnail_file": "02_PANTS/04_PANTS_BOTTOM/03_Full_break.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "02_PANTS/04_PANTS_BOTTOM"
+            }
+          ],
+          "folder": "02_PANTS/04_PANTS_BOTTOM"
+        },
+        {
+          "id": "pants_peg",
+          "label": "PLEATS",
+          "short_label": "PLEATS",
+          "shown_in_menu": true,
+          "menu_icon": {
+            "font": "man_pants",
+            "icon_class": "icon_35",
+            "codepoint": "U+0035",
+            "thumbnail_file": "02_PANTS/05_PLEATS/_menu_icon.png",
+            "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+          },
+          "sections": [
+            {
+              "title": "Pleats",
+              "field": "pants_peg",
+              "options": [
+                {
+                  "label": "No Pleats",
+                  "value": "0",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_35",
+                    "codepoint": "U+0035",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "02_PANTS/05_PLEATS/01_No_Pleats.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Pleated",
+                  "value": "1",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_33",
+                    "codepoint": "U+0033",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "02_PANTS/05_PLEATS/02_Pleated.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Double pleats",
+                  "value": "2",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_34",
+                    "codepoint": "U+0034",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 3,
+                  "thumbnail_file": "02_PANTS/05_PLEATS/03_Double_pleats.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "02_PANTS/05_PLEATS"
+            }
+          ],
+          "folder": "02_PANTS/05_PLEATS"
+        },
+        {
+          "id": "pants_belt",
+          "label": "PANTS FASTENING",
+          "short_label": "FASTENING",
+          "shown_in_menu": true,
+          "menu_icon": {
+            "font": "man_pants",
+            "icon_class": "icon_39",
+            "codepoint": "U+0039",
+            "thumbnail_file": "02_PANTS/06_PANTS_FASTENING/_menu_icon.png",
+            "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+          },
+          "sections": [
+            {
+              "title": "Pants Fastening",
+              "field": "pants_belt",
+              "options": [
+                {
+                  "label": "Centered",
+                  "value": "0",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_38",
+                    "codepoint": "U+0038",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "02_PANTS/06_PANTS_FASTENING/01_Centered.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Off-centered",
+                  "value": "1",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_39",
+                    "codepoint": "U+0039",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "02_PANTS/06_PANTS_FASTENING/02_Off-centered.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "No button",
+                  "value": "0_hidden",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_36",
+                    "codepoint": "U+0036",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 3,
+                  "thumbnail_file": "02_PANTS/06_PANTS_FASTENING/03_No_button.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Off-centered: Buttonless",
+                  "value": "1_hidden",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_37",
+                    "codepoint": "U+0037",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 4,
+                  "thumbnail_file": "02_PANTS/06_PANTS_FASTENING/04_Off-centered_Buttonless.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "02_PANTS/06_PANTS_FASTENING"
+            }
+          ],
+          "folder": "02_PANTS/06_PANTS_FASTENING"
+        },
+        {
+          "id": "pants_pockets",
+          "label": "POCKETS",
+          "short_label": "POCKETS",
+          "shown_in_menu": true,
+          "menu_icon": {
+            "font": "man_pants",
+            "icon_class": "icon_3a",
+            "codepoint": "U+003A",
+            "thumbnail_file": "02_PANTS/07_POCKETS/_menu_icon.png",
+            "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+          },
+          "sections": [
+            {
+              "title": "Side Pockets",
+              "field": "pants_front_pocket",
+              "options": [
+                {
+                  "label": "Diagonal",
+                  "value": "diagonal",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_3a",
+                    "codepoint": "U+003A",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "02_PANTS/07_POCKETS/01_Side_Pockets/01_Diagonal.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Rounded",
+                  "value": "rounded",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_3c",
+                    "codepoint": "U+003C",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "02_PANTS/07_POCKETS/01_Side_Pockets/02_Rounded.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Rounded",
+                  "value": "rounded_chinos",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_53",
+                    "codepoint": "U+0053",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 3,
+                  "thumbnail_file": "02_PANTS/07_POCKETS/01_Side_Pockets/03_Rounded.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "02_PANTS/07_POCKETS/01_Side_Pockets"
+            },
+            {
+              "title": "Back Pockets",
+              "field": "pants_back_pocket_combine",
+              "options": [
+                {
+                  "label": "No pockets",
+                  "value": "0",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_3d",
+                    "codepoint": "U+003D",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "02_PANTS/07_POCKETS/02_Back_Pockets/01_No_pockets.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "double-welted pocket with button",
+                  "value": "A1",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_3e",
+                    "codepoint": "U+003E",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "02_PANTS/07_POCKETS/02_Back_Pockets/02_double-welted_pocket_with_button.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Patched",
+                  "value": "B1",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_3f",
+                    "codepoint": "U+003F",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 3,
+                  "thumbnail_file": "02_PANTS/07_POCKETS/02_Back_Pockets/03_Patched.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Flap Pockets",
+                  "value": "C1",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_40",
+                    "codepoint": "U+0040",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 4,
+                  "thumbnail_file": "02_PANTS/07_POCKETS/02_Back_Pockets/04_Flap_Pockets.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "double-welted pocket with button x2",
+                  "value": "A2",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_4d",
+                    "codepoint": "U+004D",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 5,
+                  "thumbnail_file": "02_PANTS/07_POCKETS/02_Back_Pockets/05_double-welted_pocket_with_button_x2.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Patched x2",
+                  "value": "B2",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_4e",
+                    "codepoint": "U+004E",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 6,
+                  "thumbnail_file": "02_PANTS/07_POCKETS/02_Back_Pockets/06_Patched_x2.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Flap Pockets x2",
+                  "value": "C2",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_4f",
+                    "codepoint": "U+004F",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 7,
+                  "thumbnail_file": "02_PANTS/07_POCKETS/02_Back_Pockets/07_Flap_Pockets_x2.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "02_PANTS/07_POCKETS/02_Back_Pockets"
+            }
+          ],
+          "folder": "02_PANTS/07_POCKETS"
+        },
+        {
+          "id": "pants_cuff",
+          "label": "PANT CUFFS",
+          "short_label": "CUFFS",
+          "shown_in_menu": true,
+          "menu_icon": {
+            "font": "man_pants",
+            "icon_class": "icon_50",
+            "codepoint": "U+0050",
+            "thumbnail_file": "02_PANTS/08_PANT_CUFFS/_menu_icon.png",
+            "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+          },
+          "sections": [
+            {
+              "title": "Pant Cuffs",
+              "field": "pants_cuff",
+              "options": [
+                {
+                  "label": "No pant cuffs",
+                  "value": "0",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_50",
+                    "codepoint": "U+0050",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "02_PANTS/08_PANT_CUFFS/01_No_pant_cuffs.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "With pant cuffs",
+                  "value": "1",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_51",
+                    "codepoint": "U+0051",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "02_PANTS/08_PANT_CUFFS/02_With_pant_cuffs.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "02_PANTS/08_PANT_CUFFS"
+            }
+          ],
+          "folder": "02_PANTS/08_PANT_CUFFS"
+        },
+        {
+          "id": "suspender_buttons",
+          "label": "SUSPENDER BUTTONS",
+          "short_label": "SUSPENDER BUTTONS",
+          "shown_in_menu": true,
+          "menu_icon": {
+            "font": "man_pants",
+            "icon_class": "icon_6e",
+            "codepoint": "U+006E",
+            "thumbnail_file": "02_PANTS/09_SUSPENDER_BUTTONS/_menu_icon.png",
+            "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+          },
+          "sections": [
+            {
+              "title": "Suspender buttons",
+              "field": "suspender_buttons",
+              "options": [
+                {
+                  "label": "No",
+                  "value": "0",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_6e",
+                    "codepoint": "U+006E",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "02_PANTS/09_SUSPENDER_BUTTONS/01_No.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Yes",
+                  "value": "1",
+                  "price": "7.00",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_6c",
+                    "codepoint": "U+006C",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "02_PANTS/09_SUSPENDER_BUTTONS/02_Yes.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "02_PANTS/09_SUSPENDER_BUTTONS"
+            }
+          ],
+          "folder": "02_PANTS/09_SUSPENDER_BUTTONS"
+        },
+        {
+          "id": "active_waist",
+          "label": "WAIST ADJUSTMENT",
+          "short_label": "WAIST ADJUSTMENT",
+          "shown_in_menu": true,
+          "menu_icon": {
+            "font": "man_pants",
+            "icon_class": "icon_62",
+            "codepoint": "U+0062",
+            "thumbnail_file": "02_PANTS/10_WAIST_ADJUSTMENT/_menu_icon.png",
+            "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+          },
+          "sections": [
+            {
+              "title": "Waist Adjustment",
+              "field": "active_waist",
+              "options": [
+                {
+                  "label": "Standard",
+                  "value": "0",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_62",
+                    "codepoint": "U+0062",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "02_PANTS/10_WAIST_ADJUSTMENT/01_Standard.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Side adjusters",
+                  "value": "2",
+                  "price": "15.00",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_63",
+                    "codepoint": "U+0063",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "02_PANTS/10_WAIST_ADJUSTMENT/02_Side_adjusters.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Active waist",
+                  "value": "1",
+                  "price": "15.00",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_pants",
+                    "icon_class": "icon_61",
+                    "codepoint": "U+0061",
+                    "font_url": "https://www.hockerty.com/fonts/man_pants/man_pants.woff2"
+                  },
+                  "image_url": null,
+                  "order": 3,
+                  "thumbnail_file": "02_PANTS/10_WAIST_ADJUSTMENT/03_Active_waist.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "02_PANTS/10_WAIST_ADJUSTMENT"
+            }
+          ],
+          "folder": "02_PANTS/10_WAIST_ADJUSTMENT"
+        }
+      ],
+      "folder": "02_PANTS"
+    },
+    {
+      "category": "VEST",
+      "subcategories": [
+        {
+          "id": "waistcoat",
+          "label": "VEST",
+          "short_label": "VEST",
+          "shown_in_menu": true,
+          "menu_icon": {
+            "font": "man_jacket",
+            "icon_class": "icon_2a",
+            "codepoint": "U+002A",
+            "thumbnail_file": "03_VEST/01_VEST/_menu_icon.png",
+            "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+          },
+          "sections": [
+            {
+              "title": "Vest",
+              "field": "waistcoat",
+              "options": [
+                {
+                  "label": "2 piece suit",
+                  "value": "0",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_2b",
+                    "codepoint": "U+002B",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "03_VEST/01_VEST/01_2_piece_suit.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "3 piece suit",
+                  "value": "1",
+                  "price": "100.00",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_jacket",
+                    "icon_class": "icon_2a",
+                    "codepoint": "U+002A",
+                    "font_url": "https://www.hockerty.com/fonts/man_jacket/man-jacket.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "03_VEST/01_VEST/02_3_piece_suit.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "03_VEST/01_VEST"
+            }
+          ],
+          "folder": "03_VEST/01_VEST"
+        },
+        {
+          "id": "waistcoat_style_combined",
+          "label": "Style",
+          "short_label": "Style",
+          "shown_in_menu": false,
+          "menu_icon": {
+            "font": "man_waistcoat",
+            "icon_class": "icon_61",
+            "codepoint": "U+0061",
+            "thumbnail_file": "03_VEST/02_Style/_menu_icon.png",
+            "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+          },
+          "sections": [
+            {
+              "title": "Style",
+              "field": "waistcoat_style_combined",
+              "options": [
+                {
+                  "label": "Single Breasted 4 buttons",
+                  "value": "simple_4",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_waistcoat",
+                    "icon_class": "icon_47",
+                    "codepoint": "U+0047",
+                    "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "03_VEST/02_Style/01_Single_Breasted_4_buttons.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Single Breasted 5 buttons",
+                  "value": "simple_5",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_waistcoat",
+                    "icon_class": "icon_45",
+                    "codepoint": "U+0045",
+                    "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "03_VEST/02_Style/02_Single_Breasted_5_buttons.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Double Breasted 6 buttons",
+                  "value": "crossed_6",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_waistcoat",
+                    "icon_class": "icon_44",
+                    "codepoint": "U+0044",
+                    "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+                  },
+                  "image_url": null,
+                  "order": 3,
+                  "thumbnail_file": "03_VEST/02_Style/03_Double_Breasted_6_buttons.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "03_VEST/02_Style"
+            }
+          ],
+          "folder": "03_VEST/02_Style"
+        },
+        {
+          "id": "waistcoat_lapel",
+          "label": "Lapels",
+          "short_label": "Lapels",
+          "shown_in_menu": false,
+          "menu_icon": {
+            "font": "man_waistcoat",
+            "icon_class": "icon_78",
+            "codepoint": "U+0078",
+            "thumbnail_file": "03_VEST/03_Lapels/_menu_icon.png",
+            "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+          },
+          "sections": [
+            {
+              "title": "Lapels",
+              "field": "waistcoat_lapel",
+              "options": [
+                {
+                  "label": "Without lapels",
+                  "value": "no",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_waistcoat",
+                    "icon_class": "icon_79",
+                    "codepoint": "U+0079",
+                    "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "03_VEST/03_Lapels/01_Without_lapels.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Notched",
+                  "value": "notched",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_waistcoat",
+                    "icon_class": "icon_77",
+                    "codepoint": "U+0077",
+                    "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "03_VEST/03_Lapels/02_Notched.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Peak",
+                  "value": "peak",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_waistcoat",
+                    "icon_class": "icon_78",
+                    "codepoint": "U+0078",
+                    "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+                  },
+                  "image_url": null,
+                  "order": 3,
+                  "thumbnail_file": "03_VEST/03_Lapels/03_Peak.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Shawl",
+                  "value": "rounded",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_waistcoat",
+                    "icon_class": "icon_7a",
+                    "codepoint": "U+007A",
+                    "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+                  },
+                  "image_url": null,
+                  "order": 4,
+                  "thumbnail_file": "03_VEST/03_Lapels/04_Shawl.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "03_VEST/03_Lapels"
+            }
+          ],
+          "folder": "03_VEST/03_Lapels"
+        },
+        {
+          "id": "waistcoat_lapel_width",
+          "label": "Lapel Width",
+          "short_label": "Lapel Width",
+          "shown_in_menu": false,
+          "menu_icon": {
+            "font": "man_waistcoat",
+            "icon_class": "icon_41",
+            "codepoint": "U+0041",
+            "thumbnail_file": "03_VEST/04_Lapel_Width/_menu_icon.png",
+            "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+          },
+          "sections": [
+            {
+              "title": "Lapel Width",
+              "field": "waistcoat_lapel_width",
+              "options": [
+                {
+                  "label": "Slim",
+                  "value": "narrow",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_waistcoat",
+                    "icon_class": "icon_42",
+                    "codepoint": "U+0042",
+                    "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "03_VEST/04_Lapel_Width/01_Slim.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Standard",
+                  "value": "normal",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_waistcoat",
+                    "icon_class": "icon_41",
+                    "codepoint": "U+0041",
+                    "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "03_VEST/04_Lapel_Width/02_Standard.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "03_VEST/04_Lapel_Width"
+            }
+          ],
+          "folder": "03_VEST/04_Lapel_Width"
+        },
+        {
+          "id": "waistcoat_bottom",
+          "label": "Edge",
+          "short_label": "Edge",
+          "shown_in_menu": false,
+          "menu_icon": {
+            "font": "man_waistcoat",
+            "icon_class": "icon_66",
+            "codepoint": "U+0066",
+            "thumbnail_file": "03_VEST/05_Edge/_menu_icon.png",
+            "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+          },
+          "sections": [
+            {
+              "title": "Edge",
+              "field": "waistcoat_bottom",
+              "options": [
+                {
+                  "label": "Straight",
+                  "value": "straight",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_waistcoat",
+                    "icon_class": "icon_67",
+                    "codepoint": "U+0067",
+                    "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "03_VEST/05_Edge/01_Straight.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Diagonal",
+                  "value": "cut",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_waistcoat",
+                    "icon_class": "icon_66",
+                    "codepoint": "U+0066",
+                    "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "03_VEST/05_Edge/02_Diagonal.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "03_VEST/05_Edge"
+            }
+          ],
+          "folder": "03_VEST/05_Edge"
+        },
+        {
+          "id": "waistcoat_chest_pocket",
+          "label": "Breast Pocket",
+          "short_label": "Breast Pocket",
+          "shown_in_menu": false,
+          "menu_icon": {
+            "font": "man_waistcoat",
+            "icon_class": "icon_75",
+            "codepoint": "U+0075",
+            "thumbnail_file": "03_VEST/06_Breast_Pocket/_menu_icon.png",
+            "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+          },
+          "sections": [
+            {
+              "title": "Breast Pocket",
+              "field": "waistcoat_chest_pocket",
+              "options": [
+                {
+                  "label": "Yes",
+                  "value": "1",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_waistcoat",
+                    "icon_class": "icon_68",
+                    "codepoint": "U+0068",
+                    "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "03_VEST/06_Breast_Pocket/01_Yes.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "No",
+                  "value": "0",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_waistcoat",
+                    "icon_class": "icon_75",
+                    "codepoint": "U+0075",
+                    "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "03_VEST/06_Breast_Pocket/02_No.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "03_VEST/06_Breast_Pocket"
+            }
+          ],
+          "folder": "03_VEST/06_Breast_Pocket"
+        },
+        {
+          "id": "waistcoat_pockets",
+          "label": "Front Pockets",
+          "short_label": "Front Pockets",
+          "shown_in_menu": false,
+          "menu_icon": {
+            "font": "man_waistcoat",
+            "icon_class": "icon_69",
+            "codepoint": "U+0069",
+            "thumbnail_file": "03_VEST/07_Front_Pockets/_menu_icon.png",
+            "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+          },
+          "sections": [
+            {
+              "title": "Front Pockets",
+              "field": "waistcoat_pockets",
+              "options": [
+                {
+                  "label": "No pockets",
+                  "value": "0",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_waistcoat",
+                    "icon_class": "icon_76",
+                    "codepoint": "U+0076",
+                    "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "03_VEST/07_Front_Pockets/01_No_pockets.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Welt Pockets",
+                  "value": "2",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_waistcoat",
+                    "icon_class": "icon_69",
+                    "codepoint": "U+0069",
+                    "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "03_VEST/07_Front_Pockets/02_Welt_Pockets.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "Double Welt",
+                  "value": "2a",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_waistcoat",
+                    "icon_class": "icon_6a",
+                    "codepoint": "U+006A",
+                    "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+                  },
+                  "image_url": null,
+                  "order": 3,
+                  "thumbnail_file": "03_VEST/07_Front_Pockets/03_Double_Welt.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "with flap",
+                  "value": "2b",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_waistcoat",
+                    "icon_class": "icon_6b",
+                    "codepoint": "U+006B",
+                    "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+                  },
+                  "image_url": null,
+                  "order": 4,
+                  "thumbnail_file": "03_VEST/07_Front_Pockets/04_with_flap.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "03_VEST/07_Front_Pockets"
+            }
+          ],
+          "folder": "03_VEST/07_Front_Pockets"
+        },
+        {
+          "id": "waistcoat_wedding",
+          "label": "waistcoat_wedding",
+          "short_label": "waistcoat_wedding",
+          "shown_in_menu": false,
+          "menu_icon": {
+            "font": "man_waistcoat",
+            "icon_class": "icon_61",
+            "codepoint": "U+0061",
+            "thumbnail_file": "03_VEST/08_waistcoat_wedding/_menu_icon.png",
+            "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+          },
+          "sections": [
+            {
+              "title": "waistcoat_wedding",
+              "field": "waistcoat_wedding",
+              "options": [
+                {
+                  "label": "waistcoat_wedding_0",
+                  "value": "0",
+                  "price": "0",
+                  "selected": true,
+                  "icon": {
+                    "font": "man_waistcoat",
+                    "icon_class": "icon_61",
+                    "codepoint": "U+0061",
+                    "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+                  },
+                  "image_url": null,
+                  "order": 1,
+                  "thumbnail_file": "03_VEST/08_waistcoat_wedding/01_waistcoat_wedding_0.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                },
+                {
+                  "label": "waistcoat_wedding_1",
+                  "value": "1",
+                  "price": "0",
+                  "selected": false,
+                  "icon": {
+                    "font": "man_waistcoat",
+                    "icon_class": "icon_62",
+                    "codepoint": "U+0062",
+                    "font_url": "https://www.hockerty.com/fonts/man_waistcoat/man-waistcoat.woff2"
+                  },
+                  "image_url": null,
+                  "order": 2,
+                  "thumbnail_file": "03_VEST/08_waistcoat_wedding/02_waistcoat_wedding_1.png",
+                  "thumbnail_source": "icon-font glyph rendered to PNG"
+                }
+              ],
+              "folder": "03_VEST/08_waistcoat_wedding"
+            }
+          ],
+          "folder": "03_VEST/08_waistcoat_wedding"
+        }
+      ],
+      "folder": "03_VEST"
+    }
+  ]
+}

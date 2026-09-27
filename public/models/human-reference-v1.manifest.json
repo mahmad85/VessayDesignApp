@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "source": "https://github.com/makehumancommunity/makehuman",
+  "sourceCommit": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+  "license": "CC0-1.0",
+  "runtimeServices": [],
+  "units": "illustrative scene units; not customer measurements",
+  "axes": "+Y up; +Z front",
+  "height": 3.4,
+  "landmarks": {
+    "shoulderL": {
+      "x": 0.36434434921782904,
+      "y": 2.749308460788806,
+      "z": 0.03484218873770391
+    },
+    "elbowL": {
+      "x": 0.4825945618476724,
+      "y": 2.2713805180765223,
+      "z": 0.03484218873770391
+    },
+    "wristL": {
+      "x": 0.5402431911648236,
+      "y": 1.752542854222161,
+      "z": 0.05842571891290214
+    },
+    "ankleL": {
+      "x": 0.24194500751176307,
+      "y": 0.1845792488325486,
+      "z": -0.014906550165058504
+    },
+    "shoulderR": {
+      "x": -0.36434434921782904,
+      "y": 2.749308460788806,
+      "z": 0.03484218873770391
+    },
+    "elbowR": {
+      "x": -0.4825945618476724,
+      "y": 2.2713805180765223,
+      "z": 0.03484218873770391
+    },
+    "wristR": {
+      "x": -0.5402431911648236,
+      "y": 1.752542854222161,
+      "z": 0.05842571891290214
+    },
+    "ankleR": {
+      "x": -0.24194500751176307,
+      "y": 0.1845792488325486,
+      "z": -0.014906550165058504
+    }
+  },
+  "meshes": [
+    {
+      "name": "Body",
+      "triangles": 26756
+    },
+    {
+      "name": "ExposedSkin",
+      "triangles": 14212
+    },
+    {
+      "name": "Hair",
+      "triangles": 2028
+    },
+    {
+      "name": "Eyes",
+      "triangles": 172
+    },
+    {
+      "name": "Trousers",
+      "triangles": 3342
+    },
+    {
+      "name": "Shorts",
+      "triangles": 1824
+    }
+  ],
+  "limitation": "Generic adult reference. No personalized body reconstruction or cloth simulation."
+}
