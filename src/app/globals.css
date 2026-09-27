@@ -1448,19 +1448,37 @@ textarea {
   font-size: 12px;
   color: #718863;
 }
-.capture-illustration {
-  height: 170px;
+.saia-widget {
+  margin: 18px 0;
+}
+.saia-widget-container:empty {
+  display: none;
+}
+.saia-widget-loading {
+  height: 90px;
   background: #eeeee5;
   border: 1px dashed #c6cfb6;
-  margin: 22px 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
-  gap: 14px;
+  gap: 10px;
   color: #859570;
   border-radius: 5px;
   font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.saia-widget-error {
+  border: 1px solid #e2b8a8;
+  background: #fbf1ee;
+  border-radius: 5px;
+  padding: 14px;
+}
+.saia-widget-error p {
+  color: #a24a35;
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0 0 10px;
 }
 .preview-bottom-note {
   min-height: 135px;

@@ -35,11 +35,11 @@ Status: generated draft map v0.2, 2026-09-26. Canonical meaning remains in the l
 | FR-010 | [PRD.md](../product/PRD.md) | AC-16, AC-17 | Target; see foundation overlay | Pending full acceptance |
 | FR-011 | [PRD.md](../product/PRD.md) | AC-18, AC-19 | Target; see foundation overlay | Pending full acceptance |
 | FR-012 | [PRD.md](../product/PRD.md) | AC-20 | Target; see foundation overlay | Pending full acceptance |
-| INT-001 | [3DLOOK.md](../integrations/3DLOOK.md) | AC-09, AC-10 | Target; see foundation overlay | Pending full acceptance |
-| INT-002 | [3DLOOK.md](../integrations/3DLOOK.md) | AC-09, AC-11 | Target; see foundation overlay | Pending full acceptance |
-| INT-003 | [3DLOOK.md](../integrations/3DLOOK.md) | AC-09, AC-10, AC-20 | Target; see foundation overlay | Pending full acceptance |
-| INT-004 | [3DLOOK.md](../integrations/3DLOOK.md) | AC-09, AC-12, AC-24 | Target; see foundation overlay | Pending full acceptance |
-| INT-005 | [3DLOOK.md](../integrations/3DLOOK.md) | AC-13, AC-14 | Target; see foundation overlay | Pending full acceptance |
+| INT-001 | [3DLOOK.md](../integrations/3DLOOK.md) | AC-09, AC-10 | Implemented (public widget path); locally verified only | D-017; free-capture path connected, paid-scan adapter still not implemented (no vendor authorization capability) |
+| INT-002 | [3DLOOK.md](../integrations/3DLOOK.md) | AC-09, AC-11 | Implemented (fails closed); locally verified only | D-017; paid single-use scan stays 503 until 3DLOOK supplies single-use authorization — no vendor sandbox available |
+| INT-003 | [3DLOOK.md](../integrations/3DLOOK.md) | AC-09, AC-10, AC-20 | Implemented (public widget path); locally verified only | D-017; guided capture is the vendor's own widget, not a substitute camera frame |
+| INT-004 | [3DLOOK.md](../integrations/3DLOOK.md) | AC-09, AC-12, AC-24 | Implemented; locally verified only | D-017; raw provider dimensions preserved in measurement_source_snapshots, separate from mapped/edited values |
+| INT-005 | [3DLOOK.md](../integrations/3DLOOK.md) | AC-13, AC-14 | Target; see foundation overlay | Pending full acceptance — no body-model export in the connected widget path |
 | MEAS-001 | [MEASUREMENTS-ORDERS.md](../domain/MEASUREMENTS-ORDERS.md) | AC-12, AC-24 | Target; see foundation overlay | Pending full acceptance |
 | MEAS-002 | [MEASUREMENTS-ORDERS.md](../domain/MEASUREMENTS-ORDERS.md) | AC-12 | Target; see foundation overlay | Pending full acceptance |
 | MEAS-003 | [MEASUREMENTS-ORDERS.md](../domain/MEASUREMENTS-ORDERS.md) | AC-12, AC-17 | Target; see foundation overlay | Pending full acceptance |

@@ -125,7 +125,7 @@ export function applyCommand(draft: Draft, command: Command): Draft {
     next.measurements = {
       version: draft.measurements.version + 1,
       values: command.values,
-      source: 'customer',
+      source: command.source ?? 'customer',
       confirmed: command.confirm,
       updatedAt: next.updatedAt,
     };

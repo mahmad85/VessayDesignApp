@@ -1,5 +1,6 @@
 import { readFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
+export const MIGRATIONS = ['0001_foundation', '0002_saia_measurement_scan'];
 import * as schema from './schema';
 import { drizzle as pgDrizzle } from 'drizzle-orm/node-postgres';
 import { drizzle as localDrizzle } from 'drizzle-orm/pglite';
@@ -52,9 +53,8 @@ async function connect(): Promise<Database> {
   await mkdir(dir, { recursive: true });
   const local = new PGlite(dir);
   await local.waitReady;
-  await local.exec(
-    await readFile(path.join(process.cwd(), 'migrations/0001_foundation.sql'), 'utf8'),
-  );
+  for (const name of MIGRATIONS)
+    await local.exec(await readFile(path.join(process.cwd(), `migrations/${name}.sql`), 'utf8'));
   return {
     orm: localDrizzle(local, { schema }),
     query: async (sql, params) => (await local.query(sql, params)).rows as never,

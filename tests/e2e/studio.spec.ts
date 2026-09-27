@@ -108,7 +108,7 @@ test('category changes need confirmation and update the available fabric control
     page.getByRole('region', { name: 'All design details' }).getByRole('button'),
   ).toHaveCount(1);
 });
-test('mobile layout and unavailable capture remain usable', async ({ page }) => {
+test('mobile layout and unconfigured 3DLOOK capture remain usable', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
   await expect(page.getByRole('heading', { name: /Good style/ })).toBeVisible();
@@ -127,7 +127,7 @@ test('mobile layout and unavailable capture remain usable', async ({ page }) => 
   await expect(page.locator('canvas')).toBeVisible();
   await page.getByRole('button', { name: '02 Measurements' }).click();
   await page.getByRole('button', { name: /Measure with 3DLOOK/ }).click();
-  await expect(page.getByRole('dialog')).toContainText('Provider connection required');
+  await expect(page.getByRole('dialog')).toContainText('3DLOOK is not configured for this environment.');
   await page.getByRole('button', { name: 'Continue with manual entry' }).click();
   await page.getByRole('textbox', { name: 'Height', exact: true }).fill('180');
   await page.getByRole('button', { name: '03 Review' }).click();
@@ -152,10 +152,20 @@ test('the API prevents cross-origin mutation and guest data access', async ({ br
     headers: { Origin: 'http://localhost:3000' },
   });
   expect(checkout.status()).toBe(409);
-  const capture = await a.request.post('/api/capture', {
+  const saiaSession = await a.request.post('/api/measurements/saia/session', {
+    headers: { Origin: 'http://localhost:3000' },
+    data: { targetUnit: 'cm' },
+  });
+  expect(saiaSession.status()).toBe(201);
+  const saiaPaidSession = await a.request.post('/api/measurements/saia/session', {
+    headers: { Origin: 'http://localhost:3000' },
+    data: { targetUnit: 'cm', mode: 'paid' },
+  });
+  expect(saiaPaidSession.status()).toBe(503);
+  const scanCheckout = await a.request.post('/api/scan-service/checkout', {
     headers: { Origin: 'http://localhost:3000' },
   });
-  expect(capture.status()).toBe(503);
+  expect(scanCheckout.status()).toBe(503);
   await a.close();
   await b.close();
 });

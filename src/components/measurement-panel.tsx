@@ -1,10 +1,12 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Camera, ArrowUpRight, Check, Info, Save, ArrowRight } from 'lucide-react';
 import type { Draft, Command } from '@/modules/configuration/types';
 import { definitionsFor, displayValue, toMillimeters } from '@/modules/measurements/definitions';
+import type { SaiaPerson } from '@/integrations/3dlook';
 import { Button } from './ui/button';
 import { Dialog } from './ui/dialog';
+import { SaiaMeasurementWidget } from './saia-measurement-widget';
 export function MeasurementPanel({
   draft,
   busy,
@@ -27,7 +29,8 @@ export function MeasurementPanel({
     [capture, setCapture] = useState(false),
     [notice, setNotice] = useState(''),
     [fieldErrors, setFieldErrors] = useState<Record<string, string>>({}),
-    [active, setActive] = useState('chest');
+    [active, setActive] = useState('chest'),
+    [fields, setFields] = useState<Record<string, string>>({});
   const defs = definitionsFor(draft.design.product);
   const hasErrors = Object.keys(fieldErrors).length > 0;
   const dirty = hasErrors || JSON.stringify(values) !== JSON.stringify(draft.measurements.values);
@@ -38,6 +41,50 @@ export function MeasurementPanel({
     onPreview(values, unit);
   }, [values, unit, onPreview]);
   const complete = defs.every((m) => values[m.id] > 0 && values[m.id] <= 3000);
+  const valuesRef = useRef(values);
+  useEffect(() => {
+    valuesRef.current = values;
+  }, [values]);
+  const saiaCaptureStart = useCallback(async () => {
+    const r = await fetch('/api/measurements/saia/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ targetUnit: unit }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error?.message || 'unavailable');
+    return d.draft.captureToken as string;
+  }, [unit]);
+  const saiaMeasurementsReady = useCallback(
+    async (person: SaiaPerson, captureToken: string) => {
+      const r = await fetch(`/api/measurements/saia/${captureToken}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ person }),
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error?.message || 'save_failed');
+      const mapped = (d.draft.measurements ?? {}) as Record<string, number>;
+      const allowed = new Set(defs.map((m) => m.id as string));
+      const merged = { ...valuesRef.current };
+      let applied = 0;
+      for (const [id, value] of Object.entries(mapped))
+        if (allowed.has(id)) {
+          merged[id] = value;
+          applied++;
+        }
+      if (applied === 0) throw new Error('no_supported_measurements');
+      setValues(merged);
+      setFields({});
+      const result = await command({ type: 'measurements', values: merged, confirm: false, source: '3dlook' });
+      if (result) {
+        onDirty(false);
+        setNotice('3DLOOK measurements saved. Review and confirm before continuing.');
+        setCapture(false);
+      }
+    },
+    [command, defs, onDirty],
+  );
   async function save(confirm: boolean) {
     if (hasErrors) return;
     const kept = Object.fromEntries(
@@ -76,7 +123,6 @@ export function MeasurementPanel({
     }
     setValues((values) => ({ ...values, [id]: mm }));
   }
-  const [fields, setFields] = useState<Record<string, string>>({});
   function fieldValue(id: string) {
     return fields[id] ?? displayValue(values[id], unit);
   }
@@ -99,14 +145,17 @@ export function MeasurementPanel({
         </span>
         <span>
           <strong>Measure with 3DLOOK</strong>
-          <small>Camera-assisted capture · connection pending</small>
+          <small>Camera-assisted capture · free, unverified until you confirm</small>
         </span>
         <ArrowUpRight size={18} />
       </button>
       <div className="measurement-heading">
         <div>
           <h2>Enter your measurements</h2>
-          <span className="source-tag">Customer entered · unverified</span>
+          <span className="source-tag">
+            {draft.measurements.source === '3dlook' ? '3DLOOK assisted' : 'Customer entered'} ·
+            unverified
+          </span>
         </div>
         <div className="unit-switch" role="group" aria-label="Measurement units">
           {(['cm', 'in'] as const).map((u) => (
@@ -207,20 +256,16 @@ export function MeasurementPanel({
         open={capture}
         onOpenChange={setCapture}
         title="Your 3DLOOK measurement session"
-        description="Camera-assisted capture will be available once the provider integration is connected."
+        description="A free, camera-assisted scan. Results are saved as unverified until you review and confirm them."
       >
-        <div className="capture-illustration">
-          <Camera size={38} />
-          <span>Provider connection required</span>
-        </div>
+        {capture && (
+          <SaiaMeasurementWidget onCaptureStart={saiaCaptureStart} onMeasurementsReady={saiaMeasurementsReady} />
+        )}
         <p>
-          The live capture flow, supported devices and measurement definitions must be verified
-          against your 3DLOOK plan. We won’t ask for photos or camera access until that is ready.
+          We won’t use this to place an order. Review and confirm the mapped values below before
+          continuing — this does not verify measurement accuracy.
         </p>
-        <p>
-          You can enter measurements to explore this draft. These will remain marked as unverified.
-        </p>
-        <Button className="full-width" onClick={() => setCapture(false)}>
+        <Button className="full-width" variant="secondary" onClick={() => setCapture(false)}>
           Continue with manual entry
         </Button>
       </Dialog>

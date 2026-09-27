@@ -2,6 +2,8 @@
 
 Status: draft integration contract. Provider selection: USER CONFIRMED (D-004). Product choice: Mobile Tailor PROPOSED. Contract status: NOT VERIFIED. Public-source review: 2026-09-26. Requirements INT-001 to INT-005.
 
+Connection status (2026-09-28, D-017): the public SAIA Mobile Tailor widget capture path is connected — `src/integrations/3dlook.ts`, `src/components/saia-measurement-widget.tsx`, `src/app/api/measurements/saia/*`. It embeds 3DLOOK's own official widget script and verifies the result `postMessage`'s origin and iframe source before accepting it; results save as an unverified, review-required draft and are never treated as checkout-authoritative until the customer confirms. The paid single-use scan (Stripe entitlement/credit ledger, `src/lib/scan-service-policy.ts`, `src/app/api/scan-service/*`) is ported but stays inert: it fails closed with 503 before ever creating a Stripe charge, because the private single-use scan-authorization capability this contract still requires from 3DLOOK (see INT-002 and the failure matrix) has not been supplied. The acceptance gate below is unchanged and not yet met by either path.
+
 ## Publicly established and not yet established
 
 Mobile Tailor is presented for made-to-measure use. Its public FAQ describes guided capture through its scanning link, excludes uploading existing photos in that flow, and says API access is included in some plans. Its pricing page distinguishes widget offerings and API/SDK entitlement. Public material also describes 3D model export.

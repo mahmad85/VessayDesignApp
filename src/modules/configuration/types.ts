@@ -89,6 +89,7 @@ export const commandSchema = z.discriminatedUnion('type', [
     type: z.literal('measurements'),
     values: z.record(z.string(), z.number().finite().positive().max(3000)),
     confirm: z.boolean(),
+    source: z.enum(['customer', '3dlook']).optional(),
   }),
   z.object({ type: z.literal('review'), mode: z.enum(['automated', 'human']) }),
 ]);
