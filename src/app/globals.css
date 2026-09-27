@@ -3727,3 +3727,35 @@ body {
     left: 20px;
   }
 }
+.detail-in-2d {
+  position: absolute;
+  left: 50%;
+  bottom: 62px;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: calc(100% - 32px);
+  padding: 7px 8px 7px 12px;
+  border-left: 2px solid var(--gold);
+  background: #fffdf6f0;
+  box-shadow: 0 2px 8px #23342e14;
+  font-size: 12px;
+}
+.detail-in-2d strong {
+  font-weight: 600;
+}
+.detail-in-2d button {
+  flex-shrink: 0;
+  padding: 5px 9px;
+  border-radius: 3px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 12px;
+}
+@media (max-width: 760px) {
+  .detail-in-2d {
+    bottom: 72px;
+  }
+}

@@ -1,67 +1,22 @@
 'use client';
 import { Canvas, useThree } from '@react-three/fiber';
-import { OrbitControls, ContactShadows, Line, Html, useProgress } from '@react-three/drei';
+import {
+  OrbitControls,
+  ContactShadows,
+  Environment,
+  Lightformer,
+  Line,
+  Html,
+  useProgress,
+} from '@react-three/drei';
 import { useEffect, useMemo, useRef, useState, Suspense, Component, type ReactNode } from 'react';
 import * as THREE from 'three';
 import Image from 'next/image';
 import type { OrbitControls as Controls } from 'three-stdlib';
 import { RotateCcw, ZoomIn, ZoomOut, Move, Box } from 'lucide-react';
-import { fabricFor, type Fabric } from '@/modules/catalog/catalog';
 import type { Design } from '@/modules/configuration/types';
 import { TailoredHuman } from './tailored-human';
 const SKIN = { porcelain: '#e2cbb6', warm: '#b99779', tan: '#987456', deep: '#604436' };
-function fabricTexture(fabric: Fabric) {
-  const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = 256;
-  const c = canvas.getContext('2d')!;
-  c.fillStyle = fabric.color;
-  c.fillRect(0, 0, 256, 256);
-  // Deterministic woven reference. These are not supplier texture assets.
-  for (let y = 0; y < 256; y += 2) {
-    c.strokeStyle = y % 4 ? 'rgba(255,255,255,.025)' : 'rgba(0,0,0,.05)';
-    c.beginPath();
-    c.moveTo(0, y);
-    c.lineTo(256, y);
-    c.stroke();
-  }
-  for (let x = 0; x < 256; x += 3) {
-    c.strokeStyle = 'rgba(255,255,255,.05)';
-    c.beginPath();
-    c.moveTo(x, 0);
-    c.lineTo(x, 256);
-    c.stroke();
-  }
-  if (fabric.pattern === 'twill')
-    for (let x = -256; x < 256; x += 6) {
-      c.strokeStyle = 'rgba(255,255,255,.045)';
-      c.beginPath();
-      c.moveTo(x, 0);
-      c.lineTo(x + 256, 256);
-      c.stroke();
-    }
-  if (fabric.pattern === 'check') {
-    c.strokeStyle = 'rgba(208,210,193,.38)';
-    c.lineWidth = 1;
-    for (let n = 0; n < 256; n += 64) {
-      c.beginPath();
-      c.moveTo(n, 0);
-      c.lineTo(n, 256);
-      c.moveTo(0, n);
-      c.lineTo(256, n);
-      c.stroke();
-    }
-  }
-  if (fabric.pattern === 'stripe') {
-    c.fillStyle = 'rgba(34,63,93,.5)';
-    for (let n = 0; n < 256; n += 18) c.fillRect(n, 0, 2, 256);
-  }
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(3, 4);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.anisotropy = 8;
-  return texture;
-}
 function Mannequin({
   design,
   measure,
@@ -73,21 +28,6 @@ function Mannequin({
   highlight?: string;
   measurementValue?: string;
 }) {
-  const fabric = fabricFor(design.fabricId)!;
-  const texture = useMemo(() => fabricTexture(fabric), [fabric]);
-  const cloth = useMemo(
-    () => new THREE.MeshStandardMaterial({ map: texture, roughness: 0.86, side: THREE.DoubleSide }),
-    [texture],
-  );
-  const lapel = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        color: new THREE.Color(fabric.color).multiplyScalar(1.08),
-        roughness: 0.86,
-        side: THREE.DoubleSide,
-      }),
-    [fabric.color],
-  );
   const skin = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
@@ -96,26 +36,12 @@ function Mannequin({
       }),
     [design.skinTone],
   );
-  const ivory = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({ color: '#e8e5db', roughness: 0.93, side: THREE.DoubleSide }),
-    [],
-  );
   const trouser = useMemo(
     () => new THREE.MeshStandardMaterial({ color: '#56524b', roughness: 1 }),
     [],
   );
-  const dark = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: '#302922', roughness: 0.32 }),
-    [],
-  );
-  useEffect(() => () => texture.dispose(), [texture]);
-  useEffect(() => () => cloth.dispose(), [cloth]);
-  useEffect(() => () => lapel.dispose(), [lapel]);
   useEffect(() => () => skin.dispose(), [skin]);
-  useEffect(() => () => ivory.dispose(), [ivory]);
   useEffect(() => () => trouser.dispose(), [trouser]);
-  useEffect(() => () => dark.dispose(), [dark]);
   const y =
     highlight === 'neck'
       ? 2.99
@@ -156,16 +82,7 @@ function Mannequin({
   return (
     <group>
       <Suspense fallback={null}>
-        <TailoredHuman
-          design={design}
-          measure={measure}
-          cloth={cloth}
-          lapel={lapel}
-          skin={skin}
-          ivory={ivory}
-          trouser={trouser}
-          dark={dark}
-        />
+        <TailoredHuman design={design} measure={measure} skin={skin} trouser={trouser} />
       </Suspense>
       {measure && highlight && (
         <>
@@ -224,16 +141,42 @@ function Scene({
   }, [view, zoom, reset, camera, invalidate]);
   return (
     <>
-      <ambientLight intensity={0.45} />
-      <hemisphereLight args={['#fff7ef', '#7a8392', 1.15]} />
+      {/* Local studio lighting: soft boxes rendered once, no downloaded HDRI. */}
+      <Environment resolution={128} frames={1}>
+        <Lightformer form="rect" intensity={2.2} position={[0, 4, 5]} scale={[6, 3, 1]} />
+        <Lightformer
+          form="rect"
+          intensity={1.1}
+          position={[-5, 2, 1]}
+          scale={[3, 5, 1]}
+          rotation-y={Math.PI / 2}
+        />
+        <Lightformer
+          form="rect"
+          intensity={1.4}
+          position={[5, 3, -3]}
+          scale={[3, 5, 1]}
+          rotation-y={-Math.PI / 2}
+        />
+        <Lightformer
+          form="rect"
+          intensity={0.6}
+          position={[0, -2, 0]}
+          scale={[8, 8, 1]}
+          rotation-x={-Math.PI / 2}
+          color="#d8d2c4"
+        />
+      </Environment>
+      <ambientLight intensity={0.15} />
+      <hemisphereLight args={['#fff7ef', '#7a8392', 0.5]} />
       <directionalLight
         position={[3, 6, 4]}
-        intensity={2.4}
+        intensity={1.9}
         castShadow
         shadow-mapSize={[1024, 1024]}
         shadow-normalBias={0.025}
       />
-      <directionalLight position={[-3, 3, -2]} intensity={1.8} />
+      <directionalLight position={[-3, 3, -2]} intensity={0.9} />
       <Mannequin
         design={design}
         measure={measure}

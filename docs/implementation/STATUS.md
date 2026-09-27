@@ -60,3 +60,7 @@ The 2D view is an interactive SVG technical drawing derived from saved choices. 
 
 3D is unchanged. The procedural garment surfaces cause the rough, paper-thin collars and gaps at shoulders and cuffs. A depth-offset adjustment was tried and gave no visible gain, so it was reverted. Realistic improvement needs authored garment assets rather than renderer tweaks: pattern-based garments made in a cloth tool such as Marvelous Designer or CLO and exported to GLB on the existing CC0 MakeHuman body, or MakeHuman/MPFB2 clothing assets. A licence-free parametric body model is an alternative if personalised bodies are needed later. SMPL-family models need a commercial licence, which conflicts with D-013. The vendor body from 3DLOOK (Q-008) remains the route to a personal body shape. None of these were adopted.
 
+## Generated 3D garments — 2026-09-27
+
+[TASK-014](../delivery/TASK-014.md) (D-016) replaces the hand-shaped 3D garment tubes and flat pieces with garments generated from cross-sections of the CC0 reference body. Sleeves now join the shoulders, cloth drapes over hollows, and lapels, collars and pockets have thickness. Studio lighting and a woven, sheened fabric material replace the flat look. Only the main choices are drawn in 3D; the preview points to 2D for linings, monogram, threads and accessories. It remains an illustrative visualizer with no pattern drafting, cloth simulation or tailor validation, and real mid-range phone performance is still unmeasured.
+

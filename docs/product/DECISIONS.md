@@ -82,3 +82,9 @@ Source/approver: user interface-refinement instruction. The chat and field-based
 
 Implementation choice within that scope: one design outline drives the navigator, tags and 2D focus; tags are grouped per branch with one branch visible at a time; the 2D view is an in-app SVG technical drawing with no new dependency. Affected requirements: UX-003–005, UX-013, UX-015, VIS-001, VIS-002, VIS-005, VIS-006; evidence in [TASK-013](../delivery/TASK-013.md). No 3D change, commercial catalog approval or tailor validation is implied.
 
+## D-016 — Generated 3D garments without an artist (accepted 2026-09-27)
+
+Source/approver: after reviewing the 3D options, the user chose the recommended direction with these limits: no 3D artist; the 3D view is a visualizer that should look good enough, not a detailed fitted design; only the main details appear in 3D, with other details in 2D; target both desktop and mobile, mostly mobile.
+
+Implementation choice within that scope: keep the CC0 MakeHuman body (D-013) and generate garments from body cross-sections sampled offline, with ease, a straight drape from the chest and seat, thickness on lapels, collars and pockets, and studio lighting with a woven, sheened fabric material. No paid tool, artist, downloaded environment map or new dependency. Main 3D choices are listed in `src/visualization/garments/coverage.ts`; other details show in 2D. Affected requirements: VIS-001, VIS-002, VIS-005, VIS-006; evidence in [TASK-014](../delivery/TASK-014.md). Pattern drafting, cloth simulation, tailor validation and real-device performance acceptance are not implied.
+

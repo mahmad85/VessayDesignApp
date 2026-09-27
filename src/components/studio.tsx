@@ -28,6 +28,7 @@ import {
 } from '@/modules/configuration/design-outline';
 import { REGIONS, regionForLeaf, type RegionId } from '@/visualization/focus-regions';
 import GarmentSketch, { type SketchHotspot } from '@/visualization/garment-sketch';
+import { shownIn3D } from '@/visualization/garments/coverage';
 import { PRODUCTS, fabricFor, CLIMATES, OCCASIONS, type Product } from '@/modules/catalog/catalog';
 import { useStudio } from './use-studio';
 import { displayValue } from '@/modules/measurements/definitions';
@@ -436,6 +437,18 @@ export default function Studio() {
                     photo={photo}
                   />
                 )}
+                {step === 1 &&
+                  previewMode === '3d' &&
+                  focusedLeaf &&
+                  focus.region !== 'full' &&
+                  !shownIn3D(focusedLeaf.id) && (
+                    <div className="detail-in-2d" role="status">
+                      <span>
+                        <strong>{focusedLeaf.label}</strong> is shown in the 2D drawing
+                      </span>
+                      <button onClick={() => setPreviewMode('2d')}>View in 2D</button>
+                    </div>
+                  )}
                 <div className="preview-disclaimer">
                   <span className="reference-dot" />
                   Interactive reference ·{' '}

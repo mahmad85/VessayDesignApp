@@ -101,3 +101,21 @@ Environment: Linux cloud container, Node 22.22.2, Playwright with the bundled Ch
 The new browser scenario checks that opening a group zooms the drawing; a field choice updates the callout and its tag; a vent change switches the drawing to its back; a trouser change returns to the front; 3D → 2D switching and reload keep the saved choice; a drawing edit marker opens its editor; and keyboard zoom changes the view. The journey test checks that an accepted assistant suggestion focuses the drawing and appears as an editable tag.
 
 Visually inspected 1440×900 desktop screenshots of both input modes, jacket style, lapels, pockets, sleeve, back vent, trousers with the jacket faded, vest, necktie, lining (custom and quilted), monogram, the shirt, the 768×1024 stacked layout, and 390×844 and 320×740 phone layouts (`artifacts/07-design-2d-fields.png`, regenerated journey and `human-preview` screenshots). The drawing is an illustrative technical sketch; it has no tailor sign-off, real-device performance measurement or screen-reader certification. 3D rendering is unchanged.
+
+## TASK-014 — Generated 3D garments, 27 September 2026
+
+Environment: Linux cloud container, Node 22.22.2, bundled Chromium with SwiftShader WebGL; Playwright started its own development server with the synthetic configuration.
+
+| Executed check | Result |
+| --- | --- |
+| `node scripts/build-human-model.mjs` after moving body preparation to `scripts/lib/human-body.mjs` | GLB and manifest byte-identical to the previous output |
+| `node scripts/build-garment-profiles.mjs` | 76 torso, 41 arm and 76 leg sections; 66 KB table in 0.7 s |
+| `npx tsc --noEmit`, `npm run lint` | Passed |
+| `npx vitest run` | 29 tests passed across four files, including 5 new garment checks: finite geometry for all products and closures, construction per option, a geometry change for each main 3D choice, layer clearance (jacket over vest over shirt, jacket and vest over the trouser waistband) and 3D coverage IDs |
+| `npm run build` | Optimized production build passed |
+| Full Playwright run | 9 of 9 passed, including the full-human 3D test with garment changes, camera keys and responsive views |
+| Garment generation timing (Node, warm) | About 65 ms for a complete outfit, about 71,000 triangles |
+
+Visually inspected 3D renders: default suit front/side/back and close-up; double-breasted 6-button; Mandarin; peak/wide and shawl/slim lapels; relaxed fit with vest; blazer with neutral trousers front and side; dress shirt; measurement mode (unchanged); the 390×844 phone preview; and the "shown in the 2D drawing" hint for lining. Inspection led to four corrections before the final run: straight tapered trousers, a longer jacket hem, waistband clearance under the jacket (visible only on the blazer) and a straight back drape over the seat.
+
+Not established: real mid-range phone frame rate or generation time, tailor review of shapes, cloth folds, or screen-reader certification.

@@ -19,3 +19,5 @@ Run `node scripts/build-human-model.mjs` from the project root to reproduce the 
 The GLB provides Body, ExposedSkin, Hair, Eyes, Trousers and Shorts meshes. Jacket, shirt, collar, sleeve, lapel, pocket, fastening and shoe surfaces are original local geometry in `src/visualization/tailored-human.tsx`. Reference fabric IDs and accepted configuration still determine those surfaces and materials. Pattern UVs run along the vertical garment direction; they are illustrative, not calibrated supplier swatches.
 
 The model is a generic adult reference, not a customer scan, a garment simulation, or an assertion of physical fit. Asset ownership/provenance is documented; production visual acceptance, body-variant coverage and real-device performance remain separate gates.
+
+Run `node scripts/build-garment-profiles.mjs` to regenerate `src/visualization/body-profiles.json`: exact torso, arm and leg cross-sections of the same posed body, used to generate garments in the browser. It reads only these local CC0 files.
