@@ -1,9 +1,20 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { mkdir, readdir, readFile } from 'node:fs/promises';
 import AxeBuilder from '@axe-core/playwright';
 import { join } from 'node:path';
 
 const artifactDirectory = process.env.VESSY_E2E_ARTIFACT_DIR || 'artifacts';
+async function openDetail(page: Page, branch: RegExp, leaf: RegExp) {
+  await page.getByRole('tab', { name: 'Choose details' }).click();
+  const crumb = page.getByRole('navigation', { name: 'Detail hierarchy' });
+  if (await crumb.isVisible())
+    await crumb.getByRole('button', { name: 'All details', exact: true }).click();
+  await page
+    .getByRole('region', { name: 'All design details' })
+    .getByRole('button', { name: branch })
+    .click();
+  await page.getByRole('button', { name: leaf }).first().click();
+}
 test('design, chat, measurement and review journey', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
@@ -13,20 +24,27 @@ test('design, chat, measurement and review journey', async ({ page }) => {
   await page.getByRole('button', { name: 'Wedding', exact: true }).click();
   await page.getByRole('button', { name: 'All season', exact: true }).click();
   await page.getByRole('button', { name: 'Midnight navy', exact: true }).last().click();
-  await page.getByRole('tab', { name: /Fit & shape/ }).click();
+  await openDetail(page, /The essentials/, /^Fit Tailored/);
   await page.getByRole('button', { name: /Classic Comfortably balanced/ }).click();
-  await page.getByRole('tab', { name: /Fabric/ }).click();
+  await expect(page.locator('.sketch-callout')).toContainText('Classic');
+  await page.getByRole('tab', { name: 'Ask your tailor' }).click();
   await page.getByLabel('Message your tailor').fill('Could you suggest a green fabric?');
   await page.getByRole('button', { name: 'Send message', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Apply this suggestion' })).toBeVisible();
   await page.getByRole('button', { name: 'Apply this suggestion' }).click();
+  // The assistant's accepted change shows up as a tag and focuses the drawing.
+  await expect(page.locator('.sketch-callout')).toContainText('Forest green');
+  await page.getByRole('button', { name: 'Fabric: Forest green. Edit' }).click();
   await expect(
     page.getByRole('button', { name: 'Forest green', exact: true }).last(),
   ).toHaveAttribute('aria-pressed', 'true');
   await page.reload();
+  await page.getByRole('button', { name: 'Fabric: Forest green. Edit' }).click();
   await expect(
     page.getByRole('button', { name: 'Forest green', exact: true }).last(),
   ).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.sketch-svg')).toBeVisible();
+  await page.getByRole('button', { name: '3D model', exact: true }).click();
   await expect(page.locator('canvas')).toBeVisible();
   await mkdir(artifactDirectory, { recursive: true });
   await page.screenshot({ path: join(artifactDirectory, '01-design-desktop.png'), fullPage: true });
@@ -75,12 +93,20 @@ test('category changes need confirmation and update the available fabric control
   await expect(page.getByLabel('Garment', { exact: true })).toHaveValue('suit');
   await page.getByLabel('Garment', { exact: true }).selectOption('shirt');
   await page.getByRole('button', { name: 'Change garment', exact: true }).click();
+  await openDetail(page, /The essentials/, /^Fabric Ivory cotton/);
   await expect(
     page.getByRole('button', { name: 'Ivory cotton', exact: true }).last(),
   ).toBeVisible();
   await expect(page.getByRole('button', { name: 'Forest green', exact: true })).toHaveCount(0);
-  await page.getByRole('tab', { name: /Finishing details/ }).click();
+  await page.getByRole('button', { name: /^Next Fit/ }).click();
+  await page.getByRole('button', { name: /^Next Collar/ }).click();
+  await page.getByRole('button', { name: /^Next Cuffs/ }).click();
   await expect(page.getByRole('button', { name: 'French', exact: true })).toBeVisible();
+  // Suit-only jacket, trouser, vest and accent branches are not offered for a shirt.
+  await page.getByRole('button', { name: 'All details', exact: true }).click();
+  await expect(
+    page.getByRole('region', { name: 'All design details' }).getByRole('button'),
+  ).toHaveCount(1);
 });
 test('mobile layout and unavailable capture remain usable', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -91,9 +117,14 @@ test('mobile layout and unavailable capture remain usable', async ({ page }) => 
   );
   await mkdir(artifactDirectory, { recursive: true });
   await page.screenshot({ path: join(artifactDirectory, '04-design-mobile.png'), fullPage: true });
-  await page.getByRole('button', { name: '3D preview', exact: true }).click();
-  await expect(page.locator('canvas')).toBeVisible();
+  await page.getByRole('button', { name: 'Preview', exact: true }).click();
+  await expect(page.locator('.sketch-svg')).toBeVisible();
   await page.screenshot({ path: join(artifactDirectory, '05-preview-mobile.png'), fullPage: true });
+  await page.getByRole('button', { name: /^Fit: Tailored/ }).click();
+  await expect(page.getByRole('heading', { name: 'Fit', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Preview', exact: true }).click();
+  await page.getByRole('button', { name: '3D model', exact: true }).click();
+  await expect(page.locator('canvas')).toBeVisible();
   await page.getByRole('button', { name: '02 Measurements' }).click();
   await page.getByRole('button', { name: /Measure with 3DLOOK/ }).click();
   await expect(page.getByRole('dialog')).toContainText('Provider connection required');
@@ -179,6 +210,13 @@ test('keyboard controls and accessibility checks across desktop and small layout
   expect(
     results.violations.map((v) => ({ id: v.id, nodes: v.nodes.map((n) => n.target) })),
   ).toEqual([]);
+  await openDetail(page, /^7 Jacket/, /^Lapels/);
+  const fields = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+    .analyze();
+  expect(fields.violations.map((v) => ({ id: v.id, nodes: v.nodes.map((n) => n.target) }))).toEqual(
+    [],
+  );
   await page.getByRole('button', { name: 'Appearance', exact: true }).focus();
   await page.keyboard.press('Enter');
   await expect(page.getByRole('dialog')).toBeVisible();
@@ -191,4 +229,52 @@ test('keyboard controls and accessibility checks across desktop and small layout
   await page.screenshot({ path: join(artifactDirectory, '06-design-tablet.png'), fullPage: true });
   await page.setViewportSize({ width: 320, height: 740 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+test('field choices and the 2D drawing stay in sync across 2D/3D switches', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: /Good style/ })).toBeVisible();
+  const svg = page.locator('.sketch-svg');
+  await expect(svg).toHaveAttribute('viewBox', '0 0 400 800');
+  await openDetail(page, /^7 Jacket/, /^Pocket/);
+  // Opening a group zooms to it before anything changes.
+  await expect(page.locator('.sketch-callout')).toContainText('Pocket');
+  await expect(svg).not.toHaveAttribute('viewBox', '0 0 400 800');
+  await page.getByRole('button', { name: 'With flap x3', exact: true }).click();
+  await expect(page.locator('.sketch-callout')).toContainText('With flap x3');
+  await expect(page.getByRole('button', { name: 'Pocket: With flap x3. Edit' })).toBeVisible();
+  await page.getByRole('button', { name: /^Next Sleeve/ }).click();
+  await page.getByRole('button', { name: /^Next Back/ }).click();
+  await page.getByRole('button', { name: 'Side Vents', exact: true }).click();
+  await expect(
+    page.getByRole('group', { name: 'Drawing side' }).getByRole('button', { name: 'back' }),
+  ).toHaveAttribute('aria-pressed', 'true');
+  // Trouser details reveal the waistband by fading the jacket.
+  await page.getByRole('button', { name: 'All details', exact: true }).click();
+  await page.getByRole('button', { name: /^9 Trousers/ }).click();
+  await page.getByRole('button', { name: /^Pleats/ }).click();
+  await page.getByRole('button', { name: 'Double pleats', exact: true }).click();
+  await expect(page.locator('.sketch-callout')).toContainText('Double pleats');
+  await expect(
+    page.getByRole('group', { name: 'Drawing side' }).getByRole('button', { name: 'front' }),
+  ).toHaveAttribute('aria-pressed', 'true');
+  // Switching renderers never changes the saved selection.
+  await page.getByRole('button', { name: '3D model', exact: true }).click();
+  await expect(page.locator('canvas')).toBeVisible();
+  await page.getByRole('button', { name: '2D drawing', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Pleats: Double pleats. Edit' })).toBeVisible();
+  await page.reload();
+  await page.getByRole('button', { name: /^Trousers 9/ }).click();
+  await expect(page.getByRole('button', { name: 'Pleats: Double pleats. Edit' })).toBeVisible();
+  // A drawing hotspot opens its editor, and keyboard zoom works on the drawing.
+  await page.getByRole('button', { name: 'Edit Lapels' }).click();
+  await expect(page.getByRole('heading', { name: 'Lapels', exact: true })).toBeVisible();
+  await svg.focus();
+  const before = await svg.getAttribute('viewBox');
+  await page.keyboard.press('+');
+  await expect(svg).not.toHaveAttribute('viewBox', before!);
+  await mkdir(artifactDirectory, { recursive: true });
+  await page.screenshot({ path: join(artifactDirectory, '07-design-2d-fields.png') });
+  expect(errors).toEqual([]);
 });

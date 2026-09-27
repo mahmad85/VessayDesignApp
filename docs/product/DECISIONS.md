@@ -75,3 +75,10 @@ Implementation choice within that scope: adapt and bundle CC0 MakeHuman data, wi
 Source/approver: user added Hockerty Style and Accents menu exports under `docs` and asked that they be included in application seed data using the existing category structure. The application now normalizes those exports into a versioned suit reference seed with Style and Accents menus, jacket/pants/vest categories, option groups, sections and stable option values.
 
 This authorizes local application use of the supplied files for the reference flow. It does not approve source prices, stock, manufacturing codes, compatibility, brand claims, public asset publication or checkout. Those values remain excluded from customer pricing and production readiness. Affected requirements: CAT-001–006, UX-004, UX-016 and UX-017; evidence in [TASK-012](../delivery/TASK-012.md). Q-011, Q-014 and Q-023 remain release gates.
+
+## D-015 — Unified design input with 2D/3D preview (accepted 2026-09-27)
+
+Source/approver: user interface-refinement instruction. The chat and field-based inputs move together into the left pane with a switch between AI-guided conversation and traditional field selection, navigable through the full option hierarchy. Both lock choices through the same configuration command. The right pane shows the result, with a 2D/3D switch that never alters the selection. Current choices appear as tags that stay readable at 20+ selections while keeping the hierarchy. The 2D view must be interactive and zoom to the area of the choice being selected or changed. Improving the 3D mesh is lower priority and its behaviour stays as is for now.
+
+Implementation choice within that scope: one design outline drives the navigator, tags and 2D focus; tags are grouped per branch with one branch visible at a time; the 2D view is an in-app SVG technical drawing with no new dependency. Affected requirements: UX-003–005, UX-013, UX-015, VIS-001, VIS-002, VIS-005, VIS-006; evidence in [TASK-013](../delivery/TASK-013.md). No 3D change, commercial catalog approval or tailor validation is implied.
+

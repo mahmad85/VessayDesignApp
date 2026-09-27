@@ -83,3 +83,21 @@ Environment: Windows, Node 22.17.1, installed Chrome in headless mode. The final
 The browser pass exposed that the expanded catalog could extend under the action footer at a 1440×900 viewport. The design-control region now has a bounded, independently scrollable height; a direct Chrome interaction check confirmed the previously covered Half Canvas option can be clicked, and the final two-scenario browser run passed. The test explicitly returns to the Fabric tab after reload because Radix/browser state restoration can retain the last selected Style tab; this changes only navigation, not the persistence assertion.
 
 Visually inspected `artifacts/human-preview/suit-style-catalog.png` and `suit-accents-catalog.png`, plus the regenerated 768×1024, 390×844 and 320×740 preview screenshots. The seed is locally verified reference data. It does not establish supplier authority, stock, approved prices, manufacturing compatibility, asset publication rights or production readiness; full scope is in [TASK-012](../delivery/TASK-012.md).
+
+## TASK-013 — Unified design input and interactive 2D preview, 27 September 2026
+
+Environment: Linux cloud container, Node 22.22.2, Playwright with the bundled Chromium (`PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/opt/pw-browsers/chromium`, SwiftShader WebGL). Browser tests started their own development server with the synthetic configuration in `playwright.config.ts`.
+
+| Executed check | Result |
+| --- | --- |
+| `npx tsc --noEmit` | Passed |
+| `npm run lint` | Passed, no warnings or errors |
+| `npx vitest run` | 24 tests passed across three files, including 7 new outline, change-detection, region-mapping and drawing-spec checks |
+| `npm run build` | Optimized production build passed |
+| Full Playwright run | 8 of 9 passed on the first run. The failure was a wrong step order in the updated category-change test (Fit comes before Collar); after correcting the test navigation and making one locator exact, the studio file passed 7 of 7. `human-preview.spec.ts` passed 2 of 2 in the full run and was not changed afterwards |
+| Accessibility (axe, WCAG 2.2 AA tags) | No violations on the chat view with the 2D drawing, or on the Choose details navigator opened to Jacket › Lapels |
+| Prettier on changed files | Passed |
+
+The new browser scenario checks that opening a group zooms the drawing; a field choice updates the callout and its tag; a vent change switches the drawing to its back; a trouser change returns to the front; 3D → 2D switching and reload keep the saved choice; a drawing edit marker opens its editor; and keyboard zoom changes the view. The journey test checks that an accepted assistant suggestion focuses the drawing and appears as an editable tag.
+
+Visually inspected 1440×900 desktop screenshots of both input modes, jacket style, lapels, pockets, sleeve, back vent, trousers with the jacket faded, vest, necktie, lining (custom and quilted), monogram, the shirt, the 768×1024 stacked layout, and 390×844 and 320×740 phone layouts (`artifacts/07-design-2d-fields.png`, regenerated journey and `human-preview` screenshots). The drawing is an illustrative technical sketch; it has no tailor sign-off, real-device performance measurement or screen-reader certification. 3D rendering is unchanged.

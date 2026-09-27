@@ -1,5 +1,6 @@
 'use client';
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
+import * as Tabs from '@radix-ui/react-tabs';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import {
@@ -9,22 +10,41 @@ import {
   ChevronDown,
   Info,
   LoaderCircle,
+  ListChecks,
   Scissors,
+  Sparkles,
   SlidersHorizontal,
   Upload,
   UserRound,
   X,
   ShieldCheck,
 } from 'lucide-react';
-import type { DesignPatch } from '@/modules/configuration/types';
+import type { Design, DesignPatch, Draft } from '@/modules/configuration/types';
+import {
+  changedLeaves,
+  designOutline,
+  findLeaf,
+  type BranchId,
+} from '@/modules/configuration/design-outline';
+import { REGIONS, regionForLeaf, type RegionId } from '@/visualization/focus-regions';
+import GarmentSketch, { type SketchHotspot } from '@/visualization/garment-sketch';
 import { PRODUCTS, fabricFor, CLIMATES, OCCASIONS, type Product } from '@/modules/catalog/catalog';
 import { useStudio } from './use-studio';
 import { displayValue } from '@/modules/measurements/definitions';
-import { Consultation, DesignControls } from './design-consultation';
+import { Consultation } from './design-consultation';
+import { DesignNavigator, type NavPath } from './design-navigator';
+import { SelectionTags } from './selection-tags';
 import { MeasurementPanel } from './measurement-panel';
 import { ReviewPanel } from './review-panel';
 import { Button } from './ui/button';
 import { Dialog } from './ui/dialog';
+const BRANCH_REGIONS: Record<BranchId, RegionId> = {
+  essentials: 'full',
+  jacket: 'torso',
+  pants: 'legs',
+  vest: 'vest',
+  accents: 'full',
+};
 const GarmentView = dynamic(() => import('@/visualization/garment-view'), {
   ssr: false,
   loading: () => (
@@ -47,7 +67,74 @@ export default function Studio() {
     [info, setInfo] = useState(false),
     [dirty, setDirty] = useState(false),
     [leaveStep, setLeaveStep] = useState<number | null>(null),
-    [photoError, setPhotoError] = useState('');
+    [photoError, setPhotoError] = useState(''),
+    [inputMode, setInputMode] = useState<'chat' | 'fields'>('chat'),
+    [nav, setNav] = useState<NavPath>({}),
+    [previewMode, setPreviewMode] = useState<'2d' | '3d'>('2d'),
+    [focus, setFocus] = useState<{ region: RegionId; leafId?: string; nonce: number }>({
+      region: 'full',
+      nonce: 0,
+    });
+  const outline = useMemo(() => (draft ? designOutline(draft.design) : []), [draft]);
+  const focusedLeaf = focus.leafId ? findLeaf(outline, focus.leafId) : undefined;
+  const focusLeaf = useCallback(
+    (leafId: string, design: Design, changedKey?: string) =>
+      setFocus((current) => ({
+        leafId,
+        region: regionForLeaf(leafId, {
+          product: design.product,
+          values: design.customizations,
+          changedKey,
+        }),
+        nonce: current.nonce + 1,
+      })),
+    [],
+  );
+  // Every committed change, whether from chat, a suggestion or a field, moves the 2D focus.
+  const followChange = useCallback(
+    (before: Design, next: Draft | null) => {
+      if (!next) return next;
+      if (before.product !== next.design.product)
+        setFocus((current) => ({ leafId: 'product', region: 'full', nonce: current.nonce + 1 }));
+      else {
+        const [first] = changedLeaves(before, next.design);
+        if (first) focusLeaf(first.leafId, next.design, first.keys[0]);
+      }
+      return next;
+    },
+    [focusLeaf],
+  );
+  function navigateDetails(path: NavPath) {
+    setNav(path);
+    if (!draft) return;
+    if (path.leaf) focusLeaf(path.leaf, draft.design);
+    else
+      setFocus((current) => ({
+        region: path.branch ? BRANCH_REGIONS[path.branch] : 'full',
+        leafId: undefined,
+        nonce: current.nonce + 1,
+      }));
+  }
+  function openLeaf(leafId: string, branch: BranchId) {
+    setInputMode('fields');
+    setMobilePane('conversation');
+    navigateDetails({ branch, leaf: leafId });
+  }
+  const hotspots = useMemo(() => {
+    if (!draft) return [];
+    const seen = new Set<RegionId>(['full', 'torso', 'back']);
+    const spots: SketchHotspot[] = [];
+    for (const leaf of outline.flatMap((branch) => branch.leaves)) {
+      const region = regionForLeaf(leaf.id, {
+        product: draft.design.product,
+        values: draft.design.customizations,
+      });
+      if (seen.has(region)) continue;
+      seen.add(region);
+      spots.push({ region, leafId: leaf.id, label: leaf.label });
+    }
+    return spots;
+  }, [draft, outline]);
   const photoRef = useRef<string | undefined>(undefined);
   const onDirty = useCallback((v: boolean) => setDirty(v), []);
   const [measurementPreview, setMeasurementPreview] = useState<{
@@ -74,7 +161,8 @@ export default function Studio() {
       setProductChange(patch);
       return;
     }
-    void studio.command({ type: 'design', patch });
+    const before = draft.design;
+    void studio.command({ type: 'design', patch }).then((next) => followChange(before, next));
   }
   async function confirm() {
     const result = await studio.command({ type: 'accept_design' });
@@ -190,13 +278,59 @@ export default function Studio() {
               aria-pressed={mobilePane === 'preview'}
               onClick={() => setMobilePane('preview')}
             >
-              3D preview
+              Preview
             </button>
           </div>
           <main className={`studio-grid step-${step} mobile-${mobilePane}`} id="studio-content">
             <div className="left-pane">
               {step === 1 ? (
-                <Consultation {...studio} draft={draft} change={change} />
+                <div className="design-workspace">
+                  <div className="workspace-head">
+                    <div className="eyebrow">
+                      <span className="small-star">✳</span> YOUR PERSONAL TAILOR
+                    </div>
+                    <h1>Good style starts with you.</h1>
+                  </div>
+                  <Tabs.Root
+                    className="input-modes"
+                    value={inputMode}
+                    onValueChange={(value) => setInputMode(value as 'chat' | 'fields')}
+                  >
+                    <Tabs.List className="input-switch" aria-label="How would you like to design?">
+                      <Tabs.Trigger value="chat">
+                        <Sparkles size={14} />
+                        Ask your tailor
+                      </Tabs.Trigger>
+                      <Tabs.Trigger value="fields">
+                        <ListChecks size={14} />
+                        Choose details
+                      </Tabs.Trigger>
+                    </Tabs.List>
+                    <Tabs.Content value="chat" forceMount className="input-mode-panel">
+                      <Consultation
+                        draft={draft}
+                        busy={busy}
+                        mode={studio.mode}
+                        chat={studio.chat}
+                        change={change}
+                        onChooseDetails={() => {
+                          setInputMode('fields');
+                          navigateDetails({});
+                        }}
+                      />
+                    </Tabs.Content>
+                    <Tabs.Content value="fields" forceMount className="input-mode-panel">
+                      <DesignNavigator
+                        draft={draft}
+                        outline={outline}
+                        busy={busy}
+                        change={change}
+                        path={nav}
+                        navigate={navigateDetails}
+                      />
+                    </Tabs.Content>
+                  </Tabs.Root>
+                </div>
               ) : step === 2 ? (
                 <MeasurementPanel
                   draft={draft}
@@ -255,30 +389,65 @@ export default function Studio() {
                         <SlidersHorizontal size={15} />
                         <span>Appearance</span>
                       </button>
+                      <div className="preview-mode" role="group" aria-label="Preview type">
+                        {(['2d', '3d'] as const).map((value) => (
+                          <button
+                            key={value}
+                            aria-pressed={previewMode === value}
+                            aria-label={value === '2d' ? '2D drawing' : '3D model'}
+                            onClick={() => setPreviewMode(value)}
+                          >
+                            {value.toUpperCase()}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   ) : (
                     <span className="reference-label">REFERENCE MANNEQUIN</span>
                   )}
                 </div>
-                <GarmentView
-                  design={draft.design}
-                  measure={step === 2}
-                  highlight={highlight}
-                  measurementValue={
-                    measurementPreview.values[highlight]
-                      ? `${displayValue(measurementPreview.values[highlight], measurementPreview.unit)} ${measurementPreview.unit}`
-                      : undefined
-                  }
-                  photo={photo}
-                />
+                {step === 1 && previewMode === '2d' ? (
+                  <GarmentSketch
+                    design={draft.design}
+                    focus={{
+                      region: focus.region,
+                      nonce: focus.nonce,
+                      label:
+                        focusedLeaf?.label ??
+                        (focus.region !== 'full' ? REGIONS[focus.region].label : undefined),
+                      value: focusedLeaf?.value,
+                    }}
+                    hotspots={hotspots}
+                    onHotspot={(spot) => {
+                      const leaf = findLeaf(outline, spot.leafId);
+                      if (leaf) openLeaf(leaf.id, leaf.branchId);
+                    }}
+                  />
+                ) : (
+                  <GarmentView
+                    design={draft.design}
+                    measure={step === 2}
+                    highlight={highlight}
+                    measurementValue={
+                      measurementPreview.values[highlight]
+                        ? `${displayValue(measurementPreview.values[highlight], measurementPreview.unit)} ${measurementPreview.unit}`
+                        : undefined
+                    }
+                    photo={photo}
+                  />
+                )}
                 <div className="preview-disclaimer">
                   <span className="reference-dot" />
                   Interactive reference ·{' '}
-                  {step === 2 ? 'not a scan of your body' : 'illustrative fit and fabric colour'}
+                  {step === 2
+                    ? 'not a scan of your body'
+                    : step === 1 && previewMode === '2d'
+                      ? 'illustrative technical drawing'
+                      : 'illustrative fit and fabric colour'}
                 </div>
               </div>
               {step === 1 ? (
-                <DesignControls draft={draft} busy={busy} change={change} />
+                <SelectionTags outline={outline} activeLeaf={focus.leafId} onEdit={openLeaf} />
               ) : (
                 <div className="preview-bottom-note">
                   <Scissors size={22} />
@@ -464,11 +633,15 @@ export default function Studio() {
             disabled={busy}
             onClick={async () => {
               if (productChange) {
-                const result = await studio.command({
-                  type: 'design',
-                  patch: productChange,
-                  confirmCategoryChange: true,
-                });
+                const before = draft!.design;
+                const result = followChange(
+                  before,
+                  await studio.command({
+                    type: 'design',
+                    patch: productChange,
+                    confirmCategoryChange: true,
+                  }),
+                );
                 if (result) setProductChange(null);
               }
             }}

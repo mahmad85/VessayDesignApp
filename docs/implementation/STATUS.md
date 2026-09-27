@@ -51,3 +51,12 @@ Source assets, CC0 license, pinned commit, offline build and model manifest are 
 [TASK-012](../delivery/TASK-012.md) adds a reproducible seed generator for the supplied suit Style and Accents exports. The generated seed contains 434 choices with stable IDs and the supplied jacket, pants and vest hierarchy. Direct choices are validated server-side, saved in the existing draft revision, and selected mapped fields continue to drive the 3D reference.
 
 Source prices are retained only as unapproved reference metadata and do not appear in the customer flow or make checkout eligible. The copied thumbnails are isolated as reference assets. Supplier ownership, availability, compatibility, manufacturing interpretation, terminology review and publication rights remain unverified.
+
+## Unified design input and 2D preview — 2026-09-27
+
+[TASK-013](../delivery/TASK-013.md) (D-015) moves all design input to the left pane: **Ask your tailor** (conversation, guided choices, accepted suggestions) and **Choose details** (All details → essentials, jacket, trousers, vest, accents → group → options, with breadcrumb and previous/next stepping). Both use the same server command. The right pane has a 2D/3D switch; switching never changes the saved selection. Current choices are editable tags grouped by branch below the preview.
+
+The 2D view is an interactive SVG technical drawing derived from saved choices. It zooms to the group being edited or the choice just changed, including changes applied from chat, switches to back or inside views for vents, elbow patches, back pockets, lining, canvas and monogram, and fades the jacket to show trouser or vest details. It supports pan, zoom, keyboard control and edit markers. Accessory and lining fills use the supplied thumbnails. It is illustrative and not tailor-validated.
+
+3D is unchanged. The procedural garment surfaces cause the rough, paper-thin collars and gaps at shoulders and cuffs. A depth-offset adjustment was tried and gave no visible gain, so it was reverted. Realistic improvement needs authored garment assets rather than renderer tweaks: pattern-based garments made in a cloth tool such as Marvelous Designer or CLO and exported to GLB on the existing CC0 MakeHuman body, or MakeHuman/MPFB2 clothing assets. A licence-free parametric body model is an alternative if personalised bodies are needed later. SMPL-family models need a commercial licence, which conflicts with D-013. The vendor body from 3DLOOK (Q-008) remains the route to a personal body shape. None of these were adopted.
+
