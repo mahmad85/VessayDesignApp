@@ -55,10 +55,10 @@ const mirror = (list: P[]): P[] => list.map(([x, y]) => [400 - x, y]);
 
 function fitWidths(fit: SketchSpec['fit']) {
   return fit === 'slim'
-    ? { chest: 76, waist: 64, hem: 78 }
+    ? { chest: 82, waist: 74, hem: 77 }
     : fit === 'regular'
-      ? { chest: 80, waist: 70, hem: 82 }
-      : { chest: 84, waist: 77, hem: 88 };
+      ? { chest: 86, waist: 80, hem: 82 }
+      : { chest: 90, waist: 86, hem: 88 };
 }
 
 function jacketLayout(style: string) {
@@ -83,8 +83,8 @@ function jacketBody(spec: SketchSpec, back = false) {
   const w = fitWidths(spec.fit);
   const layout = jacketLayout(spec.jacket?.style ?? 'simple_2');
   const lowest = layout.buttons[layout.buttons.length - 1];
-  const left = `M180,146 L118,166 C110,190 118,230 ${200 - w.chest},252 L${200 - w.waist},336 Q${200 - w.hem + 1},410 ${200 - w.hem},480`;
-  const right = `L${200 + w.hem},480 Q${200 + w.hem - 1},410 ${200 + w.waist},336 L${200 + w.chest},252 C282,230 290,190 282,166 L220,146`;
+  const left = `M180,146 L110,160 C101,188 110,230 ${200 - w.chest},252 L${200 - w.waist},336 Q${200 - w.hem + 1},410 ${200 - w.hem},480`;
+  const right = `L${200 + w.hem},480 Q${200 + w.hem - 1},410 ${200 + w.waist},336 L${200 + w.chest},252 C290,230 299,188 290,160 L220,146`;
   if (back)
     return `${left} L${200 + w.hem},480 ${right.slice(right.indexOf('Q'))} Q200,136 180,146 Z`;
   if (layout.db)
@@ -123,7 +123,7 @@ function lapelShapes(spec: SketchSpec): { lapels: P[][]; collars: P[][]; shawl: 
   const leftCollar: P[] = [
     [edge(g) - 2, g - 1],
     peak ? [edge(g) - L + 18, g - 1] : [edge(g) - L + 20, g - 8],
-    [166, 152],
+    [162, 151],
     [180, 146],
   ];
   const mirrorAround = (list: P[]): P[] =>
@@ -217,12 +217,12 @@ function Trousers({
   const t = spec.trousers;
   const bermuda = t.length === 'bermuda';
   const hemY = bermuda ? 596 : t.break === 'no' ? 750 : t.break === 'full' ? 768 : 760;
-  const legW = t.fit === 'slim' ? 17 : 21;
+  const legW = t.fit === 'slim' ? 20 : 24;
   const leg = (side: -1 | 1): P[] => {
-    const c = 200 + side * 42;
+    const c = 200 + side * 41;
     return [
-      [200 + side * 60, 398],
-      [200 + side * 69, 452],
+      [200 + side * 62, 398],
+      [200 + side * 66, 452],
       [c + side * legW, hemY + (t.break === 'full' ? -side * 2 : 0)],
       [c - side * legW, hemY + (t.break === 'full' ? side * 2 : 0)],
       [200 + side * 2, 506],
@@ -243,19 +243,19 @@ function Trousers({
           <line
             x1={200 + side * 44}
             y1={bermuda ? 470 : 420}
-            x2={200 + side * 42}
+            x2={200 + side * 41}
             y2={hemY - 4}
             className="sk-crease"
           />
           {t.break !== 'no' && !bermuda && (
             <path
-              d={`M${200 + side * 42 - legW + 3},${hemY - 18} q${legW - 3},${t.break === 'full' ? 9 : 5} ${2 * legW - 6},0`}
+              d={`M${200 + side * 41 - legW + 3},${hemY - 18} q${legW - 3},${t.break === 'full' ? 9 : 5} ${2 * legW - 6},0`}
               className="sk-fold"
             />
           )}
           {t.cuffs && (
             <rect
-              x={200 + side * 42 - legW}
+              x={200 + side * 41 - legW}
               y={hemY - 11}
               width={legW * 2}
               height={11}
@@ -424,76 +424,193 @@ function Trousers({
   );
 }
 
+/** Men's shoes seen from the front or back, with welt and sole. */
 function Feet({ spec, id, back }: { spec: SketchSpec; id: string; back?: boolean }) {
   const shoe = shoeStyle(spec.shoes);
   const bermuda = spec.trousers.length === 'bermuda';
+  const skin = SKIN[spec.skinTone];
+  const edge = shade(shoe.color, shoe.color === '#ece9e1' ? -0.25 : 0.3);
   return (
     <g>
       {bermuda &&
-        [-1, 1].map((side) => (
-          <path
-            key={side}
-            d={`M${200 + side * 42 - 14},596 L${200 + side * 42 - 11},770 L${200 + side * 42 + 11},770 L${200 + side * 42 + 14},596 Z`}
-            fill={SKIN[spec.skinTone]}
-          />
-        ))}
-      {[-1, 1].map((side) => (
-        <g key={side}>
-          <rect
-            x={200 + side * 42 - 12}
-            y={bermuda ? 728 : 740}
-            width={24}
-            height={bermuda ? 44 : 34}
-            fill={spec.socks.on && spec.socks.asset ? `url(#${id}-socks)` : '#26282b'}
-          />
-          <path
-            d={
-              back
-                ? `M${200 + side * 42 - 15},766 q15,-6 30,0 l2,16 q-17,6 -34,0 z`
-                : `M${200 + side * 42 - 15},${shoe.boot ? 748 : 764} q15,-4 30,0 l${side * 9},${shoe.boot ? 30 : 14} q${-side * 1},8 ${-side * 12},8 h${-side * 18} q${-side * 12},0 ${-side * 10},-10 z`
-            }
-            fill={shoe.color}
-            stroke={shade(shoe.color, shoe.color === '#ece9e1' ? -0.25 : 0.25)}
-            strokeWidth={1}
-          />
-          {shoe.sneaker && !back && (
+        [-1, 1].map((side) => {
+          const c = 200 + side * 41;
+          // Calf and ankle below knee-length trousers.
+          return (
             <path
-              d={`M${200 + side * 42 - 14},782 h${side * 38}`}
-              stroke="#c9c5bb"
-              strokeWidth={3}
+              key={side}
+              d={`M${c - 18},596 C${c - 21},640 ${c - 19},690 ${c - 11},748 L${c + 11},748 C${c + 19},690 ${c + 21},640 ${c + 18},596 Z`}
+              fill={skin}
             />
-          )}
-        </g>
-      ))}
+          );
+        })}
+      {[-1, 1].map((side) => {
+        const c = 200 + side * 41;
+        const top = shoe.boot ? 738 : 752;
+        return (
+          <g key={side}>
+            <rect
+              x={c - 13}
+              y={bermuda ? 728 : 738}
+              width={26}
+              height={bermuda ? 30 : 22}
+              fill={spec.socks.on && spec.socks.asset ? `url(#${id}-socks)` : '#26282b'}
+            />
+            {back ? (
+              <>
+                <path
+                  d={`M${c - 16},${top} C${c - 18},770 ${c - 17},782 ${c - 13},786 L${c + 13},786 C${c + 17},782 ${c + 18},770 ${c + 16},${top} Z`}
+                  fill={shoe.color}
+                  stroke={edge}
+                  strokeWidth={1}
+                />
+                <rect x={c - 13} y={784} width={26} height={7} rx={1.5} fill="#1b1816" />
+              </>
+            ) : (
+              <>
+                {/* Instep behind a rounded toe cap, turned slightly outwards. */}
+                <rect
+                  x={c - 14}
+                  y={top}
+                  width={28}
+                  height={786 - top}
+                  rx={4}
+                  fill={shade(shoe.color, shoe.color === '#ece9e1' ? -0.12 : -0.15)}
+                />
+                <path
+                  d={`M${c - 20 + side * 2},787 L${c - 20 + side * 2},777 C${c - 20 + side * 2},768 ${c - 10 + side * 2},764 ${c + side * 2},764 C${c + 10 + side * 2},764 ${c + 20 + side * 2},768 ${c + 20 + side * 2},777 L${c + 20 + side * 2},787 Z`}
+                  fill={shoe.color}
+                  stroke={edge}
+                  strokeWidth={1}
+                />
+                <ellipse
+                  cx={c + side * 2}
+                  cy={769}
+                  rx={8}
+                  ry={2.6}
+                  fill="#ffffff"
+                  opacity={shoe.color === '#ece9e1' ? 0.3 : 0.14}
+                />
+                {!shoe.sneaker && !shoe.boot && (
+                  <path
+                    d={`M${c - 7 + side * 2},776 Q${c + side * 2},772 ${c + 7 + side * 2},776`}
+                    fill="none"
+                    stroke={edge}
+                    strokeWidth={0.8}
+                  />
+                )}
+                <rect
+                  x={c - 22 + side * 2}
+                  y={786}
+                  width={44}
+                  height={shoe.sneaker ? 6 : 4}
+                  rx={2}
+                  fill={shoe.sneaker ? '#e7e3da' : '#1b1816'}
+                />
+              </>
+            )}
+          </g>
+        );
+      })}
     </g>
   );
 }
 
+/** A relaxed hanging hand seen from the front: edge of the palm, thumb in front. */
+function handPaths(side: -1 | 1) {
+  const k = -side; // The thumb faces the body.
+  const X = (u: number) => 200 + side * 83 + k * (u - 8);
+  return {
+    hand: `M${X(0)},456 C${X(-2)},468 ${X(-3)},480 ${X(-2)},488 C${X(-1)},497 ${X(2)},505 ${X(6)},509 C${X(9)},511 ${X(13)},509 ${X(14)},503 C${X(15)},495 ${X(16)},486 ${X(16)},477 L${X(16)},456 Z`,
+    thumb: `M${X(13)},461 C${X(18)},466 ${X(21)},474 ${X(21)},483 C${X(21)},489 ${X(17)},491 ${X(14)},487 Z`,
+    fingers: `M${X(2)},492 C${X(4)},497 ${X(6)},501 ${X(9)},504 M${X(7)},488 C${X(9)},494 ${X(11)},498 ${X(13)},500`,
+  };
+}
+
 function Figure({ spec, back }: { spec: SketchSpec; back?: boolean }) {
   const skin = SKIN[spec.skinTone];
+  const shadow = shade(skin, -0.22);
+  const hair = '#2a221d';
   return (
     <g>
-      <ellipse cx={200} cy={80} rx={29} ry={37} fill={skin} />
-      {back ? (
+      {/* Neck with trapezius, wider and shorter than a female croquis. */}
+      <path d="M182,96 C183,118 182,134 178,148 L222,148 C218,134 217,118 218,96 Z" fill={skin} />
+      {/* Head sits low on a short, strong neck. */}
+      <g transform="translate(0 6)">
+        {/* Ears */}
+        {[-1, 1].map((side) => (
+          <ellipse
+            key={side}
+            cx={200 + side * 27}
+            cy={78}
+            rx={4.5}
+            ry={9}
+            fill={skin}
+            stroke={shadow}
+            strokeOpacity={0.4}
+            strokeWidth={0.8}
+          />
+        ))}
+        {/* Squarer skull, angular jaw and a broad chin. */}
         <path
-          d="M171,74 Q172,40 200,40 Q228,40 229,74 Q231,100 222,108 L178,108 Q169,100 171,74 Z"
-          fill="#2c2520"
-        />
-      ) : (
-        <path
-          d="M171,74 Q170,40 200,39 Q230,40 229,72 Q226,56 200,55 Q175,56 171,74 Z"
-          fill="#2c2520"
-        />
-      )}
-      <path d="M186,106 Q188,128 184,150 L216,150 Q212,128 214,106 Z" fill={skin} />
-      <path d="M188,112 Q200,122 212,112" fill="none" stroke="#00000018" strokeWidth={2} />
-      {[-1, 1].map((side) => (
-        <path
-          key={side}
-          d={`M${200 + side * 80},456 q${side * 6},10 ${side * 4},26 q${-side * 4},10 ${-side * 12},6 q${-side * 6},-8 ${-side * 6},-30 z`}
+          d="M200,34 C225,34 229,54 228,72 C227,86 225,94 221,99 C216,105 210,110 206,112 L194,112 C190,110 184,105 179,99 C175,94 173,86 172,72 C171,54 175,34 200,34 Z"
           fill={skin}
         />
-      ))}
+        {!back && (
+          <path
+            d="M183,103 C188,108 191,110 194,112 L206,112 C209,110 212,108 217,103 C213,114 206,118 200,118 C194,118 187,114 183,103 Z"
+            fill={shadow}
+            opacity={0.35}
+          />
+        )}
+        {/* Short tapered cut with a side part. */}
+        {back ? (
+          <path
+            d="M172,72 C169,44 183,30 200,30 C217,30 231,44 228,72 C228,82 225,88 219,92 C212,95 206,96 200,96 C194,96 188,95 181,92 C175,88 172,82 172,72 Z"
+            fill={hair}
+          />
+        ) : (
+          <>
+            <path
+              d="M172,72 C168,44 182,29 202,29 C221,29 232,42 228,72 C226,62 223,55 216,51 C205,46 190,48 180,55 C176,58 174,64 172,72 Z"
+              fill={hair}
+            />
+            <path
+              d="M172,66 L175,64 L175.5,80 L172.5,84 Z M228,66 L225,64 L224.5,80 L227.5,84 Z"
+              fill={hair}
+            />
+            <path
+              d="M190,46 C196,40 206,38 214,40"
+              fill="none"
+              stroke="#ffffff"
+              strokeOpacity={0.12}
+              strokeWidth={1.2}
+            />
+          </>
+        )}
+      </g>
+      {[-1, 1].map((side) => {
+        const paths = handPaths(side as -1 | 1);
+        return (
+          <g key={side}>
+            <path d={paths.hand} fill={skin} />
+            <path
+              d={paths.thumb}
+              fill={skin}
+              stroke={shadow}
+              strokeOpacity={0.45}
+              strokeWidth={0.8}
+            />
+            <path
+              d={paths.fingers}
+              fill="none"
+              stroke={shadow}
+              strokeOpacity={0.5}
+              strokeWidth={0.8}
+            />
+          </g>
+        );
+      })}
     </g>
   );
 }
@@ -506,7 +623,7 @@ function Shirt({ spec, id, full }: { spec: SketchSpec; id: string; full: boolean
       {full ? (
         <>
           <path
-            d={`M184,146 L120,166 C110,200 118,232 ${200 - w.chest + 2},254 L${200 - w.waist + 4},340 L${200 - w.waist + 6},400 L${200 + w.waist - 6},400 L${200 + w.waist - 4},340 L${200 + w.chest - 2},254 C282,232 290,200 280,166 L216,146 Z`}
+            d={`M184,146 L112,160 C102,200 110,232 ${200 - w.chest + 2},254 L${200 - w.waist + 4},340 L${200 - 60},398 L${200 + 60},398 L${200 + w.waist - 4},340 L${200 + w.chest - 2},254 C290,232 298,200 288,160 L216,146 Z`}
             fill={`url(#${id}-shirt)`}
             stroke="#b7b6ad"
             strokeWidth={1.2}
@@ -516,15 +633,15 @@ function Shirt({ spec, id, full }: { spec: SketchSpec; id: string; full: boolean
             return (
               <g key={side}>
                 <path
-                  d={`M${200 + side * 82},166 C${200 + side * 100},250 ${200 + side * 98},380 ${200 + side * 96},${cuffY} L${200 + side * 64},${cuffY + 2} L${200 + side * (w.chest - 2)},262 Z`}
+                  d={`M${200 + side * 86},160 C${200 + side * 104},250 ${200 + side * 103},380 ${200 + side * 101},${cuffY} L${200 + side * 65},${cuffY + 2} L${200 + side * (w.chest - 2)},262 Z`}
                   fill={`url(#${id}-shirt)`}
                   stroke="#b7b6ad"
                   strokeWidth={1.2}
                 />
                 <rect
-                  x={200 + side * 80 - 17}
+                  x={200 + side * 83 - 18}
                   y={cuffY}
-                  width={34}
+                  width={36}
                   height={spec.shirt.cuffs === 'French' ? 22 : 16}
                   rx={2}
                   fill={`url(#${id}-shirt)`}
@@ -533,7 +650,7 @@ function Shirt({ spec, id, full }: { spec: SketchSpec; id: string; full: boolean
                 />
                 {spec.shirt.cuffs === 'French' ? (
                   <rect
-                    x={200 + side * 80 + side * 9 - 3}
+                    x={200 + side * 83 + side * 9 - 3}
                     y={cuffY + 8}
                     width={6}
                     height={6}
@@ -542,7 +659,7 @@ function Shirt({ spec, id, full }: { spec: SketchSpec; id: string; full: boolean
                   />
                 ) : (
                   <Button
-                    x={200 + side * 80 + side * 9}
+                    x={200 + side * 83 + side * 9}
                     y={cuffY + 8}
                     r={2.4}
                     fill="#e9e6de"
@@ -722,10 +839,10 @@ function JacketFront({ spec, id, stroke }: { spec: SketchSpec; id: string; strok
   const sleeve = (side: -1 | 1): P[] => {
     const m = (list: P[]) => (side < 0 ? list : mirror(list));
     return m([
-      [118, 166],
-      [104, 300],
-      [102, 452],
-      [138, 456],
+      [110, 160],
+      [97, 300],
+      [97, 452],
+      [137, 456],
       [200 - w.chest + 2, 262],
     ]);
   };
@@ -757,9 +874,9 @@ function JacketFront({ spec, id, stroke }: { spec: SketchSpec; id: string; strok
             strokeWidth={1.3}
           />
           <rect
-            x={200 + side * 80 - 16}
+            x={200 + side * 83 - 18}
             y={452}
-            width={32}
+            width={36}
             height={6}
             fill={SHIRT}
             stroke="#b9b7ae"
@@ -771,15 +888,15 @@ function JacketFront({ spec, id, stroke }: { spec: SketchSpec; id: string; strok
         <g key={i}>
           {jacket.sleeveHoles && (
             <line
-              x1={113 - 6}
+              x1={106 - 6}
               y1={440 - i * 8}
-              x2={113 - 1}
+              x2={106 - 1}
               y2={440 - i * 8}
               stroke={threadCuff ? `url(#${id}-hole)` : shade(spec.fabric.color, -0.5)}
               strokeWidth={1.6}
             />
           )}
-          <Button x={113} y={440 - i * 8} r={3} fill={buttonFill} />
+          <Button x={106} y={440 - i * 8} r={3} fill={buttonFill} />
         </g>
       ))}
       {layout.mao ? (
@@ -935,10 +1052,10 @@ function JacketBack({ spec, id, stroke }: { spec: SketchSpec; id: string; stroke
   const w = fitWidths(spec.fit);
   const sleeve = (side: -1 | 1): P[] => {
     const list: P[] = [
-      [118, 166],
-      [104, 300],
-      [102, 452],
-      [138, 456],
+      [110, 160],
+      [97, 300],
+      [97, 452],
+      [137, 456],
       [200 - w.chest + 2, 262],
     ];
     return side < 0 ? list : mirror(list);
@@ -956,7 +1073,7 @@ function JacketBack({ spec, id, stroke }: { spec: SketchSpec; id: string; stroke
           {Array.from({ length: jacket.sleeveButtons }).map((_, i) => (
             <Button
               key={i}
-              x={200 + side * 94}
+              x={200 + side * 92}
               y={440 - i * 8}
               r={3}
               fill={jacket.buttonAsset ? `url(#${id}-button)` : jacket.buttonColor}
