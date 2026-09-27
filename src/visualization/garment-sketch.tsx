@@ -446,7 +446,7 @@ function Feet({ spec, id, back }: { spec: SketchSpec; id: string; back?: boolean
         })}
       {[-1, 1].map((side) => {
         const c = 200 + side * 41;
-        const top = shoe.boot ? 738 : 752;
+        const top = shoe.boot ? 740 : 756;
         return (
           <g key={side}>
             <rect
@@ -458,53 +458,47 @@ function Feet({ spec, id, back }: { spec: SketchSpec; id: string; back?: boolean
             />
             {back ? (
               <>
+                {/* Heel counter, seam and heel block. */}
                 <path
-                  d={`M${c - 16},${top} C${c - 18},770 ${c - 17},782 ${c - 13},786 L${c + 13},786 C${c + 17},782 ${c + 18},770 ${c + 16},${top} Z`}
+                  d={`M${c - 11},${top} C${c - 13},770 ${c - 16},777 ${c - 16},783 L${c + 16},783 C${c + 16},777 ${c + 13},770 ${c + 11},${top} Z`}
                   fill={shoe.color}
                   stroke={edge}
                   strokeWidth={1}
                 />
-                <rect x={c - 13} y={784} width={26} height={7} rx={1.5} fill="#1b1816" />
+                <path d={`M${c},${top + 4} L${c},782`} stroke={edge} strokeWidth={0.8} />
+                <rect x={c - 13} y={783} width={26} height={7} rx={1.5} fill="#1b1816" />
               </>
             ) : (
               <>
-                {/* Instep behind a rounded toe cap, turned slightly outwards. */}
-                <rect
-                  x={c - 14}
-                  y={top}
-                  width={28}
-                  height={786 - top}
-                  rx={4}
-                  fill={shade(shoe.color, shoe.color === '#ece9e1' ? -0.12 : -0.15)}
-                />
+                {/* Instep flaring to a low, rounded toe, turned slightly out. */}
                 <path
-                  d={`M${c - 20 + side * 2},787 L${c - 20 + side * 2},777 C${c - 20 + side * 2},768 ${c - 10 + side * 2},764 ${c + side * 2},764 C${c + 10 + side * 2},764 ${c + 20 + side * 2},768 ${c + 20 + side * 2},777 L${c + 20 + side * 2},787 Z`}
+                  d={`M${c - 11},${top} C${c - 13},770 ${c - 19 + side},777 ${c - 19 + side * 2},783 L${c - 19 + side * 2},785 Q${c - 19 + side * 2},787 ${c - 16 + side * 2},787 L${c + 16 + side * 2},787 Q${c + 19 + side * 2},787 ${c + 19 + side * 2},785 L${c + 19 + side * 2},783 C${c + 19 + side},777 ${c + 13},770 ${c + 11},${top} Z`}
                   fill={shoe.color}
                   stroke={edge}
                   strokeWidth={1}
                 />
                 <ellipse
                   cx={c + side * 2}
-                  cy={769}
-                  rx={8}
-                  ry={2.6}
+                  cy={781}
+                  rx={9}
+                  ry={2.4}
                   fill="#ffffff"
-                  opacity={shoe.color === '#ece9e1' ? 0.3 : 0.14}
+                  opacity={shoe.color === '#ece9e1' ? 0.3 : 0.16}
                 />
                 {!shoe.sneaker && !shoe.boot && (
                   <path
-                    d={`M${c - 7 + side * 2},776 Q${c + side * 2},772 ${c + 7 + side * 2},776`}
+                    d={`M${c - 7},${top + 6} L${c},${top + 12} L${c + 7},${top + 6}`}
                     fill="none"
                     stroke={edge}
                     strokeWidth={0.8}
                   />
                 )}
                 <rect
-                  x={c - 22 + side * 2}
+                  x={c - 20 + side * 2}
                   y={786}
-                  width={44}
-                  height={shoe.sneaker ? 6 : 4}
-                  rx={2}
+                  width={40}
+                  height={shoe.sneaker ? 5 : 3.5}
+                  rx={1.5}
                   fill={shoe.sneaker ? '#e7e3da' : '#1b1816'}
                 />
               </>
@@ -527,7 +521,7 @@ function handPaths(side: -1 | 1) {
   };
 }
 
-function Figure({ spec, back }: { spec: SketchSpec; back?: boolean }) {
+function Figure({ spec, id, back }: { spec: SketchSpec; id: string; back?: boolean }) {
   const skin = SKIN[spec.skinTone];
   const shadow = shade(skin, -0.22);
   const hair = '#2a221d';
@@ -553,7 +547,11 @@ function Figure({ spec, back }: { spec: SketchSpec; back?: boolean }) {
         ))}
         {/* Squarer skull, angular jaw and a broad chin. */}
         <path
-          d="M200,34 C225,34 229,54 228,72 C227,86 225,94 221,99 C216,105 210,110 206,112 L194,112 C190,110 184,105 179,99 C175,94 173,86 172,72 C171,54 175,34 200,34 Z"
+          d={
+            back
+              ? 'M200,34 C225,34 229,54 228,72 C227,86 222,96 214,102 L186,102 C178,96 173,86 172,72 C171,54 175,34 200,34 Z'
+              : 'M200,34 C225,34 229,54 228,72 C227,86 225,94 221,99 C216,105 210,110 206,112 L194,112 C190,110 184,105 179,99 C175,94 173,86 172,72 C171,54 175,34 200,34 Z'
+          }
           fill={skin}
         />
         {!back && (
@@ -565,10 +563,19 @@ function Figure({ spec, back }: { spec: SketchSpec; back?: boolean }) {
         )}
         {/* Short tapered cut with a side part. */}
         {back ? (
-          <path
-            d="M172,72 C169,44 183,30 200,30 C217,30 231,44 228,72 C228,82 225,88 219,92 C212,95 206,96 200,96 C194,96 188,95 181,92 C175,88 172,82 172,72 Z"
-            fill={hair}
-          />
+          <>
+            {/* Short back and sides: close to the skull, fading out above the nape. */}
+            <defs>
+              <linearGradient id={`${id}-fade`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0.62" stopColor={hair} />
+                <stop offset="1" stopColor={hair} stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <path
+              d="M172,70 C169,43 183,29 200,29 C217,29 231,43 228,70 C228,80 225,88 221,95 L179,95 C175,88 172,80 172,70 Z"
+              fill={`url(#${id}-fade)`}
+            />
+          </>
         ) : (
           <>
             <path
@@ -1538,7 +1545,7 @@ export default function GarmentSketch({
           <Inside spec={spec} id={id} stroke={stroke} />
         ) : (
           <>
-            <Figure spec={spec} back={view === 'back'} />
+            <Figure spec={spec} id={id} back={view === 'back'} />
             <Feet spec={spec} id={id} back={view === 'back'} />
             {view === 'front' && <Shirt spec={spec} id={id} full={!spec.jacket} />}
             <Trousers spec={spec} color={trouserColor} id={id} back={view === 'back'} />

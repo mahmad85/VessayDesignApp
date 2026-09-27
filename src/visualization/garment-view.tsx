@@ -36,12 +36,7 @@ function Mannequin({
       }),
     [design.skinTone],
   );
-  const trouser = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: '#56524b', roughness: 1 }),
-    [],
-  );
   useEffect(() => () => skin.dispose(), [skin]);
-  useEffect(() => () => trouser.dispose(), [trouser]);
   const y =
     highlight === 'neck'
       ? 2.99
@@ -82,7 +77,7 @@ function Mannequin({
   return (
     <group>
       <Suspense fallback={null}>
-        <TailoredHuman design={design} measure={measure} skin={skin} trouser={trouser} />
+        <TailoredHuman design={design} measure={measure} skin={skin} />
       </Suspense>
       {measure && highlight && (
         <>

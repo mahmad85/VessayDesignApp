@@ -10,12 +10,10 @@ export function TailoredHuman({
   design,
   measure,
   skin,
-  trouser,
 }: {
   design: Design;
   measure: boolean;
   skin: THREE.Material;
-  trouser: THREE.Material;
 }) {
   const { nodes } = useGLTF('/models/human-reference-v1.glb');
   const eyeSource = useTexture('/models/brown-eye.png');
@@ -44,6 +42,18 @@ export function TailoredHuman({
     return material;
   }, [skin]);
   useEffect(() => () => skinMaterial.dispose(), [skinMaterial]);
+  // Measurement uses a plain white shop-window dummy: no skin tone, hair or eyes.
+  const dummy = useMemo(
+    () =>
+      new THREE.MeshPhysicalMaterial({
+        color: '#f3f1ec',
+        roughness: 0.42,
+        clearcoat: 0.35,
+        clearcoatRoughness: 0.5,
+      }),
+    [],
+  );
+  useEffect(() => () => dummy.dispose(), [dummy]);
   // Bermuda trousers leave the legs visible, so the full body is drawn.
   const bermuda =
     design.product === 'suit' &&
@@ -53,20 +63,22 @@ export function TailoredHuman({
       <mesh
         name={measure ? 'anatomical-body' : 'face-and-hands'}
         geometry={mesh(measure || bermuda ? 'Body' : 'ExposedSkin')}
-        material={skinMaterial}
+        material={measure ? dummy : skinMaterial}
         castShadow
         receiveShadow
       />
-      <mesh geometry={mesh('Eyes')}>
-        <meshStandardMaterial map={eyes} roughness={0.35} />
-      </mesh>
-      <mesh geometry={mesh('Hair')} castShadow>
-        <meshStandardMaterial color="#30251f" roughness={0.94} side={THREE.DoubleSide} />
-      </mesh>
       {measure ? (
-        <mesh geometry={mesh('Shorts')} material={trouser} castShadow receiveShadow />
+        <mesh geometry={mesh('Shorts')} material={dummy} castShadow receiveShadow />
       ) : (
-        <Outfit design={design} />
+        <>
+          <mesh geometry={mesh('Eyes')}>
+            <meshStandardMaterial map={eyes} roughness={0.35} />
+          </mesh>
+          <mesh geometry={mesh('Hair')} castShadow>
+            <meshStandardMaterial color="#30251f" roughness={0.94} side={THREE.DoubleSide} />
+          </mesh>
+          <Outfit design={design} />
+        </>
       )}
     </group>
   );
