@@ -82,9 +82,9 @@ export const REGIONS: Record<RegionId, Region> = {
   sleeve: {
     label: 'Sleeve cuff',
     view: 'front',
-    box: [58, 370, 124, 124],
+    box: [40, 370, 124, 124],
     reveal: 'none',
-    anchor: [86, 418],
+    anchor: [64, 414],
   },
   waist: {
     label: 'Waistband',
@@ -145,9 +145,9 @@ export const REGIONS: Record<RegionId, Region> = {
   elbow: {
     label: 'Elbow patches',
     view: 'back',
-    box: [58, 240, 124, 170],
+    box: [44, 240, 124, 170],
     reveal: 'none',
-    anchor: [80, 322],
+    anchor: [66, 300],
   },
   'back-pockets': {
     label: 'Back pockets',

@@ -519,7 +519,7 @@ function Feet({ spec, id, back }: { spec: SketchSpec; id: string; back?: boolean
 /** A relaxed hanging hand seen from the front: edge of the palm, thumb in front. */
 function handPaths(side: -1 | 1) {
   const k = -side; // The thumb faces the body.
-  const X = (u: number) => 200 + side * 83 + k * (u - 8);
+  const X = (u: number) => 200 + side * 105 + k * (u - 8);
   return {
     hand: `M${X(0)},456 C${X(-2)},468 ${X(-3)},480 ${X(-2)},488 C${X(-1)},497 ${X(2)},505 ${X(6)},509 C${X(9)},511 ${X(13)},509 ${X(14)},503 C${X(15)},495 ${X(16)},486 ${X(16)},477 L${X(16)},456 Z`,
     thumb: `M${X(13)},461 C${X(18)},466 ${X(21)},474 ${X(21)},483 C${X(21)},489 ${X(17)},491 ${X(14)},487 Z`,
@@ -633,13 +633,13 @@ function Shirt({ spec, id, full }: { spec: SketchSpec; id: string; full: boolean
             return (
               <g key={side}>
                 <path
-                  d={`M${200 + side * 86},160 C${200 + side * 104},250 ${200 + side * 103},380 ${200 + side * 101},${cuffY} L${200 + side * 65},${cuffY + 2} L${200 + side * (w.chest - 2)},262 Z`}
+                  d={`M${200 + side * 86},160 C${200 + side * 106},250 ${200 + side * 114},380 ${200 + side * 121},${cuffY} L${200 + side * 85},${cuffY + 2} L${200 + side * 88},320 L${200 + side * (w.chest - 2)},262 Z`}
                   fill={`url(#${id}-shirt)`}
                   stroke="#b7b6ad"
                   strokeWidth={1.2}
                 />
                 <rect
-                  x={200 + side * 83 - 18}
+                  x={200 + side * 105 - 18}
                   y={cuffY}
                   width={36}
                   height={spec.shirt.cuffs === 'French' ? 22 : 16}
@@ -650,7 +650,7 @@ function Shirt({ spec, id, full }: { spec: SketchSpec; id: string; full: boolean
                 />
                 {spec.shirt.cuffs === 'French' ? (
                   <rect
-                    x={200 + side * 83 + side * 9 - 3}
+                    x={200 + side * 103 + side * 9 - 3}
                     y={cuffY + 8}
                     width={6}
                     height={6}
@@ -659,7 +659,7 @@ function Shirt({ spec, id, full }: { spec: SketchSpec; id: string; full: boolean
                   />
                 ) : (
                   <Button
-                    x={200 + side * 83 + side * 9}
+                    x={200 + side * 103 + side * 9}
                     y={cuffY + 8}
                     r={2.4}
                     fill="#e9e6de"
@@ -840,9 +840,10 @@ function JacketFront({ spec, id, stroke }: { spec: SketchSpec; id: string; strok
     const m = (list: P[]) => (side < 0 ? list : mirror(list));
     return m([
       [110, 160],
-      [97, 300],
-      [97, 452],
-      [137, 456],
+      [87, 306],
+      [76, 452],
+      [114, 457],
+      [108, 318],
       [200 - w.chest + 2, 262],
     ]);
   };
@@ -874,7 +875,7 @@ function JacketFront({ spec, id, stroke }: { spec: SketchSpec; id: string; strok
             strokeWidth={1.3}
           />
           <rect
-            x={200 + side * 83 - 18}
+            x={200 + side * 105 - 18}
             y={452}
             width={36}
             height={6}
@@ -888,15 +889,15 @@ function JacketFront({ spec, id, stroke }: { spec: SketchSpec; id: string; strok
         <g key={i}>
           {jacket.sleeveHoles && (
             <line
-              x1={106 - 6}
+              x1={85 - 6}
               y1={440 - i * 8}
-              x2={106 - 1}
+              x2={85 - 1}
               y2={440 - i * 8}
               stroke={threadCuff ? `url(#${id}-hole)` : shade(spec.fabric.color, -0.5)}
               strokeWidth={1.6}
             />
           )}
-          <Button x={106} y={440 - i * 8} r={3} fill={buttonFill} />
+          <Button x={85} y={440 - i * 8} r={3} fill={buttonFill} />
         </g>
       ))}
       {layout.mao ? (
@@ -993,9 +994,9 @@ function JacketFront({ spec, id, stroke }: { spec: SketchSpec; id: string; strok
         [-1, 1].map((side) => (
           <Pocket
             key={side}
-            x={200 + side * 52}
+            x={200 + side * 43}
             y={402}
-            width={jacket.pockets.endsWith('b') ? 50 : 46}
+            width={jacket.pockets.endsWith('b') ? 44 : 40}
             type={jacket.pockets}
             fill={`url(#${id}-fabric)`}
             slant={side * pocketSlant}
@@ -1003,9 +1004,9 @@ function JacketFront({ spec, id, stroke }: { spec: SketchSpec; id: string; strok
         ))}
       {ticket && (
         <Pocket
-          x={150}
+          x={157}
           y={378}
-          width={36}
+          width={32}
           type={jacket.pockets}
           fill={`url(#${id}-fabric)`}
           slant={-pocketSlant}
@@ -1053,9 +1054,10 @@ function JacketBack({ spec, id, stroke }: { spec: SketchSpec; id: string; stroke
   const sleeve = (side: -1 | 1): P[] => {
     const list: P[] = [
       [110, 160],
-      [97, 300],
-      [97, 452],
-      [137, 456],
+      [87, 306],
+      [76, 452],
+      [114, 457],
+      [108, 318],
       [200 - w.chest + 2, 262],
     ];
     return side < 0 ? list : mirror(list);
@@ -1073,7 +1075,7 @@ function JacketBack({ spec, id, stroke }: { spec: SketchSpec; id: string; stroke
           {Array.from({ length: jacket.sleeveButtons }).map((_, i) => (
             <Button
               key={i}
-              x={200 + side * 92}
+              x={200 + side * 113}
               y={440 - i * 8}
               r={3}
               fill={jacket.buttonAsset ? `url(#${id}-button)` : jacket.buttonColor}
@@ -1081,7 +1083,7 @@ function JacketBack({ spec, id, stroke }: { spec: SketchSpec; id: string; stroke
           ))}
           {jacket.elbowPatches && (
             <ellipse
-              cx={200 + side * 96}
+              cx={200 + side * 104}
               cy={322}
               rx={11}
               ry={24}

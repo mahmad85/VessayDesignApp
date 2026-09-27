@@ -3422,8 +3422,8 @@ body {
   min-width: 16px;
   padding: 1px 4px;
   border-radius: 8px;
-  background: #e6e8de;
-  color: var(--muted);
+  background: #e3e6da;
+  color: #464e41;
 }
 .tags-groups button[aria-pressed='true'] {
   background: var(--ink);
@@ -3757,5 +3757,14 @@ body {
 @media (max-width: 760px) {
   .detail-in-2d {
     bottom: 72px;
+  }
+}
+/* Keep the figure's feet clear of the view controls. */
+.sketch-svg {
+  height: calc(100% - 54px);
+}
+@media (max-width: 760px) {
+  .sketch-svg {
+    height: calc(100% - 50px);
   }
 }
