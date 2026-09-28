@@ -81,3 +81,16 @@ export function formatMinor(amountMinor: number, currency: string, locale = 'en'
   if (!isSupportedCurrency(currency)) throw new RangeError(`Unsupported currency: ${currency}`);
   return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amountMinor / 100);
 }
+
+/** Customer display without zero cents, for example “$934” or “$9.50” (ADMIN-SCREENS §4). */
+export function formatPrice(amountMinor: number, currency: string, locale = 'en') {
+  assertMinor(amountMinor);
+  if (!isSupportedCurrency(currency)) throw new RangeError(`Unsupported currency: ${currency}`);
+  const whole = amountMinor % 100 === 0;
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: whole ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(amountMinor / 100);
+}
