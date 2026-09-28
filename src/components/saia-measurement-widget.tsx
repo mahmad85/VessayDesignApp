@@ -80,7 +80,9 @@ export function SaiaMeasurementWidget({ onCaptureStart, onMeasurementsReady }: P
       const measurements = mapSaiaPersonToMillimeters(payload);
       const captureToken = sessionStorage.getItem(CAPTURE_TOKEN_KEY);
       if (Object.keys(measurements).length === 0 || !captureToken || payload.id == null) {
-        setError('3DLOOK completed, but no supported measurements were returned. You can continue manually.');
+        setError(
+          '3DLOOK completed, but no supported measurements were returned. You can continue manually.',
+        );
         setStatus('error');
         return;
       }
@@ -91,7 +93,9 @@ export function SaiaMeasurementWidget({ onCaptureStart, onMeasurementsReady }: P
         setError(null);
         setStatus('ready');
       } catch {
-        setError('Your result was received but could not be saved. Retry without starting another scan.');
+        setError(
+          'Your result was received but could not be saved. Retry without starting another scan.',
+        );
         setStatus('error');
       }
     },
@@ -112,7 +116,8 @@ export function SaiaMeasurementWidget({ onCaptureStart, onMeasurementsReady }: P
     setError(null);
     let launchAuthorized = false;
     const interceptLaunch = (event: MouseEvent) => {
-      const target = event.target instanceof Element ? event.target.closest('.saia-mtm-button') : null;
+      const target =
+        event.target instanceof Element ? event.target.closest('.saia-mtm-button') : null;
       if (!target || launchAuthorized) return;
       event.preventDefault();
       event.stopImmediatePropagation();
@@ -125,7 +130,9 @@ export function SaiaMeasurementWidget({ onCaptureStart, onMeasurementsReady }: P
           launchAuthorized = false;
         })
         .catch(() => {
-          setError('Vessy could not prepare secure result capture. Retry before starting the scan.');
+          setError(
+            'Vessy could not prepare secure result capture. Retry before starting the scan.',
+          );
           setStatus('error');
         });
     };
@@ -141,7 +148,8 @@ export function SaiaMeasurementWidget({ onCaptureStart, onMeasurementsReady }: P
     window.addEventListener('message', receiveTrustedResult);
 
     const storedPerson = parseStoredSaiaPerson(localStorage.getItem(STORED_RESULT_KEY));
-    if (storedPerson && sessionStorage.getItem(CAPTURE_TOKEN_KEY)) void handleMeasurementsReady(storedPerson);
+    if (storedPerson && sessionStorage.getItem(CAPTURE_TOKEN_KEY))
+      void handleMeasurementsReady(storedPerson);
     const recoveryInterval = window.setInterval(() => {
       if (!sessionStorage.getItem(CAPTURE_TOKEN_KEY)) {
         window.clearInterval(recoveryInterval);
@@ -215,7 +223,9 @@ export function SaiaMeasurementWidget({ onCaptureStart, onMeasurementsReady }: P
       };
       script.onerror = () => {
         if (script) script.dataset.loadFailed = 'true';
-        setError('3DLOOK could not be loaded. Check your connection or continue with manual measurements.');
+        setError(
+          '3DLOOK could not be loaded. Check your connection or continue with manual measurements.',
+        );
         setStatus('error');
       };
       document.body.appendChild(script);
@@ -228,7 +238,9 @@ export function SaiaMeasurementWidget({ onCaptureStart, onMeasurementsReady }: P
 
     const timeout = window.setTimeout(() => {
       if (markReady()) return;
-      setError('3DLOOK did not finish loading. You can retry or continue with manual measurements.');
+      setError(
+        '3DLOOK did not finish loading. You can retry or continue with manual measurements.',
+      );
       setStatus('error');
     }, LOAD_TIMEOUT_MS);
 
@@ -248,7 +260,10 @@ export function SaiaMeasurementWidget({ onCaptureStart, onMeasurementsReady }: P
 
   return (
     <div className="saia-widget">
-      <div id={`saia-route-mount-${ownerId.replace(/:/g, '')}`} data-testid="saia-widget-container" />
+      <div
+        id={`saia-route-mount-${ownerId.replace(/:/g, '')}`}
+        data-testid="saia-widget-container"
+      />
       {status === 'loading' && (
         <div className="saia-widget-loading" role="status">
           <LoaderCircle size={16} className="spin" aria-hidden="true" />

@@ -15,7 +15,10 @@ import {
 } from '@/lib/saia-draft';
 import { DomainError } from '@/modules/configuration/types';
 export const runtime = 'nodejs';
-export async function PUT(request: NextRequest, { params }: { params: Promise<{ captureToken: string }> }) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ captureToken: string }> },
+) {
   const { captureToken } = await params;
   let who: Awaited<ReturnType<typeof identity>> | undefined;
   try {
@@ -23,7 +26,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     who = requireSignedIn(await identity(request));
     await enforceLimit(who.owner + ':saia-draft', 20);
     const input = (await body(request)) as { person?: unknown };
-    const person = (input.person && typeof input.person === 'object' ? input.person : {}) as SaiaPerson;
+    const person = (
+      input.person && typeof input.person === 'object' ? input.person : {}
+    ) as SaiaPerson;
     const providerPersonId = sanitizeProviderPersonId(person.id);
     const providerResultFingerprint = fingerprintSaiaProviderResult(
       who.owner,
@@ -43,6 +48,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (who) await markSaiaDraftFailed(who.owner, captureToken, code).catch(() => undefined);
     if (e instanceof DomainError) return failure(e);
     const status = code === 'draft_not_found' ? 404 : 422;
-    return failure(new DomainError(code, 'The 3DLOOK result could not be saved as a review draft.', status));
+    return failure(
+      new DomainError(code, 'The 3DLOOK result could not be saved as a review draft.', status),
+    );
   }
 }

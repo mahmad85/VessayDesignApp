@@ -189,3 +189,11 @@ Measured on the import: snapshot 336 KB, customer projection 283 KB, validation 
 Test-harness note: the suites that start PGlite or load the whole catalog take a few seconds each and exceeded Vitest’s 5-second default when all files ran in parallel. They now use an explicit 30-second limit (`PGLITE_TIMEOUT` in `tests/helpers/db.ts`); no assertion changed.
 
 Not verified: hosted PostgreSQL (the `;`-split path is exercised on PGlite only), true parallel publish sessions (PGlite serialises transactions on one connection, so the concurrency test proves the lock-and-version logic only), any admin or customer surface using releases (later tasks), and production operation. The e2e run rewrote the committed human-preview screenshots; they were restored from Git because M1 changes no UI.
+
+### CI fix on the M1 pull request, 28 September 2026
+
+The GitHub `Validate` workflow failed at `npm ci` on this branch and on `master`: `package-lock.json` had been written by npm 11 and lacked the top-level `@emnapi/runtime` and `@emnapi/core` entries that npm 10 (bundled with Node 22, used by CI and by a default Replit Node 22) requires. The lock was regenerated with `npx npm@10 install --package-lock-only`: only entries were added (no existing version changed; npm 11's `"peer": true` flags were dropped). `npm ci --dry-run` passes with npm 10.9.9 and 11.6.2; the old lock reproduced CI's exact error with npm 10.
+
+The next CI step, `npm run format:check`, would then have failed on the formatting drift recorded under WP-00a. The 12 affected source and test files (including `design-outline.ts`, whose WP-05 export made a line too long) were formatted with Prettier, with no logic change. The two CC0 licence texts and the generated `human-reference-v1.manifest.json` were added to `.prettierignore` so they stay verbatim and byte-identical with their build script. `tests/repository.test.ts` got the same explicit `PGLITE_TIMEOUT` as the other PGlite suites; it timed out once under parallel load now that start-up runs migration 0003.
+
+Re-run locally: `npm run check` passed (152 tests, build); `prettier --list-different --end-of-line auto .` reported nothing (the CRLF-only differences of this Windows checkout do not occur on the Linux runner); `npm run test:e2e` 10 of 10 passed.

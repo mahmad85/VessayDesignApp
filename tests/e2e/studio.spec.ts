@@ -127,7 +127,9 @@ test('mobile layout and unconfigured 3DLOOK capture remain usable', async ({ pag
   await expect(page.locator('canvas')).toBeVisible();
   await page.getByRole('button', { name: '02 Measurements' }).click();
   await page.getByRole('button', { name: /Measure with 3DLOOK/ }).click();
-  await expect(page.getByRole('dialog')).toContainText('Sign in to save a 3DLOOK scan to your account.');
+  await expect(page.getByRole('dialog')).toContainText(
+    'Sign in to save a 3DLOOK scan to your account.',
+  );
   await page.getByRole('button', { name: 'Continue with manual entry' }).click();
   await page.getByRole('textbox', { name: 'Height', exact: true }).fill('180');
   await page.getByRole('button', { name: '03 Review' }).click();

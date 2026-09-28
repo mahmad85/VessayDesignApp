@@ -9,10 +9,12 @@ export const runtime = 'nodejs';
 // a real one either, because scan-service checkout never creates a Stripe
 // PaymentIntent (see scan-service/checkout/route.ts).
 export async function POST(request: NextRequest) {
-  if (!stripeConfigured()) return NextResponse.json({ error: 'Stripe is not configured.' }, { status: 503 });
+  if (!stripeConfigured())
+    return NextResponse.json({ error: 'Stripe is not configured.' }, { status: 503 });
   const signature = request.headers.get('stripe-signature');
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
-  if (!signature || !secret) return NextResponse.json({ error: 'Webhook is not configured.' }, { status: 503 });
+  if (!signature || !secret)
+    return NextResponse.json({ error: 'Webhook is not configured.' }, { status: 503 });
   const stripe = getStripe();
   let event;
   try {
@@ -36,19 +38,32 @@ export async function POST(request: NextRequest) {
         },
         getPayment: async (paymentId) => {
           const rows = await query<{
-            id: number; owner_id: string; draft_id: string; revision: number;
-            amount_cents: number; currency: string; stripe_payment_intent_id: string | null;
+            id: number;
+            owner_id: string;
+            draft_id: string;
+            revision: number;
+            amount_cents: number;
+            currency: string;
+            stripe_payment_intent_id: string | null;
           }>('SELECT * FROM scan_service_payments WHERE id=$1', [paymentId]);
           const row = rows[0];
           return row
             ? {
-                id: row.id, ownerId: row.owner_id, draftId: row.draft_id, revision: row.revision,
-                amountCents: row.amount_cents, currency: row.currency, stripePaymentIntentId: row.stripe_payment_intent_id,
+                id: row.id,
+                ownerId: row.owner_id,
+                draftId: row.draft_id,
+                revision: row.revision,
+                amountCents: row.amount_cents,
+                currency: row.currency,
+                stripePaymentIntentId: row.stripe_payment_intent_id,
               }
             : undefined;
         },
         updatePayment: async (paymentId, status) => {
-          await query('UPDATE scan_service_payments SET status=$1,updated_at=now() WHERE id=$2', [status, paymentId]);
+          await query('UPDATE scan_service_payments SET status=$1,updated_at=now() WHERE id=$2', [
+            status,
+            paymentId,
+          ]);
         },
         grantPaidService: async (payment) => {
           const entitlement = await query<{ id: number }>(
@@ -64,8 +79,14 @@ export async function POST(request: NextRequest) {
       });
     });
   } catch (error) {
-    console.error('Scan-service webhook rejected:', error instanceof Error ? error.message : 'unknown');
-    return NextResponse.json({ error: 'Webhook payment did not match stored state.' }, { status: 409 });
+    console.error(
+      'Scan-service webhook rejected:',
+      error instanceof Error ? error.message : 'unknown',
+    );
+    return NextResponse.json(
+      { error: 'Webhook payment did not match stored state.' },
+      { status: 409 },
+    );
   }
   return NextResponse.json({ received: true });
 }

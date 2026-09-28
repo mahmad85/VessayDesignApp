@@ -3,7 +3,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Camera, ArrowUpRight, Check, Info, Save, ArrowRight } from 'lucide-react';
 import type { Draft, Command } from '@/modules/configuration/types';
-import { definitionsFor, requiredDefinitionsFor, displayValue, toMillimeters } from '@/modules/measurements/definitions';
+import {
+  definitionsFor,
+  requiredDefinitionsFor,
+  displayValue,
+  toMillimeters,
+} from '@/modules/measurements/definitions';
 import type { SaiaPerson } from '@/integrations/3dlook';
 import { Button } from './ui/button';
 import { Dialog } from './ui/dialog';
@@ -83,7 +88,12 @@ export function MeasurementPanel({
       if (applied === 0) throw new Error('no_supported_measurements');
       setValues(merged);
       setFields({});
-      const result = await command({ type: 'measurements', values: merged, confirm: false, source: '3dlook' });
+      const result = await command({
+        type: 'measurements',
+        values: merged,
+        confirm: false,
+        source: '3dlook',
+      });
       if (result) {
         onDirty(false);
         setNotice('3DLOOK measurements saved. Review and confirm before continuing.');
@@ -229,7 +239,9 @@ export function MeasurementPanel({
       </div>
       <div className="measurement-fields">{commonDefs.map(renderField)}</div>
       {(showAdvanced || hasAdvancedValues) && (
-        <div className="measurement-fields measurement-fields-advanced">{advancedDefs.map(renderField)}</div>
+        <div className="measurement-fields measurement-fields-advanced">
+          {advancedDefs.map(renderField)}
+        </div>
       )}
       <button
         type="button"
@@ -290,7 +302,10 @@ export function MeasurementPanel({
         {user ? (
           <>
             {capture && (
-              <SaiaMeasurementWidget onCaptureStart={saiaCaptureStart} onMeasurementsReady={saiaMeasurementsReady} />
+              <SaiaMeasurementWidget
+                onCaptureStart={saiaCaptureStart}
+                onMeasurementsReady={saiaMeasurementsReady}
+              />
             )}
             <p>
               We won’t use this to place an order. Review and confirm the mapped values below before

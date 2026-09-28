@@ -46,7 +46,14 @@ export type OutlineBranch = {
 };
 
 const SUIT_DEFAULTS = defaultSuitCustomizations();
-export const OFF_VALUES = new Set(['without', 'Without', 'By default', 'default', 'No bow tie', 'base']);
+export const OFF_VALUES = new Set([
+  'without',
+  'Without',
+  'By default',
+  'default',
+  'No bow tie',
+  'base',
+]);
 
 function menu(id: SuitMenu['id']) {
   return SUIT_CUSTOMIZATION_SEED.menus.find((item) => item.id === id)!;

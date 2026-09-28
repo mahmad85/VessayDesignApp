@@ -38,9 +38,10 @@ export function mapSaiaPersonToMillimeters(person: SaiaPerson): Record<string, n
   const front = person.front_params;
   const side = person.side_params;
   const cm: Record<string, number | undefined> = {
-    height: typeof person.height === 'number' && Number.isFinite(person.height) && person.height > 0
-      ? person.height
-      : undefined,
+    height:
+      typeof person.height === 'number' && Number.isFinite(person.height) && person.height > 0
+        ? person.height
+        : undefined,
     neck: numeric(volume, 'neck_girth', 'neck'),
     chest: numeric(volume, 'chest_girth', 'chest'),
     waist: numeric(volume, 'waist_girth', 'waist'),
@@ -87,7 +88,11 @@ export function isTrustedSaiaMessage(
   event: Pick<MessageEvent, 'origin' | 'source' | 'data'>,
   iframeWindow: Window | null | undefined,
 ) {
-  if (event.origin !== 'https://mtm-widget.3dlook.me' || !iframeWindow || event.source !== iframeWindow)
+  if (
+    event.origin !== 'https://mtm-widget.3dlook.me' ||
+    !iframeWindow ||
+    event.source !== iframeWindow
+  )
     return false;
   if (!event.data || typeof event.data !== 'object') return false;
   return (event.data as { command?: unknown }).command === 'saia-pf-widget.data';

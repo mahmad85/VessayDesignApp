@@ -93,11 +93,22 @@ export async function createPaidSaiaSession(ownerId: string, targetUnit: 'cm' | 
     );
     await query(
       'INSERT INTO scan_attempt_events(entitlement_id,owner_id,event_type,actor_id,metadata) VALUES($1,$2,$3,$4,$5)',
-      [consumed[0].id, ownerId, 'entitlement_consumed', ownerId, JSON.stringify({ draftId: created[0].id })],
+      [
+        consumed[0].id,
+        ownerId,
+        'entitlement_consumed',
+        ownerId,
+        JSON.stringify({ draftId: created[0].id }),
+      ],
     );
     return created[0];
   });
-  if (!result) throw new DomainError('no_paid_scan_available', 'No paid AI scan is available for this account.', 403);
+  if (!result)
+    throw new DomainError(
+      'no_paid_scan_available',
+      'No paid AI scan is available for this account.',
+      403,
+    );
   return mapDraft(result);
 }
 export async function saveSaiaDraftResult(
@@ -111,9 +122,10 @@ export async function saveSaiaDraftResult(
 ) {
   const db = await getDatabase();
   return db.transaction(async (query) => {
-    const rows = await query<SaiaDraftRow>('SELECT * FROM saia_measurement_drafts WHERE capture_token=$1', [
-      captureToken,
-    ]);
+    const rows = await query<SaiaDraftRow>(
+      'SELECT * FROM saia_measurement_drafts WHERE capture_token=$1',
+      [captureToken],
+    );
     const session = rows[0];
     if (!session || session.owner_id !== ownerId) throw new Error('draft_not_found');
     const existingPersonDraft = await query<SaiaDraftRow>(
@@ -132,14 +144,25 @@ export async function saveSaiaDraftResult(
       [
         ownerId,
         'saia',
-        JSON.stringify({ provider: '3dlook-saia-mtm', providerPersonFingerprint: input.providerResultFingerprint, targetUnit: session.target_unit }),
+        JSON.stringify({
+          provider: '3dlook-saia-mtm',
+          providerPersonFingerprint: input.providerResultFingerprint,
+          targetUnit: session.target_unit,
+        }),
         JSON.stringify(input.sourceDimensions),
         JSON.stringify(input.measurements),
       ],
     );
     const saved = await query<SaiaDraftRow>(
       'UPDATE saia_measurement_drafts SET provider_person_id=$1,measurements=$2,source_dimensions=$3,status=$4,error_code=NULL,updated_at=now() WHERE capture_token=$5 AND owner_id=$6 RETURNING *',
-      [input.providerResultFingerprint, JSON.stringify(input.measurements), JSON.stringify(input.sourceDimensions), 'saved', captureToken, ownerId],
+      [
+        input.providerResultFingerprint,
+        JSON.stringify(input.measurements),
+        JSON.stringify(input.sourceDimensions),
+        'saved',
+        captureToken,
+        ownerId,
+      ],
     );
     if (saved[0].entitlement_id) {
       await query(
@@ -148,13 +171,23 @@ export async function saveSaiaDraftResult(
       );
       await query(
         'INSERT INTO scan_attempt_events(entitlement_id,owner_id,event_type,actor_id,metadata) VALUES($1,$2,$3,$4,$5)',
-        [saved[0].entitlement_id, ownerId, 'result_saved', ownerId, JSON.stringify({ draftId: saved[0].id })],
+        [
+          saved[0].entitlement_id,
+          ownerId,
+          'result_saved',
+          ownerId,
+          JSON.stringify({ draftId: saved[0].id }),
+        ],
       );
     }
     return mapDraft(saved[0]);
   });
 }
-export async function markSaiaDraftFailed(ownerId: string, captureToken: string, errorCode: string) {
+export async function markSaiaDraftFailed(
+  ownerId: string,
+  captureToken: string,
+  errorCode: string,
+) {
   const db = await getDatabase();
   await db.query(
     'UPDATE saia_measurement_drafts SET status=$1,error_code=$2,updated_at=now() WHERE capture_token=$3 AND owner_id=$4',

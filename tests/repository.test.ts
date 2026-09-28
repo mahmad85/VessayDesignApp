@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { getDraft, mutateDraft, claimGuest, enforceLimit } from '../src/db/repository';
-import { setupTestDatabase } from './helpers/db';
+import { PGLITE_TIMEOUT, setupTestDatabase } from './helpers/db';
 setupTestDatabase();
-describe('durable owned drafts', () => {
+describe('durable owned drafts', { timeout: PGLITE_TIMEOUT }, () => {
   it('isolates owners and returns persisted state on reload', async () => {
     const a = await getDraft('test:a'),
       b = await getDraft('test:b');
