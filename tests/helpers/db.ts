@@ -8,6 +8,13 @@ import { getDatabase } from '../../src/db/client';
 // worker, so the cached connection in src/db/client.ts never crosses files.
 // Every migration runs on connect, exactly as in local development.
 
+/**
+ * Per-test time limit for suites that start PGlite, run every migration or
+ * load the whole catalog: each takes a few seconds, more when all test files
+ * run in parallel, which exceeds Vitest's 5-second default.
+ */
+export const PGLITE_TIMEOUT = 30_000;
+
 export async function createTestDatabaseDirectory(prefix = 'vessy-test-') {
   return mkdtemp(path.join(tmpdir(), prefix));
 }

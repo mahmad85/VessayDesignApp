@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { tmpdir } from 'node:os';
-import { setupTestDatabase } from './helpers/db';
+import { PGLITE_TIMEOUT, setupTestDatabase } from './helpers/db';
 import { apiRequest, cookiesFrom } from './helpers/http';
 import { createSyntheticUser } from './helpers/users';
 import { GET as getStudio, POST as postStudio } from '../src/app/api/studio/route';
@@ -8,7 +8,7 @@ import { GET as getStudio, POST as postStudio } from '../src/app/api/studio/rout
 // Smoke tests for the shared helpers. Synthetic data only.
 const database = setupTestDatabase();
 
-describe('test helpers', () => {
+describe('test helpers', { timeout: PGLITE_TIMEOUT }, () => {
   it('opens a migrated database in a temporary directory', async () => {
     expect(process.env.VESSY_DEV_DATABASE_PATH?.startsWith(tmpdir())).toBe(true);
     const db = await database();

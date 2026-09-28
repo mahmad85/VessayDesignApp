@@ -3,6 +3,7 @@
 Status: ready for execution, 2026-09-28. This plan splits TASK-015 to TASK-027 into **51 work packages (WP-00a, WP-00b, WP-01 to WP-49)**, each sized to be built, reviewed and merged as **one pull request**. It adds no requirements. Every package points at its canonical spec. When this plan and a spec disagree, the spec wins; fix the plan in the same PR.
 
 Authority: implementation is authorised by D-019 and D-020 (DECISIONS.md). Items marked “proposed” in the specs (tracking statuses, sign-off wording, commerce placeholders) may be built as specified. They remain subject to confirmation before **customer release**, not before implementation.
+Execution status (2026-09-28): **Phase 0 (WP-00a, WP-00b) and M1 (WP-01 – WP-08) are implemented and locally verified** on the branch `feature/phase0-m1-catalog-foundation`, at the user's request as one branch with one commit per package (instead of one branch per package). Evidence: [TASK-015](TASK-015.md), [TEST-EVIDENCE.md](../implementation/TEST-EVIDENCE.md). No package was split. Next: M2 from WP-09 and M3 from WP-19.
 
 ## 1. How to use this plan
 
@@ -116,7 +117,7 @@ Total planning effort is roughly 67–133 focused days for a single stream. Runn
 - **Spec:** CATALOG-ADMIN §3.8, §10; ADMIN-BACKEND §5.
 - **Depends on:** WP-03, WP-04.
 - **Build:** `src/modules/catalog/import-legacy.ts`, a pure `importLegacyCatalog()` that returns a `CatalogSnapshot` plus the system lookup seeds. It covers: products and part links (including “Add a vest”); the components; groups and attributes with seed codes, readable labels, focus regions and accessory line kinds; values with cleaned labels, `metadata.referencePrice`/`sourceLabel`, `is_off` and defaults; visibility conditions derived from `relevantSections`/`visibleGroups`; archived placeholder groups; vest inclusion replacing the waistcoat attribute; the shirt groups; the blazer product settings; the `relaxed` jacket-fit value; the 8 fabrics as materials (null weight and composition, with the label metadata kept); static media rows; `reference_only` on everything; and the bindings from the registry.
-- **Tests:** twice → identical checksum; all 434 seed values present (plus the added shirt and fit values); every attribute code equals its seed `selectionKey`; every binding resolves; `validateRelease` (WP-07) reports no errors, only the expected warnings (`price_missing`, `reference_only_present`, `rights_unconfirmed`, `supplier_missing`, `image_missing`).
+- **Tests:** twice → identical checksum; all 434 seed values accounted for (428 active plus the 6 of the archived placeholders, which a snapshot omits; plus the added shirt and fit values); every attribute code equals its seed `selectionKey`; every binding resolves; `validateRelease` (WP-07) reports no errors, only the expected warnings (`price_missing`, `reference_only_present`, `reference_price_unset`, `rights_unconfirmed`, `supplier_missing`, `image_missing`; §7.4 makes the imported reference prices a `reference_price_unset` warning).
 
 #### WP-06 · Compile working copy and load snapshot into the working copy — L
 - **Spec:** CATALOG-ADMIN §7.1–7.2, §7.5; ADMIN-BACKEND §5.
@@ -134,7 +135,7 @@ Total planning effort is roughly 67–133 focused days for a single stream. Runn
 - **Spec:** CATALOG-ADMIN §7.3; ADMIN-BACKEND §6; TASK-015 steps 7–9.
 - **Depends on:** WP-05, WP-06, WP-07.
 - **Build:** `db/release-repository.ts` (`publish` under advisory lock 731851 with `expectedCurrentVersion`, warning acknowledgement, `nothing_to_publish`, `first_published_version` stamping and audit; `getCurrentVersion`; the `getRelease` LRU; `ensureCatalog` with `CATALOG_AUTO_BOOTSTRAP`; `restoreToWorkingCopy`); `scripts/catalog-bootstrap.ts` plus the `catalog:bootstrap` package script; the `/api/ready` catalog check; the `.env.example` entry.
-- **Tests:** bootstrap creates v1 with `reference_only`; re-running is a no-op; concurrent publishes → one gets `stale_release`; `nothing_to_publish`; restore v1 then publish gives v2 with the same checksum; production mode without a release → 503 `catalog_unavailable` and ready `not_ready`.
+- **Tests:** bootstrap creates v1 with `reference_only`; re-running is a no-op; concurrent publishes → one gets `stale_release`; `nothing_to_publish`; after a later release, restore v1 then publish gives a new version with v1’s checksum and `restored_from_version = 1`; production mode without a release → 503 `catalog_unavailable` and ready `not_ready`.
 - **M1 exit:** the catalog exists in the database with deterministic content, and the customer app is unchanged.
 
 ### M2 — Customer runtime on releases and pricing (TASK-016, TASK-017)

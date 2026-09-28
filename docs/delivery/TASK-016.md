@@ -1,6 +1,6 @@
 # TASK-016: Customer runtime on catalog releases (engine v2, visual binding, grounded assistant)
 
-Status: ready (specified 2026-09-28; depends on TASK-015)
+Status: ready (specified 2026-09-28). WP-00b (goldens) done 2026-09-28; WP-09 – WP-16 not started. TASK-015 is locally verified.
 
 Implementation packages: WP-00b, WP-09 – WP-16 in [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md). Build and merge them in that order.
 
@@ -18,7 +18,7 @@ Implementation packages: WP-00b, WP-09 – WP-16 in [IMPLEMENTATION-PLAN.md](IMP
 - Migration/compatibility implications: no SQL migration. Draft JSON is upgraded lazily and deterministically (§7.2). Existing browser and unit tests are **ported, not weakened**: every existing assertion keeps an equivalent v2 assertion.
 - Test fixtures (synthetic or authorised): the synthetic snapshot fixture; v1 draft fixtures for each product, built from today’s `createDraft()` plus edited variants.
 - Verification plan: see the build steps; Playwright studio and human-preview specs at 1440/768/390/320; keyboard pass; axe.
-- Actual verification evidence: not started.
+- Actual verification evidence: WP-00b only — the golden `sketchSpec()`, `regionForLeaf()` and `shownIn3D()` outputs were recorded on the unchanged renderers and `tests/golden.test.ts` passes (commit `972fb9a`; see [TEST-EVIDENCE.md](../implementation/TEST-EVIDENCE.md)). `src/modules/catalog/structure.ts` already holds `defaultsFor`, `effectiveSelections` and `ruleViolations` (added in WP-07 for publish validation); WP-09 adds `visibleStructure` and its tests.
 - Deviations and decision references: D-019. The start screen is new behaviour required by the empty-cart model.
 - Remaining limitations: prices still unavailable; one garment visible at a time.
 - Changed files/commit: —

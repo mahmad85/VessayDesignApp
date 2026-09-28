@@ -142,22 +142,22 @@ Authorization and boundary: D-014; unresolved rights and production data gates: 
 
 ## Admin catalog, commerce and fulfilment specification — D-019 (2026-09-28)
 
-This section adds 56 requirements (including ORD-012 and REV-009 from D-020) and 13 acceptance scenarios (AC-34 to AC-46). D-020 also revised REV-003 to REV-008, PAY-001, ORD-003, UX-011 and the scenarios AC-25 to AC-27 and AC-32 in their canonical files. The status **Specified** means the canonical contract and a ready task exist. Nothing below is implemented or verified yet. Each task records its actual evidence here when done.
+This section adds 56 requirements (including ORD-012 and REV-009 from D-020) and 13 acceptance scenarios (AC-34 to AC-46). D-020 also revised REV-003 to REV-008, PAY-001, ORD-003, UX-011 and the scenarios AC-25 to AC-27 and AC-32 in their canonical files. The status **Specified** means the canonical contract and a ready task exist. **TASK-015 part locally verified** (2026-09-28) means the TASK-015 share of the requirement is implemented and passed its automated tests on a local PGlite database; the remaining tasks named in the row are not started, and nothing here is externally verified or released. Each task records its actual evidence here when done.
 
 | Requirement | Canonical owner | Acceptance scenarios | Task | Status | Evidence |
 | --- | --- | --- | --- | --- | --- |
-| CAT-007 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-34, AC-43 | TASK-015, TASK-016, TASK-019 | Specified | Not started |
-| CAT-008 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-34 | TASK-015, TASK-019 | Specified | Not started |
-| CAT-009 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-34, AC-35 | TASK-015, TASK-020, TASK-027 | Specified | Not started |
-| CAT-010 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-07, AC-34 | TASK-016, TASK-019 | Specified | Not started |
-| CAT-011 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-34 | TASK-016, TASK-019 | Specified | Not started |
-| CAT-012 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-19, AC-34, AC-35 | TASK-015, TASK-021 | Specified | Not started |
+| CAT-007 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-34, AC-43 | TASK-015, TASK-016, TASK-019 | TASK-015 part locally verified | Database hierarchy, importer and compile: `import-legacy.test.ts`, `catalog-working-copy.test.ts`. Customer tabs wait for TASK-016 |
+| CAT-008 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-34 | TASK-015, TASK-019 | TASK-015 part locally verified | System lookup types and seed values imported and published: `import-legacy.test.ts`, `release-repository.test.ts`. Admin maintenance waits for TASK-019 |
+| CAT-009 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-34, AC-35 | TASK-015, TASK-020, TASK-027 | TASK-015 part locally verified | Material fields stored and compiled; imported fabrics keep weight, composition, band and supplier empty: `import-legacy.test.ts`, `validate-release.test.ts` |
+| CAT-010 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-07, AC-34 | TASK-016, TASK-019 | TASK-015 part locally verified | Condition language, fixed-point visibility and rule checks used by publish validation: `catalog-snapshot.test.ts`, `validate-release.test.ts`. Command paths wait for TASK-016 |
+| CAT-011 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-34 | TASK-016, TASK-019 | TASK-015 part locally verified | Per-product settings stored, compiled and validated (imported blazer restrictions): `import-legacy.test.ts`, `catalog-working-copy.test.ts` |
+| CAT-012 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-19, AC-34, AC-35 | TASK-015, TASK-021 | TASK-015 part locally verified | Validated, immutable, versioned publish under an advisory lock; history kept (AC-19 publish portion): `release-repository.test.ts` |
 | CAT-013 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-07, AC-34 | TASK-016, TASK-021 | Specified | Not started |
-| CAT-014 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-43 | TASK-015, TASK-016, TASK-019 | Specified | Not started |
-| CAT-015 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-34 | TASK-015, TASK-019 | Specified | Not started |
-| CAT-016 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-45 | TASK-015, TASK-019, TASK-026 | Specified | Not started |
-| CAT-017 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-39 | TASK-015, TASK-020, TASK-023 | Specified | Not started |
-| CAT-018 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-39 | TASK-016, TASK-020, TASK-023 | Specified | Not started |
+| CAT-014 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-43 | TASK-015, TASK-016, TASK-019 | TASK-015 part locally verified | Registry derived from renderer code; every imported binding resolves; goldens recorded: `visual-registry.test.ts`, `import-legacy.test.ts`, `golden.test.ts`. Renderer refactor waits for TASK-016 |
+| CAT-015 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-34 | TASK-015, TASK-019 | TASK-015 part locally verified | Loader archives, never deletes; `first_published_version` stamped at publish: `catalog-working-copy.test.ts`, `release-repository.test.ts`. `code_immutable` enforcement waits for TASK-019 |
+| CAT-016 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-45 | TASK-015, TASK-019, TASK-026 | TASK-015 part locally verified | Static media rows record type, size, sha256, alt text and rights; missing alt text is a publish warning: `catalog-working-copy.test.ts`, `validate-release.test.ts`. Uploads wait for TASK-019 |
+| CAT-017 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-39 | TASK-015, TASK-020, TASK-023 | TASK-015 part locally verified | Imported data and release v1 are `reference_only`: `import-legacy.test.ts`, `release-repository.test.ts`. The production order guard waits for TASK-023 |
+| CAT-018 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-39 | TASK-016, TASK-020, TASK-023 | TASK-015 part locally verified | Live availability is never overwritten by load or restore: `catalog-working-copy.test.ts`. The runtime overlay waits for TASK-016 |
 | TPL-001 – TPL-004 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-37 | TASK-021 | Specified | Not started |
 | PRC-001 – PRC-005, PRC-007 | [PRICING.md](../domain/PRICING.md) | AC-36 | TASK-017, TASK-020 | Specified | Not started |
 | PRC-006 | [PRICING.md](../domain/PRICING.md) | AC-39 | TASK-023 | Specified | Not started |

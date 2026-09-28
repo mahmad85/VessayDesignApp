@@ -15,6 +15,7 @@
     "test:e2e": "playwright test",
     "seed:suit-customization": "node scripts/build-suit-customization-seed.mjs",
     "db:migrate": "node --import tsx scripts/migrate.ts",
+    "catalog:bootstrap": "node --import tsx scripts/catalog-bootstrap.ts",
     "check": "npm run typecheck && npm run lint && npm test && npm run build",
     "lint": "eslint .",
     "format": "prettier --write .",

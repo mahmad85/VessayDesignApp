@@ -15,11 +15,12 @@ npm run dev
 
 The development server binds to port 3000. Without `DATABASE_URL`, development uses PGlite, an embedded PostgreSQL runtime, in `.data/postgres`. This works immediately without cloud credentials. PGlite is deliberately rejected in production; it is not an Autoscale database.
 
-For external PostgreSQL, configure `DATABASE_URL` in environment secrets, run `npm run db:migrate` once, then start the application. `.env.example` documents available configuration; do not commit secrets. See [Replit deployment](docs/implementation/REPLIT.md).
+For external PostgreSQL, configure `DATABASE_URL` in environment secrets, run `npm run db:migrate` once, then `npm run catalog:bootstrap` to publish catalog release v1 from the reference data (it does nothing once a release exists), then start the application. In development the first readiness check publishes v1 automatically (`CATALOG_AUTO_BOOTSTRAP`). `.env.example` documents available configuration; do not commit secrets. See [Replit deployment](docs/implementation/REPLIT.md).
 
 ## What works now
 
 - Men’s two-piece suit, dress shirt and blazer configuration; eight explicitly labeled reference fabrics plus 434 supplied suit Style and Accents reference options grouped by jacket, pants and vest.
+- A database catalog foundation (TASK-015): working tables, a deterministic importer of today’s reference data, release validation, immutable versioned releases and `npm run catalog:bootstrap`. The customer studio does not read releases yet (TASK-016).
 - Shared commands for direct selection and assistant suggestions, with compatibility validation, category-change confirmation, version checks and idempotent writes.
 - Full human Three.js reference with anatomical face, hands and feet. Suit, blazer, shirt, vest and trousers are generated from the body's own cross-sections, with main construction choices (style, lapels, pockets, vents, sleeve buttons, trouser fit/length/turn-ups, vest, collar and cuffs), skin tone, rotate, front/side/back, zoom and reset. An interactive 2D technical drawing covers every other detail. The bundled CC0 body has no subscription or royalty fees. This is illustrative geometry, not garment simulation or a reconstructed customer body.
 - Optional appearance photo stays in browser memory and can be removed. It is displayed as a reference, not mapped to the mannequin.

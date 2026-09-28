@@ -7,7 +7,7 @@ import { is } from 'drizzle-orm';
 import { MIGRATIONS } from '../src/db/client';
 import * as schema from '../src/db/schema';
 import { writeAudit } from '../src/db/audit';
-import { createTestDatabaseDirectory, setupTestDatabase } from './helpers/db';
+import { PGLITE_TIMEOUT, createTestDatabaseDirectory, setupTestDatabase } from './helpers/db';
 
 // Migration mechanics (CURRENT-SYSTEM.md): PGlite runs every file on every
 // start, and scripts/migrate.ts splits files on ';' for hosted PostgreSQL.
@@ -16,7 +16,7 @@ const migrationSql = (name: string) =>
   readFile(path.join(process.cwd(), 'migrations', `${name}.sql`), 'utf8');
 const statements = (sql: string) => sql.split(';').filter((part) => part.trim());
 
-describe('migration files', () => {
+describe('migration files', { timeout: PGLITE_TIMEOUT }, () => {
   it('split on semicolons into whole CREATE, ALTER or INSERT statements', async () => {
     for (const name of MIGRATIONS) {
       const sql = await migrationSql(name);
@@ -126,7 +126,7 @@ describe('migration files', () => {
   });
 });
 
-describe('catalog constraints (0003_catalog)', () => {
+describe('catalog constraints (0003_catalog)', { timeout: PGLITE_TIMEOUT }, () => {
   const rejects = async (sql: string, params: unknown[] = []) => {
     const db = await database();
     await expect(db.query(sql, params)).rejects.toThrow(/violates|duplicate key/);

@@ -104,6 +104,8 @@ export class DomainError extends Error {
     public code: string,
     message: string,
     public status = 422,
+    /** Optional structured context, returned as `error.details` (ADMIN-BACKEND §2 “Errors”). */
+    public details?: Record<string, unknown>,
   ) {
     super(message);
   }

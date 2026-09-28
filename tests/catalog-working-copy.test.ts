@@ -8,7 +8,7 @@ import {
   loadWorkingRows,
   seedLookupTypes,
 } from '../src/db/catalog-admin-repository';
-import { setupTestDatabase } from './helpers/db';
+import { PGLITE_TIMEOUT, setupTestDatabase } from './helpers/db';
 import { SYN, syntheticSnapshot } from './fixtures/catalog.synthetic';
 
 // CATALOG-ADMIN.md §7.1–7.2, §7.5. The legacy import is the user-supplied
@@ -43,7 +43,7 @@ const versions = async () => {
 /** Synthetic media paths do not exist on disk; tests supply their bytes. */
 const readStatic = async (url: string) => new TextEncoder().encode(`SYNTHETIC ${url}`);
 
-describe('working copy ⇄ snapshot', () => {
+describe('working copy ⇄ snapshot', { timeout: PGLITE_TIMEOUT }, () => {
   it('round-trips the legacy import: import → load → compile gives the same checksum', async () => {
     const db = await database();
     const summary = await db.transaction(async (query) => {

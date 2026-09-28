@@ -26,8 +26,7 @@ export async function identity(request: NextRequest) {
   return { owner: guest, token, user: null };
 }
 export function requireSignedIn(who: Awaited<ReturnType<typeof identity>>) {
-  if (!who.user)
-    throw new DomainError('sign_in_required', 'Sign in to use this feature.', 401);
+  if (!who.user) throw new DomainError('sign_in_required', 'Sign in to use this feature.', 401);
   return who as typeof who & { user: NonNullable<(typeof who)['user']> };
 }
 export function json(data: unknown, token?: string, status = 200) {
@@ -73,7 +72,17 @@ export async function body(request: NextRequest) {
 }
 export function failure(error: unknown) {
   if (error instanceof DomainError)
-    return json({ error: { code: error.code, message: error.message } }, undefined, error.status);
+    return json(
+      {
+        error: {
+          code: error.code,
+          message: error.message,
+          ...(error.details ? { details: error.details } : {}),
+        },
+      },
+      undefined,
+      error.status,
+    );
   if (error instanceof ZodError)
     return json(
       { error: { code: 'invalid_input', message: 'Please check your selections and try again.' } },

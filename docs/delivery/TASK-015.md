@@ -1,6 +1,6 @@
 # TASK-015: Database catalog, importer and immutable releases
 
-Status: ready (specified 2026-09-28; not started)
+Status: implemented and locally verified (2026-09-28, branch `feature/phase0-m1-catalog-foundation`, WP-01 – WP-08). Not externally verified or released.
 
 Implementation packages: WP-01 – WP-08 in [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md). Build and merge them in that order.
 
@@ -18,10 +18,10 @@ Implementation packages: WP-01 – WP-08 in [IMPLEMENTATION-PLAN.md](IMPLEMENTAT
 - Migration/compatibility implications: the migration is additive and idempotent. The existing tables and code paths are untouched. The seed JSON and `catalog.ts` remain as sources.
 - Test fixtures (synthetic or authorised): the user-supplied seed (reference-only) and a synthetic snapshot fixture `tests/fixtures/catalog.synthetic.ts` labelled `SYNTHETIC`.
 - Verification plan: see the build steps below; `npm run check`; re-run PGlite start twice (idempotent migration).
-- Actual verification evidence: not started.
-- Deviations and decision references: D-019.
-- Remaining limitations: no customer or admin surface uses the release yet.
-- Changed files/commit: —
+- Actual verification evidence (2026-09-28, Windows 11, Node 22.17.1, local PGlite only): `npm run check` passed (typecheck, lint, 152 Vitest tests in 15 files, production build); the e2e result is in [TEST-EVIDENCE.md](../implementation/TEST-EVIDENCE.md). Per build step: (1) `tests/migrations.test.ts` — every file survives the `;` split, all migrations run twice on one directory as whole files and as split statements, the Drizzle mirror matches the database, constraint smoke tests; (2) `tests/money.test.ts`; (3) `tests/catalog-snapshot.test.ts`; (4) `tests/visual-registry.test.ts` (scans the renderer source); (5) `tests/import-legacy.test.ts` — 428 active seed choices plus 6 documented archived placeholders (= 434), shirt and relaxed-fit choices, deterministic checksum, every attribute code equals its seed key, every binding resolves; (6) `tests/catalog-working-copy.test.ts` (import → load → compile round trip, no-op reload) and `tests/validate-release.test.ts` (one failing fixture per error and warning code; the import has no errors and only the warnings `price_missing`, `reference_only_present`, `reference_price_unset`, `rights_unconfirmed`, `supplier_missing`, `image_missing`); (7–9) `tests/release-repository.test.ts` (bootstrap v1 reference-only, re-run no-op, `nothing_to_publish`, `publish_blocked`, warning acknowledgement, concurrent publishes → one `stale_release`, action replay, restore v1 → new version with v1’s checksum) and `tests/catalog-readiness.test.ts` (production without a release → 503 `catalog_unavailable` and `not_ready`/`catalog_missing`). `npm run catalog:bootstrap` run twice on a temporary PGlite directory: v1 published, then a no-op.
+- Deviations and decision references: D-019. Clarifications recorded in CATALOG-ADMIN §10 (implementation notes) and ADMIN-BACKEND §5: archived imports are absent from the snapshot; lining metadata fields are `text` and source prices are stored as `source*` keys; illustrative SVG swatches generated from each reference colour (an active fabric needs a swatch); four internal snapshot fields and `materials[].metadata`; releases carry only used price bands and lookup types with values. The publish `actionId` is stored in `catalog_releases.validation` (the verbatim DDL has no column for it) and replayed under the publish lock. `DomainError` gained optional `details`, returned by `failure()`. The concurrency test runs on PGlite, which serialises transactions on one connection, so it proves the lock-and-version logic, not parallel sessions on hosted PostgreSQL.
+- Remaining limitations: no customer or admin surface uses the release yet (TASK-016, TASK-019 onward); hosted PostgreSQL untested; template prices at publish arrive with pricing (WP-34); `code_immutable` enforcement arrives with admin CRUD (WP-23).
+- Changed files/commit: commits `72a3478` (WP-01), `17ef62e` (WP-02), `0c0b711` (WP-03), `8088ee1` (WP-04), `e81d915` (WP-05), `d81fda5` (WP-06), `e810532` (WP-07) and the WP-08 commit on the same branch.
 
 ## Build steps
 
