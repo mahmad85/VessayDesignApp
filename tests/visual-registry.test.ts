@@ -11,7 +11,6 @@ import {
   slotForKey,
 } from '../src/visualization/registry';
 import { LEAF_REGIONS, REGIONS } from '../src/visualization/focus-regions';
-import { shownIn3D } from '../src/visualization/garments/coverage';
 import { SUIT_CUSTOMIZATION_SEED } from '../src/modules/catalog/suit-customization';
 import {
   IMPORTED_EXTRA_VALUES,
@@ -48,58 +47,63 @@ const source = (file: string) =>
   readFile(path.join(process.cwd(), 'src/visualization', file), 'utf8');
 const FULL_KEY = /'((?:style|accents)\.[\w-]+\.[\w-]+\.[\w-]+)'/g;
 
-/** Selection keys the renderers read, reconstructed from their source text. */
-async function keysReadByRenderers() {
-  const keys = new Set<string>();
-  // Template placeholders such as `${group}` are resolved through the products() calls.
-  const add = (key: string) => (key.includes('${') ? keys : keys.add(key));
-  const sketch = await source('sketch-spec.ts');
-  // Calls may be wrapped over several lines by Prettier.
-  for (const [, key] of sketch.matchAll(/\bs\(\s*'([^']+)'\s*,?\s*\)/g)) add(`style.${key}`);
-  for (const [, key] of sketch.matchAll(/\ba\(\s*'([^']+)'\s*,?\s*\)/g)) add(`accents.${key}`);
-  for (const [, key] of sketch.matchAll(/asset\(\s*values,\s*`\$\{ACCENTS\}([^`]+)`\s*,?\s*\)/g))
-    add(`accents.${key}`);
-  for (const [, group, toggle] of sketch.matchAll(
-    /products\(\s*'([^']+)',\s*'([^']+)'\s*,?\s*\)/g,
-  )) {
-    add(`accents.${group}.${toggle}`);
-    add(`accents.${group}.products`);
-  }
-  if (/\bhasVest\(/.test(sketch)) add(LEGACY_KEYS.vest);
-  const files = [
+/** The renderer sources: the drawing specification, 3D garments, focus and binding. */
+async function rendererFiles() {
+  return [
     'sketch-spec.ts',
     'tailored-human.tsx',
     'focus-regions.ts',
+    'binding.ts',
+    'outfit.tsx',
+    'garment-sketch.tsx',
     ...(await readdir(path.join(process.cwd(), 'src/visualization/garments'))).map(
       (file) => `garments/${file}`,
     ),
   ];
-  for (const file of files) {
-    const text = await source(file);
-    for (const [, key] of text.matchAll(FULL_KEY)) add(key);
-    for (const [, suffix] of text.matchAll(/changedKey\?\.endsWith\('([^']+)'\)/g))
-      for (const key of seedValues.keys()) if (key.endsWith(suffix)) add(key);
+}
+
+/** Slot ids the renderers read (WP-14: they read render values, not selection keys). */
+async function slotsReadByRenderers() {
+  const slots = new Set<string>();
+  const sketch = await source('sketch-spec.ts');
+  // Calls may be wrapped over several lines by Prettier.
+  for (const [, slot] of sketch.matchAll(/\b(?:t|image)\(\s*'([^']+)'\s*,?\s*\)/g)) slots.add(slot);
+  for (const [, on, product] of sketch.matchAll(
+    /\baccessory\(\s*'([^']+)',\s*'([^']+)'\s*,?\s*\)/g,
+  )) {
+    slots.add(on);
+    slots.add(product);
   }
-  return keys;
+  for (const file of await rendererFiles())
+    for (const [, slot] of (await source(file)).matchAll(/visualSlot === '([^']+)'/g))
+      slots.add(slot);
+  return slots;
 }
 
 describe('visual slot registry', () => {
-  it('has a slot for every selection key the renderers read', async () => {
-    const read = await keysReadByRenderers();
+  it('renderers read only registered slots, never catalog selection keys (CAT-014)', async () => {
+    const read = await slotsReadByRenderers();
     expect(read.size).toBeGreaterThan(40);
-    for (const key of read)
+    for (const slot of read) expect(SLOT_IDS, slot).toContain(slot);
+    for (const file of await rendererFiles())
       expect(
-        slotForKey(key) ?? (key in COMPONENT_DRIVEN_KEYS ? 'component' : undefined),
-        key,
-      ).toBeDefined();
+        [...(await source(file)).matchAll(FULL_KEY)].map((m) => m[1]),
+        file,
+      ).toEqual([]);
   });
 
-  it('binds only keys the renderers read, or legacy design fields they read', async () => {
-    const read = await keysReadByRenderers();
+  it('draws every registered slot', async () => {
+    const read = await slotsReadByRenderers();
+    for (const slot of SLOT_IDS) expect(read.has(slot), slot).toBe(true);
+  });
+
+  it('binds only seed selection keys or legacy design fields', () => {
     const legacy = new Set<string>(Object.values(LEGACY_KEYS));
     for (const slot of SLOT_IDS)
       for (const key of VISUAL_SLOTS[slot].keys)
-        expect(read.has(key) || legacy.has(key), `${slot}: ${key}`).toBe(true);
+        expect(seedValues.has(key) || legacy.has(key), `${slot}: ${key}`).toBe(true);
+    // The vest is drawn when the vest part is included, not from a choice.
+    expect(COMPONENT_DRIVEN_KEYS).toEqual({ [LEGACY_KEYS.vest]: 'vest' });
   });
 
   it('binds each key to exactly one slot', () => {
@@ -125,7 +129,11 @@ describe('visual slot registry', () => {
     }
   });
 
-  it('reproduces today’s 3D coverage when derived from the slots of a group’s options', () => {
+  it('reproduces the recorded 3D coverage when derived from the slots of a group’s options', async () => {
+    const recorded: Record<string, boolean> = JSON.parse(
+      await readFile(path.join(process.cwd(), 'tests/golden/shown-in-3d.json'), 'utf8'),
+    );
+    const shownIn3D = (leafId: string) => recorded[leafId];
     for (const { leafId, keys } of seedGroups) {
       if (keys.some((key) => key in COMPONENT_DRIVEN_KEYS)) continue;
       const derived = keys.some((key) => {

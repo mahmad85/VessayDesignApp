@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import { Minus, Plus, RotateCcw, Move } from 'lucide-react';
-import type { Design } from '@/modules/configuration/types';
+import type { RenderInput } from './binding';
 import { REGIONS, type RegionId, type SketchView, type Reveal } from './focus-regions';
 import { sketchSpec, shoeStyle, type SketchSpec } from './sketch-spec';
 
@@ -1297,18 +1297,18 @@ function FabricPattern({
 }
 
 export default function GarmentSketch({
-  design,
+  render,
   focus,
   hotspots = [],
   onHotspot,
 }: {
-  design: Design;
+  render: RenderInput;
   focus: SketchFocus;
   hotspots?: SketchHotspot[];
   onHotspot?: (spot: SketchHotspot) => void;
 }) {
   const id = useId().replace(/:/g, '');
-  const spec = sketchSpec(design);
+  const spec = sketchSpec(render);
   const svgRef = useRef<SVGSVGElement>(null);
   const [view, setView] = useState<SketchView>('front');
   const [reveal, setReveal] = useState<Reveal>('none');

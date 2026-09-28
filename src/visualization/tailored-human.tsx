@@ -3,15 +3,16 @@
 import { useEffect, useMemo } from 'react';
 import { useGLTF, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
-import type { Design } from '@/modules/configuration/types';
+import type { RenderInput } from './binding';
 import { Outfit } from './outfit';
+import { sketchSpec } from './sketch-spec';
 
 export function TailoredHuman({
-  design,
+  render,
   measure,
   skin,
 }: {
-  design: Design;
+  render: RenderInput;
   measure: boolean;
   skin: THREE.Material;
 }) {
@@ -55,9 +56,7 @@ export function TailoredHuman({
   );
   useEffect(() => () => dummy.dispose(), [dummy]);
   // Bermuda trousers leave the legs visible, so the full body is drawn.
-  const bermuda =
-    design.product === 'suit' &&
-    design.customizations?.['style.pants.pants_length.pants-length'] === 'bermuda';
+  const bermuda = render.visualModel === 'suit' && sketchSpec(render).trousers.length === 'bermuda';
   return (
     <group name="human-reference">
       <mesh
@@ -77,7 +76,7 @@ export function TailoredHuman({
           <mesh geometry={mesh('Hair')} castShadow>
             <meshStandardMaterial color="#30251f" roughness={0.94} side={THREE.DoubleSide} />
           </mesh>
-          <Outfit design={design} />
+          <Outfit render={render} />
         </>
       )}
     </group>

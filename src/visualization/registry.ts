@@ -2,15 +2,16 @@ import { REGIONS, type RegionId } from './focus-regions';
 
 // Visual slot registry (CATALOG-ADMIN.md §6, CAT-014). The renderers stay code;
 // this makes their coupling to catalog choices explicit. Each slot is one
-// drawing property of today's renderers. `keys` are the selection keys
-// (attribute codes) that sketch-spec.ts, tailored-human.tsx, garments/*.ts and
-// focus-regions.ts read for it; `tokens` are exactly the values those keys can
-// hold (the supplied seed, the imported legacy shirt and fit choices) plus the
-// literals the code compares against. `shownIn3D` follows garments/coverage.ts.
+// drawing property the renderers read through binding.ts (WP-14): an
+// attribute's `visual_slot` names its slot and a choice's `visual_token` the
+// token drawn. `keys` are the selection keys the pre-catalog renderers read for
+// each slot; the importer binds those attributes (CATALOG-ADMIN §10). `tokens`
+// are exactly the values those keys can hold (the supplied seed, the imported
+// legacy shirt and fit choices) plus the literals the renderers compare
+// against. `shownIn3D` drives garments/coverage.ts.
 //
 // Slots and tokens are derived from the code, not invented, and are checked
-// against the renderer source by tests/visual-registry.test.ts. This module
-// changes no rendering: the renderers are rebound to it in WP-14.
+// against the renderer source by tests/visual-registry.test.ts.
 
 export type VisualModel = 'suit' | 'shirt' | 'blazer';
 export type VisualSlot = {

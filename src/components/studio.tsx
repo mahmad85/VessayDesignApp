@@ -28,6 +28,7 @@ import {
 } from '@/modules/configuration/design-outline';
 import { REGIONS, regionForLeaf, type RegionId } from '@/visualization/focus-regions';
 import GarmentSketch, { type SketchHotspot } from '@/visualization/garment-sketch';
+import { legacyRenderInput } from '@/visualization/legacy-render';
 import { shownIn3D } from '@/visualization/garments/coverage';
 import { PRODUCTS, fabricFor, CLIMATES, OCCASIONS, type Product } from '@/modules/catalog/catalog';
 import { useStudio } from './use-studio';
@@ -84,7 +85,6 @@ export default function Studio() {
         leafId,
         region: regionForLeaf(leafId, {
           product: design.product,
-          values: design.customizations,
           changedKey,
         }),
         nonce: current.nonce + 1,
@@ -128,7 +128,6 @@ export default function Studio() {
     for (const leaf of outline.flatMap((branch) => branch.leaves)) {
       const region = regionForLeaf(leaf.id, {
         product: draft.design.product,
-        values: draft.design.customizations,
       });
       if (seen.has(region)) continue;
       seen.add(region);
@@ -410,7 +409,7 @@ export default function Studio() {
                 </div>
                 {step === 1 && previewMode === '2d' ? (
                   <GarmentSketch
-                    design={draft.design}
+                    render={legacyRenderInput(draft.design)}
                     focus={{
                       region: focus.region,
                       nonce: focus.nonce,
@@ -427,7 +426,7 @@ export default function Studio() {
                   />
                 ) : (
                   <GarmentView
-                    design={draft.design}
+                    render={legacyRenderInput(draft.design)}
                     measure={step === 2}
                     highlight={highlight}
                     measurementValue={

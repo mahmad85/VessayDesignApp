@@ -8,6 +8,7 @@ import {
 } from '../src/modules/configuration/design-outline';
 import { REGIONS, regionForLeaf } from '../src/visualization/focus-regions';
 import { sketchSpec } from '../src/visualization/sketch-spec';
+import { add, draftWith, referenceIndex, renderOf, select } from './helpers/reference';
 
 // Synthetic drafts only; no customer data.
 const suit = () => createDraft();
@@ -94,7 +95,9 @@ describe('design outline shared by fields, tags and the 2D view', () => {
       leafId: 'style.pants.pants_pockets',
       keys: ['style.pants.pants_pockets.pants-back-pocket-combine'],
     });
-    expect(regionForLeaf(change.leafId, { changedKey: change.keys[0] })).toBe('back-pockets');
+    expect(
+      regionForLeaf(change.leafId, { index: referenceIndex(), changedKey: change.keys[0] }),
+    ).toBe('back-pockets');
     const fabric = applyCommand(start, { type: 'design', patch: { fabricId: 'forest' } });
     expect(changedLeaves(start.design, fabric.design)[0].leafId).toBe('fabricId');
     expect(changedLeaves(start.design, start.design)).toEqual([]);
@@ -117,25 +120,30 @@ describe('design outline shared by fields, tags and the 2D view', () => {
 describe('2D drawing specification', () => {
   it('derives visible construction from saved choices, not labels', () => {
     const spec = sketchSpec(
-      design({
-        type: 'design',
-        patch: {
-          customizations: {
+      renderOf(
+        draftWith(
+          add('suit'),
+          select({
             'style.jacket.jacket_style_combined.jacket-style-combined': 'crossed_6',
             'style.jacket.jacket_vent.jacket-vent': '2',
             'style.pants.pants_cuff.pants-cuff': '1',
-          },
-        },
-      }),
+          }),
+        ),
+      ),
     );
     expect(spec.jacket).toMatchObject({ style: 'crossed_6', vent: '2' });
     expect(spec.trousers.cuffs).toBe(true);
-    expect(sketchSpec(design({ type: 'design', patch: { product: 'shirt' } })).jacket).toBeNull();
+    expect(sketchSpec(renderOf(draftWith(add('shirt')))).jacket).toBeNull();
     const blazer = sketchSpec(
-      design({
-        type: 'design',
-        patch: { product: 'blazer', lapel: 'Peak', closure: 'One button' },
-      }),
+      renderOf(
+        draftWith(
+          add('blazer'),
+          select({
+            'style.jacket.jacket_lapel_type_combinated.jacket-lapel-type': 'peak',
+            'style.jacket.jacket_style_combined.jacket-style-combined': 'simple_1',
+          }),
+        ),
+      ),
     );
     expect(blazer.jacket).toMatchObject({ lapelType: 'peak', style: 'simple_1' });
     expect(blazer.trousers.color).not.toBeNull();

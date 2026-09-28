@@ -10,13 +10,22 @@ import {
 } from '../../src/modules/catalog/suit-customization';
 import { createDraft, applyCommand } from '../legacy/engine-v1';
 import { designOutline } from '../../src/modules/configuration/design-outline';
-import type { Command, Design } from '../../src/modules/configuration/types';
+import type { Command, CommandV2, Design } from '../../src/modules/configuration/types';
+import { garmentPatchFromLegacy } from '../../src/modules/configuration/upgrade';
 import { sketchSpec } from '../../src/visualization/sketch-spec';
+import { add, draftWith, referenceIndex, renderOf, select } from '../helpers/reference';
 import { regionForLeaf } from '../../src/visualization/focus-regions';
 import { shownIn3D } from '../../src/visualization/garments/coverage';
 
 // Golden visual outputs (WP-00b, CATALOG-ADMIN §6, AC-43), recorded from the
 // renderers as they were before the catalog refactor. SYNTHETIC designs only.
+//
+// Since WP-14 the outputs are computed the new way: each case, still described
+// by the v1 design commands it was recorded with, is translated to v2 garment
+// commands on the imported reference release (v2Commands below), and the
+// renderers read render values bound through the visual slot registry. Focus
+// regions and 3D coverage read the catalog; the pre-catalog leaf ids map to the
+// leaves that replaced them (LEGACY_LEAVES). The recorded JSON is unchanged.
 //
 // - sketch-spec.json: sketchSpec() for suit defaults, every seed choice applied
 //   one at a time (with the vest and the group's gate opened where the choice
@@ -46,6 +55,54 @@ const VEST_TOGGLE = 'style.vest.waistcoat.waistcoat';
 
 const design = (commands: Command[]) =>
   commands.reduce((draft, command) => applyCommand(draft, command), createDraft()).design;
+
+/**
+ * A case's v1 design commands as v2 commands for a garment of the case's
+ * product. Choices of the two placeholder groups the importer archives
+ * (pants_chinos, waistcoat_wedding) do not exist in the release; the v1
+ * renderer never drew them.
+ */
+function v2Commands(product: Design['product'], commands: Command[]): CommandV2[] {
+  const index = referenceIndex();
+  const result: CommandV2[] = [add(product)];
+  for (const command of commands) {
+    if (command.type !== 'design') throw new Error('Golden cases are design commands.');
+    // The garment already has the case's product.
+    const { skinTone, ...rest } = command.patch;
+    delete rest.product;
+    if (skinTone) result.push({ type: 'appearance', skinTone });
+    const converted = garmentPatchFromLegacy(rest, product);
+    if (!converted) continue;
+    if (converted.selections)
+      converted.selections = Object.fromEntries(
+        Object.entries(converted.selections).filter(([key]) => index.attributes.has(key)),
+      );
+    if (converted.selections && !Object.keys(converted.selections).length)
+      delete converted.selections;
+    if (Object.keys(converted).length) result.push({ type: 'design', patch: converted });
+  }
+  return result;
+}
+const caseProduct = (id: string) => id.split('/')[0] as Design['product'];
+/** Render values of a case's garment, built by the v2 engine. */
+const caseRender = (item: Case) =>
+  renderOf(draftWith(...v2Commands(caseProduct(item.id), item.commands)));
+
+/** Pre-catalog leaf ids and the leaves that replaced them, per product. */
+function leafFor(id: string, product: Design['product'] = 'suit') {
+  const legacy: Record<string, string> = {
+    fabricId: 'fabric',
+    fit: product === 'shirt' ? 'style.shirt.shirt_fit' : 'style.jacket.jacket_fit',
+    lapel: 'style.jacket.jacket_lapel_type_combinated',
+    pockets: 'style.jacket.jacket_pockets_type',
+    closure: 'style.jacket.jacket_style_combined',
+    collar: 'style.shirt.shirt_collar',
+    cuffs: 'style.shirt.shirt_cuffs',
+    // The waistcoat option became the vest part's include toggle.
+    'style.vest.waistcoat': 'include:vest',
+  };
+  return legacy[id] ?? id;
+}
 const customize = (values: Record<string, string>): Command => ({
   type: 'design',
   patch: { customizations: values },
@@ -175,7 +232,7 @@ export function applyDifferences(base: Json, differences: Record<string, Json>) 
 /** Full sketch specifications for every case, keyed by case id. */
 export function computeSketchSpecs() {
   return Object.fromEntries(
-    goldenCases().map((item) => [item.id, plain(sketchSpec(design(item.commands))) as Json]),
+    goldenCases().map((item) => [item.id, plain(sketchSpec(caseRender(item))) as Json]),
   );
 }
 
@@ -207,7 +264,10 @@ export function buildGoldens() {
       Object.fromEntries(
         designOutline(design)
           .flatMap((branch) => branch.leaves)
-          .map((leaf) => [leaf.id, regionForLeaf(leaf.id, { product })]),
+          .map((leaf) => [
+            leaf.id,
+            regionForLeaf(leafFor(leaf.id, product), { index: referenceIndex(), product }),
+          ]),
       ),
     ]),
   );
@@ -216,27 +276,36 @@ export function buildGoldens() {
     .find((category) => category.id === 'pants')!
     .groups.find((group) => group.id === 'pants_pockets')!;
   const regions = {
-    byLeaf: Object.fromEntries(ids.map((id) => [id, regionForLeaf(id)])),
+    byLeaf: Object.fromEntries(
+      ids.map((id) => [id, regionForLeaf(leafFor(id), { index: referenceIndex() })]),
+    ),
     byProduct,
     contextual: {
       threadScope: Object.fromEntries(
         ['By default', 'all', 'cuff', 'lapel'].map((scope) => [
           scope,
           regionForLeaf('accents.jacket.button_holes_threads', {
-            values: { [threadScope]: scope },
+            index: referenceIndex(),
+            tokens: renderOf(draftWith(add('suit'), select({ [threadScope]: scope }))).tokens,
           }),
         ]),
       ),
       pantsPocketsChangedKey: Object.fromEntries(
         pockets.sections.map((section) => [
           section.selectionKey,
-          regionForLeaf('style.pants.pants_pockets', { changedKey: section.selectionKey }),
+          regionForLeaf('style.pants.pants_pockets', {
+            index: referenceIndex(),
+            changedKey: section.selectionKey,
+          }),
         ]),
       ),
-      shirtFabric: regionForLeaf('fabricId', { product: 'shirt' }),
+      shirtFabric: regionForLeaf(leafFor('fabricId'), {
+        index: referenceIndex(),
+        product: 'shirt',
+      }),
     },
   };
-  const shown = Object.fromEntries(ids.map((id) => [id, shownIn3D(id)]));
+  const shown = Object.fromEntries(ids.map((id) => [id, shownIn3D(leafFor(id), referenceIndex())]));
   return { sketchSpecs, regions, shownIn3D: shown };
 }
 
