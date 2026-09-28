@@ -141,3 +141,20 @@ Shared test helpers added in WP-00a (synthetic data only):
 | `tests/helpers/users.ts` | `createSyntheticUser()`: signs up through Better Auth, verifies the email in the test database and returns a session cookie | The session resolves to the user in `GET /api/studio`; an unverified variant stays unverified |
 
 After WP-00a: Vitest 33 tests across 5 files passed; typecheck and lint passed; Prettier passed on the new and changed test files.
+
+## WP-00b — Golden visual outputs before any renderer change, 28 September 2026
+
+Environment as WP-00a. Generated with `node --import tsx tests/golden/generate.ts` on the unchanged renderers (`sketch-spec.ts`, `focus-regions.ts`, `garments/coverage.ts` untouched).
+
+| Golden | Content |
+| --- | --- |
+| `tests/golden/sketch-spec.json` | `sketchSpec()` for 473 SYNTHETIC designs: suit defaults; each of the 434 seed choices applied one at a time (with the vest and the group’s gate opened where the choice needs them to be drawn); suit fit, fabric and skin tone; shirt and blazer defaults plus every legacy fit, detail and fabric option. Stored as one baseline per product plus each case’s exact differences (lossless; 87 KB instead of 652 KB) |
+| `tests/golden/regions.json` | `regionForLeaf()` for all 54 leaf ids (every seed group plus the legacy leaves), per product outline, and the contextual cases (thread scope, changed back-pocket key, shirt fabric) |
+| `tests/golden/shown-in-3d.json` | `shownIn3D()` for the same 54 leaf ids (24 drawn in 3D) |
+
+| Executed check | Result |
+| --- | --- |
+| `npx vitest run tests/golden.test.ts` on the unchanged code | 4 tests passed |
+| Mutation check: one button colour constant in `sketch-spec.ts` changed temporarily | The comparison failed on exactly `suit/accents.jacket.buttons_color.colors=1`; the constant was restored from Git and the test passed again |
+
+Rule for later packages: a golden may be regenerated only with a written justification in the PR and an explicit reviewer sign-off; never to make a failing comparison pass.
