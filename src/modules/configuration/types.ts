@@ -158,6 +158,82 @@ export type Impact = {
   message: string;
 };
 
+/** The pre-D-019 draft (no `schemaVersion`), read only to upgrade it (ADMIN-BACKEND §7.2). */
+export type DraftV1 = Draft;
+export type SkinTone = Design['skinTone'];
+export type ChatSuggestion = { garmentId: string | null; patch: GarmentPatch };
+export type ChatMessageV2 = Omit<ChatMessage, 'suggestion'> & { suggestion?: ChatSuggestion };
+export type DraftV2 = {
+  schemaVersion: 2;
+  id: string;
+  revision: number;
+  createdAt: string;
+  updatedAt: string;
+  /** The garment commands target when they name none; null when the cart is empty. */
+  activeGarmentId: string | null;
+  /** 0–10 garments (CRT-001). */
+  garments: Garment[];
+  skinTone: SkinTone;
+  /** One measurement profile per draft (CRT-004). */
+  measurements: Measurements;
+  messages: ChatMessageV2[];
+  /** The `review` command result, as today, until TASK-023 replaces it with the order check. */
+  review: Review | null;
+  orders: { orderId: string; number: string; submittedAt: string }[];
+};
+
+export const MAX_GARMENTS = 10;
+const garmentId = z.uuid();
+export const commandSchemaV2 = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('add_garment'),
+    productCode: codeSchema,
+    templateCode: codeSchema.nullable().optional(),
+  }),
+  z.object({
+    type: z.literal('remove_garment'),
+    garmentId,
+    confirm: z.boolean().optional(),
+  }),
+  z.object({ type: z.literal('select_garment'), garmentId }),
+  z.object({
+    type: z.literal('design'),
+    garmentId: garmentId.optional(),
+    patch: garmentPatch,
+    confirmCategoryChange: z.boolean().optional(),
+    confirmImpact: z.boolean().optional(),
+  }),
+  z.object({
+    type: z.literal('set_quantity'),
+    garmentId,
+    quantity: z.number().int().min(1).max(5),
+  }),
+  z.object({ type: z.literal('accept_design'), garmentId: garmentId.optional() }),
+  z.object({
+    type: z.literal('rebase_catalog'),
+    garmentId,
+    confirmImpact: z.boolean(),
+  }),
+  z.object({
+    type: z.literal('appearance'),
+    skinTone: z.enum(['porcelain', 'warm', 'tan', 'deep']),
+  }),
+  z.object({
+    type: z.literal('measurements'),
+    values: z.record(z.string(), z.number().finite().positive().max(3000)),
+    confirm: z.boolean(),
+    source: z.enum(['customer', '3dlook']).optional(),
+  }),
+  // Kept as today until TASK-023 replaces it with POST /api/studio/check.
+  z.object({ type: z.literal('review'), mode: z.enum(['automated', 'human']) }),
+]);
+export type CommandV2 = z.infer<typeof commandSchemaV2>;
+export const commandEnvelopeV2 = z.object({
+  actionId: z.uuid(),
+  expectedRevision: z.number().int().nonnegative(),
+  command: commandSchemaV2,
+});
+
 export class DomainError extends Error {
   constructor(
     public code: string,
