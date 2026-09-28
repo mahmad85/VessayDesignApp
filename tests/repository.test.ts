@@ -1,12 +1,7 @@
-import { beforeAll, describe, it, expect } from 'vitest';
-import { mkdtemp } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import path from 'node:path';
+import { describe, it, expect } from 'vitest';
 import { getDraft, mutateDraft, claimGuest, enforceLimit } from '../src/db/repository';
-beforeAll(async () => {
-  process.env.VESSY_DEV_DATABASE_PATH = await mkdtemp(path.join(tmpdir(), 'vessy-test-'));
-  delete process.env.DATABASE_URL;
-});
+import { setupTestDatabase } from './helpers/db';
+setupTestDatabase();
 describe('durable owned drafts', () => {
   it('isolates owners and returns persisted state on reload', async () => {
     const a = await getDraft('test:a'),

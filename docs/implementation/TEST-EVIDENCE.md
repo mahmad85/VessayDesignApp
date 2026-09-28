@@ -119,3 +119,25 @@ Environment: Linux cloud container, Node 22.22.2, bundled Chromium with SwiftSha
 Visually inspected 3D renders: default suit front/side/back and close-up; double-breasted 6-button; Mandarin; peak/wide and shawl/slim lapels; relaxed fit with vest; blazer with neutral trousers front and side; dress shirt; measurement mode (unchanged); the 390×844 phone preview; and the "shown in the 2D drawing" hint for lining. Inspection led to four corrections before the final run: straight tapered trousers, a longer jacket hem, waistband clearance under the jacket (visible only on the blazer) and a straight back drape over the seat.
 
 Not established: real mid-range phone frame rate or generation time, tailor review of shapes, cloth folds, or screen-reader certification.
+
+## WP-00a — Baseline verification on `master`, 28 September 2026
+
+Environment: Windows 11, Node 22.17.1, npm 11.6.2, Playwright 1.63.0 with its bundled Chromium (software WebGL). Commit `20741c2` (unchanged `master`), run on branch `feature/phase0-m1-catalog-foundation` before any code change. Playwright started its own development server with the synthetic configuration in `playwright.config.ts`.
+
+| Executed check | Result |
+| --- | --- |
+| `npm run check` (typecheck, lint, Vitest, production build) | Passed. Vitest: 29 tests across 4 files |
+| `npm run test:e2e` | 9 of 9 passed in 1.5 min. The logged “Could not load /models/human-reference-v1.glb” error comes from the deliberate asset-failure scenario, which passed |
+| `npm run format:check` | **Failed: 42 files reported.** 26 of them differ only by line endings (this checkout uses `core.autocrlf=true`, so files are CRLF on disk while Prettier expects LF). The other 16 have genuine formatting drift already committed on `master`: `src/app/api/measurements/saia/[captureToken]/route.ts`, `src/app/api/scan-service/{checkout,policy,webhook}/route.ts`, `src/components/{measurement-panel,saia-measurement-widget}.tsx`, `src/db/{saia-repository,schema}.ts`, `src/integrations/3dlook.ts`, `src/lib/{http,saia-draft,scan-service-policy}.ts`, `tests/e2e/studio.spec.ts`, `assets/human-source/LICENSE.md`, `public/models/LICENSE-CC0.md` and `public/models/human-reference-v1.manifest.json` |
+
+The e2e run rewrites the committed screenshots under `artifacts/`; they were restored from Git after the baseline run so the existing evidence stays unchanged. Unrelated formatting drift was not reformatted. Files changed by later packages are formatted as they are touched (`npx prettier --check --end-of-line auto <files>`).
+
+Shared test helpers added in WP-00a (synthetic data only):
+
+| Helper | Purpose | Smoke test |
+| --- | --- | --- |
+| `tests/helpers/db.ts` | `setupTestDatabase()`: a migrated PGlite database in a new temporary directory per test file | `tests/helpers.test.ts`; now also used by `tests/repository.test.ts` |
+| `tests/helpers/http.ts` | `apiRequest()`: a `NextRequest` with an `Origin` header, cookies and a JSON body, for calling route handlers directly; `cookiesFrom()` | Calls `GET`/`POST /api/studio`, including the 403 `invalid_origin` path |
+| `tests/helpers/users.ts` | `createSyntheticUser()`: signs up through Better Auth, verifies the email in the test database and returns a session cookie | The session resolves to the user in `GET /api/studio`; an unverified variant stays unverified |
+
+After WP-00a: Vitest 33 tests across 5 files passed; typecheck and lint passed; Prettier passed on the new and changed test files.
