@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { Product } from '../catalog/catalog';
+import { codeSchema } from '../catalog/snapshot';
 export const designPatch = z
   .object({
     product: z.enum(['suit', 'shirt', 'blazer']).optional(),
@@ -99,6 +100,64 @@ export const commandEnvelope = z.object({
   expectedRevision: z.number().int().nonnegative(),
   command: commandSchema,
 });
+
+// Draft v2 garments (ADMIN-BACKEND.md §7.1, CRT-001). A garment pins the
+// catalog release it was configured against; every code refers to that release.
+
+export type GarmentConfirmation = 'product' | 'material' | 'preferences' | 'details';
+export type Garment = {
+  /** uuid; for an upgraded v1 draft it equals the draft id (deterministic). */
+  id: string;
+  productCode: string;
+  templateCode: string | null;
+  catalogVersion: number;
+  materialCode: string;
+  /** Component codes, required ones included. */
+  includedComponents: string[];
+  /** Attribute code → value code, or the text of a text option. */
+  selections: Record<string, string>;
+  preferences: { occasion: string | null; climate: string | null };
+  confirmed: GarmentConfirmation[];
+  /** 1–5 identical copies for the same measurement profile (CRT-002). */
+  quantity: number;
+};
+export const garmentPatch = z
+  .object({
+    productCode: codeSchema.optional(),
+    materialCode: codeSchema.optional(),
+    preferences: z
+      .object({
+        occasion: codeSchema.nullable().optional(),
+        climate: codeSchema.nullable().optional(),
+      })
+      .strict()
+      .optional(),
+    components: z
+      .record(codeSchema, z.boolean())
+      .refine((value) => Object.keys(value).length <= 10)
+      .optional(),
+    selections: z
+      .record(z.string().min(1).max(180), z.string().max(180))
+      .refine((value) => Object.keys(value).length <= 100)
+      .optional(),
+  })
+  .strict();
+export type GarmentPatch = z.infer<typeof garmentPatch>;
+/** A change the customer must accept: removed or replaced choices (CATALOG-ADMIN §5.3, §7.8). */
+export type Impact = {
+  garmentId: string;
+  kind:
+    | 'selection_removed'
+    | 'selection_replaced'
+    | 'component_removed'
+    | 'material_unavailable'
+    | 'product_unavailable';
+  attributeCode?: string;
+  from?: string;
+  to?: string;
+  message: string;
+};
+
 export class DomainError extends Error {
   constructor(
     public code: string,
