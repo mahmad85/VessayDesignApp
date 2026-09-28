@@ -15,12 +15,14 @@ For every screen, implement idle, loading, success, empty, recoverable error, un
 | S-05 Capture handoff | Secure link/QR or verified embedded provider flow; return path | Waiting, launched, abandoned, expired, provider unavailable. No assumed provider webcam UI or unsupported photo upload |
 | S-06 Processing | Status text and saved-design reassurance | Processing, completed, failed, taking longer, retry/review alternatives. Can leave and resume; no fake percentage |
 | S-07 Measurement review | Relevant input fields, source/status, units, body model, Save/confirm measurements | Field selection highlights body path. Validation, dirty changes, missing metric, unknown quality, retake, provider-model unavailable |
-| S-08 Order review | Included garments, exact selections, measurement revision, current quote, review mode and findings | Checking, correction required, expert required, human pending, approved, stale, provider failure; no checkout for unresolved blockers |
+| S-08 Order review | Included garments, exact selections, measurement revision, current quote, automated check and findings, design and measurement sign-off, optional tailor-review request | Checking, correction required, passed with advice, stale after edit, AI advisory unavailable; no order for unresolved blockers, a stale check or missing sign-off (D-020) |
 | S-09 Order/payment result | Reference, paid or review-pending status, specification, next action | Separate review submission from verified payment. Pending/unknown payment must reconcile before retry; no duplicate charge |
 | S-10 Admin catalog | Schema/fabric/options/asset mappings and draft/publish state | Validation errors, unsupported combination, asset missing, published version retained |
-| S-11 Tailor review | Review snapshot, measurement sources, findings, SLA due time, reviewer actions | Human pending, awaiting customer, approved/declined, overdue; decisions tied to exact revision |
+| S-11 Tailor review | Paid order snapshot, customer sign-off, measurement sources, check advice, SLA due time, reviewer actions | Pending, in review, awaiting customer, completed, overdue; decisions (no changes or proposed measurement changes) tied to the exact snapshot version; runs after payment and before production (D-020) |
 | S-12 Checkout | Current approved snapshot, total/currency, delivery terms, explicit payment action | Revalidate review/quote/stock, pending verification, failed, cancelled, succeeded; hosted/tokenized payment UI |
-| S-13 Human review tracking | Received time, requested 24-hour expectation, case status, secure messages and payment-ready action | Awaiting reviewer/customer, overdue, updated revision, approved; no automatic charge |
+| S-13 Tailor review tracking | Payment time, requested 24-hour expectation, case status, the tailor’s message and proposed values, and the customer’s accept/keep decision | Pending, awaiting your answer, overdue, completed; production starts only after completion; no automatic completion (D-020) |
+
+S-10 and S-11 are expanded into the admin screens ADM-01 to ADM-19 in [ADMIN-SCREENS.md](ADMIN-SCREENS.md). That file also specifies the D-019 changes to S-01 (look gallery), S-02 and S-03 (cart and prices), S-08 (submission), S-09 and S-13 (customer orders) and S-12 (Stripe checkout).
 
 ## Design details
 
@@ -48,6 +50,6 @@ UX-009: Review MUST label styling-only garments as Not included. The specificati
 
 UX-010: Each review section MUST link to its corresponding editor. A change affecting order meaning invalidates the previous confirmation and, where relevant, quote. Returning to review shows what changed.
 
-UX-011: Offer automated order checks and optional human review before checkout. Display findings and a correction path, then an explicit Continue to payment action only for a current eligible revision. Human review displays the requested 24-hour expectation with the agreed delay/awaiting-information terms. Payment and production messages must reflect verified states. [REVIEW-PAYMENTS.md](../domain/REVIEW-PAYMENTS.md) owns the full policy and copy.
+UX-011 (v0.3, D-020): Run the automated order check. Display blocking findings with a correction path, and advice without blocking. Require the customer’s explicit sign-off on design and measurements, and offer an optional tailor review that happens after payment and before production. Then provide an explicit **Place order and pay** action only for a current, checked and signed-off revision. Tailor review displays the requested 24-hour expectation from payment, with the agreed delay and awaiting-customer terms, and lets the customer accept a proposed change or keep their own values. Payment and production messages must reflect verified states. [REVIEW-PAYMENTS.md](../domain/REVIEW-PAYMENTS.md) owns the full policy and copy.
 
 UX-012: Staff screens MUST use least-privilege roles and distinguish a historical order snapshot from editable catalog/current customer data. Notes and clarifications must be attributable and dated.

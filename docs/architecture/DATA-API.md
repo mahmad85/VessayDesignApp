@@ -37,9 +37,10 @@ Foreign keys, ownership checks and unique constraints enforce relationships. Ord
 | SaveMeasurementEdits | Source revision, expected active revision, validated values, action ID | New measurement revision and confirmation state |
 | ConfirmMeasurements | Exact revision and required coverage | Approved-for-customer-review status; not automatically tailor verified |
 | GetReview | Draft/current revision | Included garments, resolved choices, measurement revision, commercial and completeness state |
-| SubmitForReview | Expected draft/measurement/quote revision, selected review mode, action ID | Review snapshot/reference, findings or pending human case |
-| ResolveReviewFinding | Review/revision, issue ID, explicit accepted correction or clarification | Revised inputs, review invalidation/recheck, current eligibility |
-| CreateCheckout | Current approved review/snapshot, quote, customer acceptance, action ID | Server-created provider checkout reference or actionable rejection |
+| RunOrderCheck (v0.3, D-020) | Expected draft revision, action ID | Blocking and advice findings for that revision; AI advisory status |
+| SubmitOrder (v0.3, D-020; was SubmitForReview) | Expected draft revision, passed check ID, design and measurement sign-off, tailor-review request, accepted total, action ID | Order and immutable snapshot, ready for checkout |
+| RespondToTailorReview (v0.3, D-020; was ResolveReviewFinding) | Order, review case, accept changes or keep original, action ID | Amendment snapshot or unchanged snapshot; review completed |
+| CreateCheckout | Current signed-off snapshot, quote, customer acceptance, action ID | Server-created provider checkout reference or actionable rejection |
 | ReconcilePayment | Authorized provider event or server retrieval reference | Verified paid/pending/failed state after amount/currency/snapshot validation |
 
 Transport is proposed JSON HTTP endpoints with SSE for consultation streaming. Use explicit JSON schemas/Zod at boundaries. Do not expose privileged provider keys or accept ownership/price assertions from browser input.
@@ -49,6 +50,10 @@ Transport is proposed JSON HTTP endpoints with SSE for consultation streaming. U
 Use stable application error codes: validation_failed, forbidden, not_found, stale_revision, incomplete_configuration, unavailable_option, quote_expired, provider_unavailable, capture_expired, processing_failed and rate_limited. Return readable text plus relevant field/requirement IDs. Authentication expiry routes to recovery without exposing private data.
 
 Revision conflicts return current revision and safe reconciliation information. Retrying an action reuses its action ID; matching repeats return the same result, and conflicting payload reuse is rejected. Store idempotency records durably. Do not report success on an uncommitted or unknown result.
+
+## D-019 detailed contracts
+
+The catalog, quote, order, review, payment, supplier, role-grant, audit and notification entities above are now specified in detail. The tables and DDL are in [ADMIN-BACKEND.md](ADMIN-BACKEND.md), and the endpoints and error codes in [API-REFERENCE.md](API-REFERENCE.md). The command list gains the draft v2 commands (`add_garment`, `remove_garment`, `select_garment`, `set_quantity`, `rebase_catalog`, `appearance`) and the order commands (submit, resubmit, cancel, checkout). The error codes above remain valid: `unavailable_option`, `stale_revision` (implemented as `revision_conflict`), `quote_expired` and `rate_limited` keep their meaning.
 
 ## Schema and contract delivery gate
 

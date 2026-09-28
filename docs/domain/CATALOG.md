@@ -31,6 +31,10 @@ CAT-005: Server-side pricing MUST identify currency and version. Store money usi
 
 CAT-006: A compatibility change MUST identify affected options and require explicit acceptance where selected choices will be removed. Historical orders retain their original configuration snapshots even if current catalog records are discontinued.
 
+## Admin-driven catalog (D-019)
+
+The database-backed catalog, the product → part → option group → option → choice hierarchy, lookups, fabric metadata, rules, templates and versioned releases are specified in [CATALOG-ADMIN.md](CATALOG-ADMIN.md) (CAT-007 to CAT-018, TPL-001 to TPL-004). Pricing is specified in [PRICING.md](PRICING.md) (PRC-001 to PRC-007). CAT-001 to CAT-006 above remain in force.
+
 ## Initial catalog onboarding
 
 Obtain supplier records; normalize attributes; review terminology with tailor; author compatibility rules; prepare visual assets; enter a small curated catalog; test representative complete combinations and rejected combinations; then publish a version. Reference-sheet compositions and brand/mill names require supplier verification and usage rights.

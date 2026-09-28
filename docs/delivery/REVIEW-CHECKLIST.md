@@ -6,7 +6,7 @@ Status: review aid, not completed approvals. Baseline v0.2 remains DRAFT.
 
 - [x] User confirmed two-piece suits, shirts and blazers; menswear first.
 - [ ] Tailor confirms exact supported pattern blocks/body coverage.
-- [ ] Approve automated review/correction/payment policy and optional 24-hour human-review operation.
+- [ ] Approve the sign-off wording (Q-032) and the optional 24-hour post-payment tailor-review operation (Q-018). The check-then-pay policy itself is decided by D-020.
 - [ ] Choose payment provider and approve quote, reservation, refund and notification policies.
 - [ ] Resolve Node/FastAPI and Better Auth/Clerk decisions before their implementation.
 - [ ] Identify brand, initial market, currency and language.

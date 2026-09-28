@@ -30,7 +30,7 @@ No loading spinner is an indefinite outcome: each async feature needs a status m
 
 ## Persistent chrome
 
-Top: brand placeholder, draft title, save indicator, step navigation. On design: accepted-choice summary above chat, collapsed by group if lengthy. Primary action: Continue to measurements / Review order / Resolve issues / Continue to payment or Request human review, according to the current state. The customer-facing final step is Review & pay. Secondary navigation must preserve completed inputs.
+Top: brand placeholder, draft title, save indicator, step navigation. On design: accepted-choice summary above chat, collapsed by group if lengthy. Primary action: Continue to measurements / Review order / Check my order / Resolve issues / Place order and pay (with an optional post-payment tailor review, D-020), according to the current state. The customer-facing final step is Review & pay. Secondary navigation must preserve completed inputs.
 
 Use readable labels: Fabric, Shape, Details, Personalize. Explain lapel, vent, cuff, and lining in context. Color swatches require names and texture information. Currency and units are explicit. Brand, currency and final product wording depend on Q-004.
 

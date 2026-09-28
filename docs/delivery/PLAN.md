@@ -13,7 +13,7 @@ Status: implementation authorized by D-012. The local foundation and reference c
 | G4 Foundation slice | Authorized repo, runtime, persistence, identity, deployment, observability | Published staging, restart/restore/ownership checks |
 | G5 Design slice | Curated real catalog, shared configuration engine, direct controls, 3D viewer, then AI consultation | AC-02 to AC-08, AC-14, AC-19, AC-23 as applicable |
 | G6 Measurement slice | 3DLOOK capture/resume, normalization, editable review, provenance/model | AC-09 to AC-13, AC-20, AC-24 with live-provider evidence |
-| G7 Review/checkout/operations slice | Automated findings, optional human review/SLA, hosted checkout, payment reconciliation, export, amendments and notifications | AC-15 to AC-18 plus AC-25 to AC-33 as relevant; verified payment provider and reviewed policies |
+| G7 Review/checkout/operations slice | Automated check and customer sign-off, hosted checkout, optional post-payment tailor review/SLA (D-020), payment reconciliation, export, amendments and notifications | AC-15 to AC-18 plus AC-25 to AC-33 as relevant; verified payment provider and reviewed policies |
 | G8 Pilot/release | Representative user testing, tailor validation, operational rehearsal | All release-critical criteria verified, authorized production scope |
 
 G1 and G2 documentation work may progress together. G4 may start only after explicit implementation authorization and its relevant G3 baseline is accepted. Unresolved provider details block the dependent integration slice, not all independent approved work. Every stage extends the same application and domain contracts.

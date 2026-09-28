@@ -46,4 +46,4 @@ These references establish platform capabilities. They do not certify this appli
 
 ## Review and checkout extension
 
-Add a Review service within pricing/orders, with versioned findings and deterministic eligibility. Payment and notification adapters are Phase 1 boundaries. Review approval, paid status and fulfillment release are independent. See [REVIEW-PAYMENTS.md](../domain/REVIEW-PAYMENTS.md). See [BACKEND-AUTH-DECISION.md](BACKEND-AUTH-DECISION.md) for the requested FastAPI/authentication comparison; Node remains the recommendation, not a user-ratified irreversible choice.
+Add a Review service within pricing/orders, with versioned findings and deterministic eligibility. Payment and notification adapters are Phase 1 boundaries. The automated check, the customer’s sign-off, paid status, the optional post-payment tailor review and fulfillment release are independent facts (D-020). See [REVIEW-PAYMENTS.md](../domain/REVIEW-PAYMENTS.md). See [BACKEND-AUTH-DECISION.md](BACKEND-AUTH-DECISION.md) for the requested FastAPI/authentication comparison; Node remains the recommendation, not a user-ratified irreversible choice.

@@ -26,7 +26,7 @@ ORD-001: Submission MUST create an immutable snapshot containing garment compone
 
 ORD-002: The same submission action MUST produce at most one order request. Retry after a timeout returns the original result. Refreshing a success page must not create an order.
 
-ORD-003: Review, payment and fulfillment MUST have separate state machines. The current desired flow is automated checks/corrections then explicit payment, or optional human review then payment after approval. Unresolved serious findings require human review. See [REVIEW-PAYMENTS.md](REVIEW-PAYMENTS.md) for lifecycle, SLA, payment eligibility and amendment requirements.
+ORD-003 (v0.3, D-020): Automated check, tailor review, payment and fulfillment MUST have separate state machines. The flow is: automated check and corrections, then the customer’s explicit sign-off on design and measurements, then payment, then an optional tailor review (requested at submission), then release to production. Blocking findings must be corrected before submission. The customer owns their measurements, so a tailor proposal is accepted or declined by the customer. See [REVIEW-PAYMENTS.md](REVIEW-PAYMENTS.md) for lifecycle, SLA, payment eligibility and amendment requirements.
 
 ORD-004: A post-submission change MUST create a revision/amendment for review. It must not rewrite an already accepted production specification. Capture who changed what and when.
 

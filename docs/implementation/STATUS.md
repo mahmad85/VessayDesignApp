@@ -65,6 +65,10 @@ The 2D view is an interactive SVG technical drawing derived from saved choices. 
 [TASK-014](../delivery/TASK-014.md) (D-016) replaces the hand-shaped 3D garment tubes and flat pieces with garments generated from cross-sections of the CC0 reference body. Sleeves now join the shoulders, cloth drapes over hollows, and lapels, collars and pockets have thickness. Studio lighting and a woven, sheened fabric material replace the flat look. Only the main choices are drawn in 3D; the preview points to 2D for linings, monogram, threads and accessories. It remains an illustrative visualizer with no pattern drafting, cloth simulation or tailor validation, and real mid-range phone performance is still unmeasured.
 
 
+## Admin catalog, commerce and fulfilment — specified 2026-09-28, not implemented
+
+D-019 adds specifications for a database-driven catalog with an admin panel, lookups, expert fabric metadata, rules, versioned releases, templates, band-based additive pricing, a multi-garment cart, orders with review cases, Stripe Checkout (test mode), supplier management and fulfilment tracking, plus staff roles with MFA. No code has changed yet; the capability table above is still accurate. Delivery is TASK-015 to TASK-027 ([next tasks](NEXT-TASKS.md)).
+
 ## 2D male figure and measurement dummy — 2026-09-27
 
 The 2D drawing uses a male figure: square jaw, short tapered haircut (faded at the nape from behind), a short strong neck, broad square shoulders, a V-shaped jacket, arms standing clear of the waist, larger hands and men's dress shoes. The drawing keeps a strip below it for the view controls so the feet are never covered. The measurement step shows the 3D body as a plain white shop dummy with no skin tone, hair or eyes; the design step is unchanged.

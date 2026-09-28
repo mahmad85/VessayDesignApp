@@ -139,3 +139,36 @@ Source rights and no-recurring-license requirement: D-013; CC0 attribution and o
 | CAT-006, UX-016, UX-017 | Server validates every submitted selection; choices use existing revisioned commands, persist after reload and mapped legacy controls remain synchronized | `human-preview.spec.ts`; Style/Accents screenshots and reload assertion | Authoritative dependency/compatibility rules and historical production catalog snapshots |
 
 Authorization and boundary: D-014; unresolved rights and production data gates: Q-011, Q-014 and Q-023. Full task scope and actual checks: [TASK-012](../delivery/TASK-012.md).
+
+## Admin catalog, commerce and fulfilment specification — D-019 (2026-09-28)
+
+This section adds 56 requirements (including ORD-012 and REV-009 from D-020) and 13 acceptance scenarios (AC-34 to AC-46). D-020 also revised REV-003 to REV-008, PAY-001, ORD-003, UX-011 and the scenarios AC-25 to AC-27 and AC-32 in their canonical files. The status **Specified** means the canonical contract and a ready task exist. Nothing below is implemented or verified yet. Each task records its actual evidence here when done.
+
+| Requirement | Canonical owner | Acceptance scenarios | Task | Status | Evidence |
+| --- | --- | --- | --- | --- | --- |
+| CAT-007 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-34, AC-43 | TASK-015, TASK-016, TASK-019 | Specified | Not started |
+| CAT-008 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-34 | TASK-015, TASK-019 | Specified | Not started |
+| CAT-009 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-34, AC-35 | TASK-015, TASK-020, TASK-027 | Specified | Not started |
+| CAT-010 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-07, AC-34 | TASK-016, TASK-019 | Specified | Not started |
+| CAT-011 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-34 | TASK-016, TASK-019 | Specified | Not started |
+| CAT-012 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-19, AC-34, AC-35 | TASK-015, TASK-021 | Specified | Not started |
+| CAT-013 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-07, AC-34 | TASK-016, TASK-021 | Specified | Not started |
+| CAT-014 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-43 | TASK-015, TASK-016, TASK-019 | Specified | Not started |
+| CAT-015 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-34 | TASK-015, TASK-019 | Specified | Not started |
+| CAT-016 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-45 | TASK-015, TASK-019, TASK-026 | Specified | Not started |
+| CAT-017 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-39 | TASK-015, TASK-020, TASK-023 | Specified | Not started |
+| CAT-018 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-39 | TASK-016, TASK-020, TASK-023 | Specified | Not started |
+| TPL-001 – TPL-004 | [CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) | AC-37 | TASK-021 | Specified | Not started |
+| PRC-001 – PRC-005, PRC-007 | [PRICING.md](../domain/PRICING.md) | AC-36 | TASK-017, TASK-020 | Specified | Not started |
+| PRC-006 | [PRICING.md](../domain/PRICING.md) | AC-39 | TASK-023 | Specified | Not started |
+| CRT-001 – CRT-004 | [ORDERS-FULFILLMENT.md](../domain/ORDERS-FULFILLMENT.md) | AC-01, AC-38 | TASK-016, TASK-022 | Specified | Not started |
+| ORD-006 – ORD-012 | [ORDERS-FULFILLMENT.md](../domain/ORDERS-FULFILLMENT.md) | AC-15, AC-16, AC-17, AC-25, AC-26, AC-39, AC-46 | TASK-023 | Specified | Not started |
+| REV-009 (D-020) | [REVIEW-PAYMENTS.md](../domain/REVIEW-PAYMENTS.md) | AC-39 | TASK-023 | Specified | Not started |
+| PAY-007 – PAY-009 | [ORDERS-FULFILLMENT.md](../domain/ORDERS-FULFILLMENT.md) | AC-27, AC-28, AC-40 | TASK-024 | Specified | Not started |
+| FUL-001 – FUL-006 | [ORDERS-FULFILLMENT.md](../domain/ORDERS-FULFILLMENT.md) | AC-41 | TASK-025 | Specified | Not started |
+| SUP-001 – SUP-004 | [ORDERS-FULFILLMENT.md](../domain/ORDERS-FULFILLMENT.md) | AC-44 | TASK-020, TASK-025 | Specified | Not started |
+| NTF-001 – NTF-002 | [ORDERS-FULFILLMENT.md](../domain/ORDERS-FULFILLMENT.md) | AC-33 | TASK-023, TASK-024 | Specified | Not started |
+| ADM-001 – ADM-003 | [ADMIN-SCREENS.md](../ux/ADMIN-SCREENS.md) | AC-18, AC-31, AC-42 | TASK-018 | Specified | Not started |
+| ADM-004 – ADM-006 | [ADMIN-SCREENS.md](../ux/ADMIN-SCREENS.md) | AC-34, AC-36, AC-42 | TASK-019, TASK-020, TASK-021 | Specified | Not started |
+
+Existing requirements with new implementation paths: FR-011 (admin catalog and order review) → TASK-018 to TASK-025; CAT-004 → TASK-022; CAT-005 → TASK-017 and TASK-023; ORD-001 to ORD-005 → TASK-023 and TASK-025; REV-001 to REV-009 as revised by **D-020** (the automated check and the customer sign-off gate payment; an optional tailor review runs after payment and before release; staffing gated by Q-018) → TASK-023, with the release guard in TASK-025; PAY-001 to PAY-006 → TASK-024 (test mode); UX-012 → TASK-018 and TASK-025; S-10 and S-11 → ADM screens. Technical contracts: [ADMIN-BACKEND.md](../architecture/ADMIN-BACKEND.md) and [API-REFERENCE.md](../architecture/API-REFERENCE.md). Baseline description: [CURRENT-SYSTEM.md](../architecture/CURRENT-SYSTEM.md).
