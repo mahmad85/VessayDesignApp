@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { identity, json, failure, checkOrigin } from '@/lib/http';
+import { identity, json, failure, checkOrigin, requireSignedIn } from '@/lib/http';
 import { providerScanAuthorizationReadiness } from '@/lib/scan-service-policy';
 export const runtime = 'nodejs';
 // This branch intentionally stays unreachable until 3DLOOK supplies a
@@ -11,7 +11,7 @@ export const runtime = 'nodejs';
 export async function POST(request: NextRequest) {
   try {
     checkOrigin(request);
-    await identity(request);
+    requireSignedIn(await identity(request));
     const readiness = providerScanAuthorizationReadiness();
     return json(
       {

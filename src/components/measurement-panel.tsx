@@ -1,8 +1,9 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { Camera, ArrowUpRight, Check, Info, Save, ArrowRight } from 'lucide-react';
 import type { Draft, Command } from '@/modules/configuration/types';
-import { definitionsFor, displayValue, toMillimeters } from '@/modules/measurements/definitions';
+import { definitionsFor, requiredDefinitionsFor, displayValue, toMillimeters } from '@/modules/measurements/definitions';
 import type { SaiaPerson } from '@/integrations/3dlook';
 import { Button } from './ui/button';
 import { Dialog } from './ui/dialog';
@@ -10,6 +11,7 @@ import { SaiaMeasurementWidget } from './saia-measurement-widget';
 export function MeasurementPanel({
   draft,
   busy,
+  user,
   command,
   setHighlight,
   onContinue,
@@ -18,6 +20,7 @@ export function MeasurementPanel({
 }: {
   draft: Draft;
   busy: boolean;
+  user: { name: string; email: string } | null;
   command: (c: Command) => Promise<Draft | null>;
   setHighlight: (id: string) => void;
   onContinue: () => void;
@@ -30,8 +33,11 @@ export function MeasurementPanel({
     [notice, setNotice] = useState(''),
     [fieldErrors, setFieldErrors] = useState<Record<string, string>>({}),
     [active, setActive] = useState('chest'),
-    [fields, setFields] = useState<Record<string, string>>({});
+    [fields, setFields] = useState<Record<string, string>>({}),
+    [showAdvanced, setShowAdvanced] = useState(false);
   const defs = definitionsFor(draft.design.product);
+  const commonDefs = requiredDefinitionsFor(draft.design.product);
+  const advancedDefs = defs.filter((m) => !commonDefs.includes(m));
   const hasErrors = Object.keys(fieldErrors).length > 0;
   const dirty = hasErrors || JSON.stringify(values) !== JSON.stringify(draft.measurements.values);
   useEffect(() => {
@@ -40,7 +46,8 @@ export function MeasurementPanel({
   useEffect(() => {
     onPreview(values, unit);
   }, [values, unit, onPreview]);
-  const complete = defs.every((m) => values[m.id] > 0 && values[m.id] <= 3000);
+  const complete = commonDefs.every((m) => values[m.id] > 0 && values[m.id] <= 3000);
+  const hasAdvancedValues = advancedDefs.some((m) => values[m.id] > 0);
   const valuesRef = useRef(values);
   useEffect(() => {
     valuesRef.current = values;
@@ -65,7 +72,7 @@ export function MeasurementPanel({
       const d = await r.json();
       if (!r.ok) throw new Error(d.error?.message || 'save_failed');
       const mapped = (d.draft.measurements ?? {}) as Record<string, number>;
-      const allowed = new Set(defs.map((m) => m.id as string));
+      const allowed = new Set(definitionsFor(draft.design.product).map((m) => m.id as string));
       const merged = { ...valuesRef.current };
       let applied = 0;
       for (const [id, value] of Object.entries(mapped))
@@ -83,7 +90,7 @@ export function MeasurementPanel({
         setCapture(false);
       }
     },
-    [command, defs, onDirty],
+    [command, draft.design.product, onDirty],
   );
   async function save(confirm: boolean) {
     if (hasErrors) return;
@@ -126,6 +133,49 @@ export function MeasurementPanel({
   function fieldValue(id: string) {
     return fields[id] ?? displayValue(values[id], unit);
   }
+  function renderField(m: { id: string; label: string }) {
+    return (
+      <label className={`measurement-field ${active === m.id ? 'active' : ''}`} key={m.id}>
+        <span>
+          {m.label}
+          {values[m.id] > 0 && <Check size={13} />}
+        </span>
+        <div>
+          <input
+            aria-label={m.label}
+            aria-invalid={!!fieldErrors[m.id]}
+            aria-describedby={fieldErrors[m.id] ? `error-${m.id}` : 'measurement-guidance'}
+            type="text"
+            inputMode="decimal"
+            value={fieldValue(m.id)}
+            placeholder="—"
+            onFocus={() => {
+              setHighlight(m.id);
+              setActive(m.id);
+            }}
+            onChange={(e) => {
+              setFields((f) => ({ ...f, [m.id]: e.target.value }));
+              edit(m.id, e.target.value);
+            }}
+            onBlur={() => {
+              if (fieldErrors[m.id]) return;
+              setFields((f) => {
+                const next = { ...f };
+                delete next[m.id];
+                return next;
+              });
+            }}
+          />
+          <span>{unit}</span>
+        </div>
+        {fieldErrors[m.id] && (
+          <small id={`error-${m.id}`} className="field-error">
+            {fieldErrors[m.id]}
+          </small>
+        )}
+      </label>
+    );
+  }
   return (
     <section className="measurement-panel">
       <div className="eyebrow">
@@ -145,7 +195,11 @@ export function MeasurementPanel({
         </span>
         <span>
           <strong>Measure with 3DLOOK</strong>
-          <small>Camera-assisted capture · free, unverified until you confirm</small>
+          <small>
+            {user
+              ? 'Camera-assisted capture · free, unverified until you confirm'
+              : 'Camera-assisted capture · sign in to use 3DLOOK'}
+          </small>
         </span>
         <ArrowUpRight size={18} />
       </button>
@@ -173,49 +227,20 @@ export function MeasurementPanel({
           ))}
         </div>
       </div>
-      <div className="measurement-fields">
-        {defs.map((m) => (
-          <label className={`measurement-field ${active === m.id ? 'active' : ''}`} key={m.id}>
-            <span>
-              {m.label}
-              {values[m.id] > 0 && <Check size={13} />}
-            </span>
-            <div>
-              <input
-                aria-label={m.label}
-                aria-invalid={!!fieldErrors[m.id]}
-                aria-describedby={fieldErrors[m.id] ? `error-${m.id}` : 'measurement-guidance'}
-                type="text"
-                inputMode="decimal"
-                value={fieldValue(m.id)}
-                placeholder="—"
-                onFocus={() => {
-                  setHighlight(m.id);
-                  setActive(m.id);
-                }}
-                onChange={(e) => {
-                  setFields((f) => ({ ...f, [m.id]: e.target.value }));
-                  edit(m.id, e.target.value);
-                }}
-                onBlur={() => {
-                  if (fieldErrors[m.id]) return;
-                  setFields((f) => {
-                    const next = { ...f };
-                    delete next[m.id];
-                    return next;
-                  });
-                }}
-              />
-              <span>{unit}</span>
-            </div>
-            {fieldErrors[m.id] && (
-              <small id={`error-${m.id}`} className="field-error">
-                {fieldErrors[m.id]}
-              </small>
-            )}
-          </label>
-        ))}
-      </div>
+      <div className="measurement-fields">{commonDefs.map(renderField)}</div>
+      {(showAdvanced || hasAdvancedValues) && (
+        <div className="measurement-fields measurement-fields-advanced">{advancedDefs.map(renderField)}</div>
+      )}
+      <button
+        type="button"
+        className="measurement-advanced-toggle"
+        aria-expanded={showAdvanced || hasAdvancedValues}
+        onClick={() => setShowAdvanced((v) => !v)}
+      >
+        {showAdvanced || hasAdvancedValues
+          ? 'Hide additional-accuracy measurements'
+          : `Add more for accuracy (${advancedDefs.length})`}
+      </button>
       <div className="measurement-hint">
         <Info size={16} />
         <p id="measurement-guidance">
@@ -256,18 +281,42 @@ export function MeasurementPanel({
         open={capture}
         onOpenChange={setCapture}
         title="Your 3DLOOK measurement session"
-        description="A free, camera-assisted scan. Results are saved as unverified until you review and confirm them."
+        description={
+          user
+            ? 'A free, camera-assisted scan. Results are saved as unverified until you review and confirm them.'
+            : 'Sign in to save a 3DLOOK scan to your account.'
+        }
       >
-        {capture && (
-          <SaiaMeasurementWidget onCaptureStart={saiaCaptureStart} onMeasurementsReady={saiaMeasurementsReady} />
+        {user ? (
+          <>
+            {capture && (
+              <SaiaMeasurementWidget onCaptureStart={saiaCaptureStart} onMeasurementsReady={saiaMeasurementsReady} />
+            )}
+            <p>
+              We won’t use this to place an order. Review and confirm the mapped values below before
+              continuing — this does not verify measurement accuracy.
+            </p>
+          </>
+        ) : (
+          <p>
+            3DLOOK results are saved to your account, so we ask you to sign in first. You can keep
+            entering measurements manually without an account.
+          </p>
         )}
-        <p>
-          We won’t use this to place an order. Review and confirm the mapped values below before
-          continuing — this does not verify measurement accuracy.
-        </p>
-        <Button className="full-width" variant="secondary" onClick={() => setCapture(false)}>
-          Continue with manual entry
-        </Button>
+        {user ? (
+          <Button className="full-width" variant="secondary" onClick={() => setCapture(false)}>
+            Continue with manual entry
+          </Button>
+        ) : (
+          <div className="dialog-actions">
+            <Button variant="secondary" onClick={() => setCapture(false)}>
+              Continue with manual entry
+            </Button>
+            <Button asChild onClick={() => setCapture(false)}>
+              <Link href="/account">Sign in</Link>
+            </Button>
+          </div>
+        )}
       </Dialog>
     </section>
   );

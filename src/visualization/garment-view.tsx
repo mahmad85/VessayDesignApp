@@ -37,23 +37,27 @@ function Mannequin({
     [design.skinTone],
   );
   useEffect(() => () => skin.dispose(), [skin]);
-  const y =
-    highlight === 'neck'
-      ? 2.99
-      : highlight === 'chest'
-        ? 2.5
-        : highlight === 'waist'
-          ? 2.1
-          : highlight === 'hips'
-            ? 1.8
-            : 1.9;
+  // Circumference fields: rendered as a ring at [y, centerX, centerZ] with
+  // radii [rx, rz]. Torso rings are centered on the body; limb rings follow
+  // the same illustrative arm/leg centerlines the `path` fields below use.
+  const CIRCUMFERENCE: Record<string, [number, number, number, number, number]> = {
+    neck: [2.99, 0, 0.065, 0.14, 0.145],
+    chest: [2.5, 0, 0.065, 0.4, 0.255],
+    waist: [2.1, 0, 0.065, 0.32, 0.255],
+    hips: [1.8, 0, 0.065, 0.4, 0.255],
+    bicep: [2.55, 0.43, 0.176, 0.095, 0.1],
+    forearm: [2.0, 0.52, 0.16, 0.075, 0.08],
+    wrist: [1.75, 0.55, 0.15, 0.05, 0.055],
+    thigh: [1.35, 0.057, 0.19, 0.16, 0.17],
+    knee: [0.85, 0.095, 0.173, 0.11, 0.115],
+    calf: [0.5, 0.121, 0.161, 0.115, 0.12],
+    ankle: [0.15, 0.145, 0.15, 0.07, 0.075],
+  };
+  const circle = CIRCUMFERENCE[highlight ?? ''] ?? CIRCUMFERENCE.chest;
+  const [y, cx, cz, rx, rz] = circle;
   const ellipse = Array.from({ length: 65 }, (_, i) => {
     const a = (i / 64) * Math.PI * 2;
-    return [
-      Math.cos(a) * (highlight === 'neck' ? 0.14 : highlight === 'waist' ? 0.32 : 0.4),
-      y,
-      0.065 + Math.sin(a) * (highlight === 'neck' ? 0.145 : 0.255),
-    ] as [number, number, number];
+    return [cx + Math.cos(a) * rx, y, cz + Math.sin(a) * rz] as [number, number, number];
   });
   const path: Record<string, [number, number, number][]> = {
     height: [
@@ -73,6 +77,32 @@ function Mannequin({
       [0.035, 1.65, 0.2],
       [0.145, 0.18, 0.15],
     ],
+    jacketLength: [
+      [0.41, 2.85, 0.2],
+      [0.41, 1.55, 0.2],
+    ],
+    frontRise: [
+      [0, 2.1, 0.32],
+      [0.035, 1.65, 0.2],
+    ],
+    backRise: [
+      [0, 2.1, -0.19],
+      [0.035, 1.65, 0.2],
+    ],
+  };
+  const LABELS: Record<string, string> = {
+    hips: 'Seat',
+    inseam: 'Inside leg',
+    jacketLength: 'Jacket length',
+    frontRise: 'Front rise',
+    backRise: 'Back rise',
+  };
+  const LABEL_POSITION: Record<string, [number, number, number]> = {
+    height: [-0.85, 3.38, 0],
+    inseam: [0.2, 0.5, 0.3],
+    jacketLength: [0.55, 2.2, 0.2],
+    frontRise: [0.15, 1.9, 0.35],
+    backRise: [0.15, 1.9, -0.05],
   };
   return (
     <group>
@@ -82,22 +112,9 @@ function Mannequin({
       {measure && highlight && (
         <>
           <Line points={path[highlight] || ellipse} color="#937340" lineWidth={2.5} />
-          <Html
-            position={
-              highlight === 'height'
-                ? [-0.85, 3.38, 0]
-                : highlight === 'inseam'
-                  ? [0.2, 0.5, 0.3]
-                  : [0.51, y, 0.12]
-            }
-            center
-          >
+          <Html position={LABEL_POSITION[highlight] ?? [cx + rx + 0.1, y, cz]} center>
             <span className="model-label">
-              {highlight === 'hips'
-                ? 'Seat'
-                : highlight === 'inseam'
-                  ? 'Inside leg'
-                  : highlight.charAt(0).toUpperCase() + highlight.slice(1)}
+              {LABELS[highlight] ?? highlight.charAt(0).toUpperCase() + highlight.slice(1)}
               {measurementValue ? ` · ${measurementValue}` : ''}
             </span>
           </Html>

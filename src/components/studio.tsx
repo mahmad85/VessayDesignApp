@@ -336,6 +336,7 @@ export default function Studio() {
                 <MeasurementPanel
                   draft={draft}
                   busy={busy}
+                  user={user}
                   command={studio.command}
                   setHighlight={setHighlight}
                   onContinue={() => {

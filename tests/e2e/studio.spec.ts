@@ -127,7 +127,7 @@ test('mobile layout and unconfigured 3DLOOK capture remain usable', async ({ pag
   await expect(page.locator('canvas')).toBeVisible();
   await page.getByRole('button', { name: '02 Measurements' }).click();
   await page.getByRole('button', { name: /Measure with 3DLOOK/ }).click();
-  await expect(page.getByRole('dialog')).toContainText('3DLOOK is not configured for this environment.');
+  await expect(page.getByRole('dialog')).toContainText('Sign in to save a 3DLOOK scan to your account.');
   await page.getByRole('button', { name: 'Continue with manual entry' }).click();
   await page.getByRole('textbox', { name: 'Height', exact: true }).fill('180');
   await page.getByRole('button', { name: '03 Review' }).click();
@@ -152,20 +152,17 @@ test('the API prevents cross-origin mutation and guest data access', async ({ br
     headers: { Origin: 'http://localhost:3000' },
   });
   expect(checkout.status()).toBe(409);
+  // 3DLOOK capture and the scan-service checkout both require a signed-in
+  // owner — a guest cookie is not enough.
   const saiaSession = await a.request.post('/api/measurements/saia/session', {
     headers: { Origin: 'http://localhost:3000' },
     data: { targetUnit: 'cm' },
   });
-  expect(saiaSession.status()).toBe(201);
-  const saiaPaidSession = await a.request.post('/api/measurements/saia/session', {
-    headers: { Origin: 'http://localhost:3000' },
-    data: { targetUnit: 'cm', mode: 'paid' },
-  });
-  expect(saiaPaidSession.status()).toBe(503);
+  expect(saiaSession.status()).toBe(401);
   const scanCheckout = await a.request.post('/api/scan-service/checkout', {
     headers: { Origin: 'http://localhost:3000' },
   });
-  expect(scanCheckout.status()).toBe(503);
+  expect(scanCheckout.status()).toBe(401);
   await a.close();
   await b.close();
 });
@@ -204,6 +201,18 @@ test('verification, sign-in, guest claim and sign-out use real database sessions
   const after = await (await page.request.get('/api/studio')).json();
   expect(after.user.email).toBe(email);
   expect(after.draft.id).toBe(before.draft.id);
+  // Once signed in, the public 3DLOOK capture path opens; the paid path
+  // still fails closed on the unconfigured provider authorization.
+  const saiaSession = await page.request.post('/api/measurements/saia/session', {
+    headers: { Origin: 'http://localhost:3000' },
+    data: { targetUnit: 'cm' },
+  });
+  expect(saiaSession.status()).toBe(201);
+  const saiaPaidSession = await page.request.post('/api/measurements/saia/session', {
+    headers: { Origin: 'http://localhost:3000' },
+    data: { targetUnit: 'cm', mode: 'paid' },
+  });
+  expect(saiaPaidSession.status()).toBe(503);
   await page.getByRole('link', { name: 'Your account', exact: true }).click();
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
   await expect(page.getByRole('heading', { name: /Good style/ })).toBeVisible();

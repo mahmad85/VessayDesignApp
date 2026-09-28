@@ -48,6 +48,18 @@ export function mapSaiaPersonToMillimeters(person: SaiaPerson): Record<string, n
     sleeve: numeric(front, 'sleeve_length'),
     hips: numeric(volume, 'low_hips_girth', 'low_hips', 'hips'),
     inseam: numeric(front, 'inseam') ?? numeric(side, 'inseam'),
+    // Additional-accuracy fields (definitions.ts `advanced`): mapped when
+    // present, never required to confirm measurements.
+    bicep: numeric(volume, 'bicep_girth', 'bicep'),
+    forearm: numeric(volume, 'forearm_girth', 'forearm'),
+    wrist: numeric(volume, 'wrist_girth', 'wrist'),
+    thigh: numeric(volume, 'thigh_girth', 'thigh'),
+    knee: numeric(volume, 'knee_girth', 'knee'),
+    calf: numeric(volume, 'calf_girth', 'calf'),
+    ankle: numeric(volume, 'ankle_girth', 'ankle'),
+    jacketLength: numeric(front, 'jacket_length'),
+    frontRise: numeric(front, 'front_crotch_length'),
+    backRise: numeric(front, 'back_crotch_length'),
   };
   return Object.fromEntries(
     Object.entries(cm)

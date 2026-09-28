@@ -124,8 +124,8 @@ export function ReviewPanel({
           ))}
         </div>
         <p className="source-tag">
-          Customer entered · {draft.measurements.confirmed ? 'confirmed by you' : 'not confirmed'} ·
-          unverified
+          {draft.measurements.source === '3dlook' ? '3DLOOK assisted' : 'Customer entered'} ·{' '}
+          {draft.measurements.confirmed ? 'confirmed by you' : 'not confirmed'} · unverified
         </p>
       </div>
       <div className="review-section">

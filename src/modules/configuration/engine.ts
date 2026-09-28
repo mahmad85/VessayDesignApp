@@ -1,5 +1,5 @@
 import { availableFabrics, fabricFor } from '../catalog/catalog';
-import { definitionsFor } from '../measurements/definitions';
+import { definitionsFor, requiredDefinitionsFor } from '../measurements/definitions';
 import { reviewDraft } from '../review/review';
 import { DomainError, type Draft, type Command } from './types';
 import {
@@ -112,12 +112,13 @@ export function applyCommand(draft: Draft, command: Command): Draft {
     next.review = null;
   } else if (command.type === 'measurements') {
     const allowed = definitionsFor(next.design.product).map((m) => m.id as string);
+    const required = requiredDefinitionsFor(next.design.product).map((m) => m.id as string);
     if (Object.keys(command.values).some((k) => !allowed.includes(k)))
       throw new DomainError(
         'unknown_measurement',
         'A measurement field is not valid for this garment.',
       );
-    if (command.confirm && allowed.some((k) => !command.values[k]))
+    if (command.confirm && required.some((k) => !command.values[k]))
       throw new DomainError(
         'missing_measurements',
         'Enter all required measurements before confirming.',

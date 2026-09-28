@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { identity, json, failure, body, checkOrigin } from '@/lib/http';
+import { identity, json, failure, body, checkOrigin, requireSignedIn } from '@/lib/http';
 import { enforceLimit } from '@/db/repository';
 import { createPublicSaiaSession, createPaidSaiaSession } from '@/db/saia-repository';
 import { providerScanAuthorizationReadiness } from '@/lib/scan-service-policy';
@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     const input = (await body(request)) as { targetUnit?: unknown; mode?: unknown };
     if (input.targetUnit !== 'cm' && input.targetUnit !== 'in')
       throw new DomainError('invalid_input', 'A supported target unit is required.', 400);
-    const who = await identity(request);
+    const who = requireSignedIn(await identity(request));
     await enforceLimit(who.owner + ':saia-session', 20);
     const mode = input.mode === 'paid' ? 'paid' : 'public';
     if (mode === 'paid') {

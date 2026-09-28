@@ -56,9 +56,95 @@ export const MEASUREMENTS = [
     region: 'leg',
     products: ['suit'],
   },
+  // Additional-accuracy fields: less commonly asked for by tailors than the
+  // set above, but supported when a 3DLOOK scan (or the customer) supplies
+  // them. Never required to confirm measurements — see `advanced` below.
+  {
+    id: 'bicep',
+    label: 'Bicep',
+    hint: 'Around the fullest part of the upper arm, with the arm relaxed at your side.',
+    region: 'sleeve',
+    products: ['suit', 'shirt', 'blazer'],
+    advanced: true,
+  },
+  {
+    id: 'forearm',
+    label: 'Forearm',
+    hint: 'Around the fullest part of the forearm, just below the elbow.',
+    region: 'sleeve',
+    products: ['shirt'],
+    advanced: true,
+  },
+  {
+    id: 'wrist',
+    label: 'Wrist',
+    hint: 'Around the wrist bone, where a cuff would sit.',
+    region: 'sleeve',
+    products: ['shirt'],
+    advanced: true,
+  },
+  {
+    id: 'thigh',
+    label: 'Thigh',
+    hint: 'Around the fullest part of the upper thigh.',
+    region: 'leg',
+    products: ['suit'],
+    advanced: true,
+  },
+  {
+    id: 'knee',
+    label: 'Knee',
+    hint: 'Around the knee, with the leg straight.',
+    region: 'leg',
+    products: ['suit'],
+    advanced: true,
+  },
+  {
+    id: 'calf',
+    label: 'Calf',
+    hint: 'Around the fullest part of the calf.',
+    region: 'leg',
+    products: ['suit'],
+    advanced: true,
+  },
+  {
+    id: 'ankle',
+    label: 'Ankle',
+    hint: 'Around the ankle, just above the anklebone.',
+    region: 'leg',
+    products: ['suit'],
+    advanced: true,
+  },
+  {
+    id: 'jacketLength',
+    label: 'Jacket length',
+    hint: 'From the base of the collar at the back of the neck to the desired jacket hem.',
+    region: 'chest',
+    products: ['suit', 'blazer'],
+    advanced: true,
+  },
+  {
+    id: 'frontRise',
+    label: 'Front rise',
+    hint: 'From the top of the waistband at the front to the crotch seam.',
+    region: 'waist',
+    products: ['suit'],
+    advanced: true,
+  },
+  {
+    id: 'backRise',
+    label: 'Back rise',
+    hint: 'From the top of the waistband at the back to the crotch seam.',
+    region: 'waist',
+    products: ['suit'],
+    advanced: true,
+  },
 ] as const;
 export function definitionsFor(product: Product) {
   return MEASUREMENTS.filter((m) => (m.products as readonly string[]).includes(product));
+}
+export function requiredDefinitionsFor(product: Product) {
+  return definitionsFor(product).filter((m) => !('advanced' in m && m.advanced));
 }
 export function displayValue(mm: number | undefined, unit: 'cm' | 'in') {
   return mm === undefined ? '' : String(Math.round((mm / (unit === 'cm' ? 10 : 25.4)) * 10) / 10);

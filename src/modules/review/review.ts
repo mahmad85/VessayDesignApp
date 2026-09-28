@@ -1,5 +1,5 @@
 import type { Draft, Finding, Review } from '../configuration/types';
-import { definitionsFor } from '../measurements/definitions';
+import { requiredDefinitionsFor } from '../measurements/definitions';
 export function missingDesign(d: Draft['design']) {
   return ['product', 'fabricId', 'occasion', 'climate', 'fit', 'details'].filter(
     (k) => !d.confirmed.includes(k),
@@ -16,7 +16,7 @@ export function reviewDraft(draft: Draft, mode: 'automated' | 'human'): Review {
       description: 'Review your fabric, occasion, weather, fit and finishing details.',
       target: 'design',
     });
-  const needed = definitionsFor(draft.design.product).filter(
+  const needed = requiredDefinitionsFor(draft.design.product).filter(
     (m) => !draft.measurements.values[m.id],
   );
   if (needed.length)

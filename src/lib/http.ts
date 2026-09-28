@@ -25,6 +25,11 @@ export async function identity(request: NextRequest) {
   }
   return { owner: guest, token, user: null };
 }
+export function requireSignedIn(who: Awaited<ReturnType<typeof identity>>) {
+  if (!who.user)
+    throw new DomainError('sign_in_required', 'Sign in to use this feature.', 401);
+  return who as typeof who & { user: NonNullable<(typeof who)['user']> };
+}
 export function json(data: unknown, token?: string, status = 200) {
   const r = NextResponse.json(data, { status, headers: { 'Cache-Control': 'no-store' } });
   if (token)
