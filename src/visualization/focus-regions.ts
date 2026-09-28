@@ -179,7 +179,7 @@ export const REGIONS: Record<RegionId, Region> = {
   },
 };
 
-const LEAF_REGIONS: Record<string, RegionId> = {
+export const LEAF_REGIONS: Record<string, RegionId> = {
   product: 'full',
   occasion: 'full',
   climate: 'full',
