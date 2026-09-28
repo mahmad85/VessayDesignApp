@@ -1,6 +1,6 @@
 import { readFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
-export const MIGRATIONS = ['0001_foundation', '0002_saia_measurement_scan'];
+export const MIGRATIONS = ['0001_foundation', '0002_saia_measurement_scan', '0003_catalog'];
 import * as schema from './schema';
 import { drizzle as pgDrizzle } from 'drizzle-orm/node-postgres';
 import { drizzle as localDrizzle } from 'drizzle-orm/pglite';
