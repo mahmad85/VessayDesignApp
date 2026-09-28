@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { identity, json, failure, body, checkOrigin } from '@/lib/http';
 import { getDraft, mutateDraft, enforceLimit, studioState } from '@/db/repository';
 import { commandEnvelopeV2 } from '@/modules/configuration/types';
+import { assistantConfigured } from '@/integrations/assistant';
 export const runtime = 'nodejs';
 export async function GET(request: NextRequest) {
   try {
@@ -11,7 +12,7 @@ export async function GET(request: NextRequest) {
       {
         ...state,
         user: who.user,
-        assistantMode: process.env.OPENAI_API_KEY && process.env.OPENAI_MODEL ? 'ai' : 'guided',
+        assistantMode: assistantConfigured() ? 'ai' : 'guided',
       },
       who.token,
     );

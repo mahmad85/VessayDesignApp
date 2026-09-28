@@ -197,3 +197,30 @@ The GitHub `Validate` workflow failed at `npm ci` on this branch and on `master`
 The next CI step, `npm run format:check`, would then have failed on the formatting drift recorded under WP-00a. The 12 affected source and test files (including `design-outline.ts`, whose WP-05 export made a line too long) were formatted with Prettier, with no logic change. The two CC0 licence texts and the generated `human-reference-v1.manifest.json` were added to `.prettierignore` so they stay verbatim and byte-identical with their build script. `tests/repository.test.ts` got the same explicit `PGLITE_TIMEOUT` as the other PGlite suites; it timed out once under parallel load now that start-up runs migration 0003.
 
 Re-run locally: `npm run check` passed (152 tests, build); `prettier --list-different --end-of-line auto .` reported nothing (the CRLF-only differences of this Windows checkout do not occur on the Linux runner); `npm run test:e2e` 10 of 10 passed.
+
+## TASK-016 (M2, WP-09 – WP-16) — Customer runtime on catalog releases, 28 September 2026
+
+Environment as TASK-015: Windows 11, Node 22.17.1, local PGlite databases (temporary directories for Vitest, `.data/qa-postgres` for Playwright), Playwright 1.63.0 with bundled Chromium. Branch `feature/phase0-m1-catalog-foundation`, one commit per package. No hosted PostgreSQL, no live model, no external service; drafts, releases and fixtures are SYNTHETIC or the reference import.
+
+| Executed check | Result |
+| --- | --- |
+| `npm run check` | Passed: typecheck, lint, **237 Vitest tests in 21 files**, production build |
+| `npm run format:check` | Passed (after normalising CRLF-only working-copy differences on this Windows checkout; no content change) |
+| `npm run test:e2e` | **11 of 11 passed** (3.5 min) on the ported studio and human-preview journeys plus the new start-screen test |
+| Golden comparison (`tests/golden.test.ts`) | 4 of 4 passed with **no golden file changed**: all 473 sketch specifications, every focus region and the 3D coverage list are reproduced from v2 garments on the imported release through `renderValues` |
+| axe (WCAG 2.2 A/AA tags) | No violations on the start screen, the studio and the option editor |
+
+Automated coverage added or ported (tests, not claims):
+
+| Test file | What it proves |
+| --- | --- |
+| `tests/catalog-structure.test.ts` (11) | Customer tabs (§2.1): suit parts and accents in order; the vest tab with only its toggle until included; personalizado and off-value gating with inert hidden values; shirt and blazer flattened into Essentials with the blazer's product settings; material conditions; the 10-pass cycle limit |
+| `tests/catalog-garment.test.ts` (22) | `applyGarmentPatch` error codes, forbid and require rules as impact, rejected self-violating choices, product change with confirmation, preferences, parts, text rules, inert values; `validateGarment`; `rebaseGarment` keeping, replacing and removing choices, withdrawn fabrics, parts and products, new rules |
+| `tests/draft-upgrade.test.ts` (14) | One block per ADMIN-BACKEND §7.2 row on nine SYNTHETIC v1 drafts recorded from the old engine; determinism; idempotence; upgraded codes valid in the release |
+| `tests/configuration.test.ts` (21) | The v1 engine assertions ported to v2 (each kept) plus garment isolation, removal confirmation, the 10-garment limit, quantities, the measurement union (CRT-004), design_incomplete details, silent and consented rebase |
+| `tests/repository.test.ts` (7), `tests/helpers.test.ts` (4) | Ported owner isolation, replay, concurrency, guest claim and rate limit; a stored v1 draft, revision and replayed action result (command and chat) upgraded on read |
+| `tests/catalog-routes.test.ts` (7) | `/api/catalog/current` (no-store); `/api/catalog/v/{version}` immutable, schema-valid, without any internal field, 404 for unknown or malformed versions; `/api/media/{id}` 308 for static media; the studio envelope; the 60-second availability overlay and its bust; `catalogUpdates` after a SYNTHETIC withdrawal of a choice, 409 `catalog_update_required`, and a consented `rebase_catalog` |
+| `tests/visual-binding.test.ts` (7), `tests/visual-registry.test.ts` (10), `tests/design-outline.test.ts` (8), `tests/garments.test.ts` (5) | Render values, the Not illustrated flag, focus and coverage from the catalog; the renderers read only registry slots and contain no catalog selection key; the catalog outline; 3D geometry on v2 garments |
+| `tests/assistant.test.ts` (11) | Stubbed model: unknown codes and incompatible or out-of-stock fabrics dropped with the message kept; valid multi-intent output kept whole; changes validated against a suggested product; empty-cart suggestions need a product; the developer context excludes descriptions and stories (instruction text planted there), supplier fields, stock, measurements and other garments; guided keyword cases |
+
+Not verified: a live model (readiness item R3; the OpenAI adapter only ran against a stub); the impact and catalog-update dialogs in a browser (the imported release has no rules, so they are covered by unit and route tests only); the WP-12 – WP-14 commits individually against the browser suite (the server switched to draft v2 before the UI was ported in WP-15; each commit passed `npm run check`); hosted PostgreSQL; real-device performance.

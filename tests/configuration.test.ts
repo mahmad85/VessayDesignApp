@@ -199,7 +199,7 @@ describe('measurement provenance and checkout', () => {
 
   it('guided suggestions are proposals and use category-compatible IDs', () => {
     const d = withSuit();
-    const suggestion = guidedReply(d, 'I need a shirt for a summer wedding');
+    const suggestion = guidedReply(d, 'I need a shirt for a summer wedding', ctx);
     expect(suggestion).toMatchObject({
       mode: 'guided',
       suggestion: {
@@ -212,7 +212,10 @@ describe('measurement provenance and checkout', () => {
       },
     });
     expect(active(d).productCode).toBe('suit');
-    expect(guidedReply(createDraft(), 'a suit please').suggestion?.garmentId).toBeNull();
+    expect(guidedReply(createDraft(), 'a suit please', ctx).suggestion).toEqual({
+      garmentId: null,
+      patch: { productCode: 'suit' },
+    });
   });
 });
 

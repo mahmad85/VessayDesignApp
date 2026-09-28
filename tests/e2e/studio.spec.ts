@@ -26,6 +26,8 @@ async function openDetail(page: Page, branch: RegExp, leaf: RegExp) {
   await page.getByRole('button', { name: leaf }).first().click();
 }
 test('design, chat, measurement and review journey', async ({ page }) => {
+  // The longest journey; a cold development server compiles every step on first use.
+  test.setTimeout(120000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/');

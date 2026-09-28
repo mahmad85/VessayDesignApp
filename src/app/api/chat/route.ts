@@ -1,7 +1,15 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { identity, json, failure, body, checkOrigin } from '@/lib/http';
-import { getDraft, saveChat, replayChat, enforceLimit, studioState } from '@/db/repository';
+import {
+  getDraft,
+  saveChat,
+  replayChat,
+  enforceLimit,
+  studioState,
+  loadEngineContext,
+} from '@/db/repository';
+import { pinnedVersions } from '@/modules/configuration/engine';
 import { assistantReply } from '@/integrations/assistant';
 import { DomainError } from '@/modules/configuration/types';
 export const runtime = 'nodejs';
@@ -26,7 +34,8 @@ export async function POST(request: NextRequest) {
         'Your draft has changed. Please send your message again.',
         409,
       );
-    const answer = await assistantReply(current, input.message);
+    const context = await loadEngineContext(pinnedVersions(current));
+    const answer = await assistantReply(current, input.message, context);
     const draft = await saveChat(who.owner, input, {
       id: crypto.randomUUID(),
       role: 'assistant',
