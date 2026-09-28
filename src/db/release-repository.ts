@@ -115,6 +115,19 @@ export async function getRelease(version: number): Promise<LoadedRelease | null>
   return loading;
 }
 
+const serialised = new WeakMap<LoadedRelease, string>();
+/** The customer projection of a release as JSON text, serialised once per loaded release. */
+export async function customerCatalogJson(version: number): Promise<string | null> {
+  const release = await getRelease(version);
+  if (!release) return null;
+  let text = serialised.get(release);
+  if (text === undefined) {
+    text = JSON.stringify(release.customer);
+    serialised.set(release, text);
+  }
+  return text;
+}
+
 const fingerprint = (input: z.output<typeof publishInput>) =>
   sha256Hex(
     canonicalJson({

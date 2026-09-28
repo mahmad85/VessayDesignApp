@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { identity, json, failure, body, checkOrigin } from '@/lib/http';
-import { getDraft, saveChat, replayChat, enforceLimit } from '@/db/repository';
+import { getDraft, saveChat, replayChat, enforceLimit, studioState } from '@/db/repository';
 import { assistantReply } from '@/integrations/assistant';
 import { DomainError } from '@/modules/configuration/types';
 export const runtime = 'nodejs';
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     const input = inputSchema.parse(await body(request));
     const who = await identity(request);
     const replay = await replayChat(who.owner, input);
-    if (replay) return json({ draft: replay }, who.token);
+    if (replay) return json(await studioState(replay), who.token);
     await enforceLimit(who.owner + ':chat', 12);
     await enforceLimit('assistant:global', 80);
     const current = await getDraft(who.owner);
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       basisRevision: current.revision + 1,
       createdAt: new Date().toISOString(),
     });
-    return json({ draft }, who.token);
+    return json(await studioState(draft), who.token);
   } catch (e) {
     return failure(e);
   }

@@ -1,8 +1,10 @@
 import { createHash } from 'node:crypto';
 import { getDatabase } from './client';
 import { ensureCatalog, getRelease } from './release-repository';
+import { getAvailability } from './availability';
 import {
   applyCommand,
+  catalogUpdates,
   createDraft,
   pinnedVersions,
   type EngineContext,
@@ -15,7 +17,9 @@ import {
   type CommandV2,
   type DraftV1,
   type DraftV2,
+  type Impact,
 } from '@/modules/configuration/types';
+import type { AvailabilityMap } from '@/modules/catalog/garment';
 
 // Owned drafts (one per owner). Every read path — the draft row, a replayed
 // action result and a stored revision — upgrades v1 JSON to v2 on read
@@ -27,10 +31,10 @@ const fingerprint = (value: unknown) =>
 const read = (data: unknown) => upgradeDraft(data as DraftV1 | DraftV2);
 
 /**
- * The engine context: the current release (bootstrapped outside production)
- * and the releases the given garment versions are pinned to. Releases are read
- * before the draft transaction, because PGlite serialises every query behind
- * an open transaction.
+ * The engine context: the current release (bootstrapped outside production),
+ * the releases the given garment versions are pinned to, and the live fabric
+ * availability overlay. Releases are read before the draft transaction,
+ * because PGlite serialises every query behind an open transaction.
  */
 export async function loadEngineContext(versions: readonly number[] = []): Promise<EngineContext> {
   const currentVersion = await ensureCatalog();
@@ -46,7 +50,28 @@ export async function loadEngineContext(versions: readonly number[] = []): Promi
       'The catalog is not available yet. Please try again later.',
       503,
     );
-  return { current, releases };
+  return { current, releases, availability: await getAvailability() };
+}
+
+/** The studio envelope around a draft (ADMIN-BACKEND §7.1, API-REFERENCE §2.2). */
+export type StudioState = {
+  draft: DraftV2;
+  catalogVersion: number;
+  catalogUpdates: { garmentId: string; impact: Impact[] }[];
+  /** The cart quote arrives with pricing (TASK-017); null until then. */
+  quote: null;
+  availability: AvailabilityMap;
+};
+
+export async function studioState(draft: DraftV2): Promise<StudioState> {
+  const context = await loadEngineContext(pinnedVersions(draft));
+  return {
+    draft,
+    catalogVersion: context.current.catalog.version,
+    catalogUpdates: catalogUpdates(context, draft),
+    quote: null,
+    availability: context.availability ?? {},
+  };
 }
 
 export async function getDraft(owner: string): Promise<DraftV2> {
