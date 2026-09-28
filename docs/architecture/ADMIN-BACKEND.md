@@ -248,12 +248,13 @@ type CatalogSnapshot = {
       code: string; name: string; shortName: string; description: string; kind: 'style'|'accent';
       lineKind: 'construction'|'accessory'; iconMediaId: string | null; focusRegion: string;
       surchargeMinor: Minor; visibleWhen: Condition | null; sort: number; referenceOnly: boolean;
+      metadata: Record<string, string | number | boolean>;          // internal (import provenance)
       attributes: {
         code: string; name: string; helpText: string; inputType: 'choice'|'text'; required: boolean;
         textRules: { maxLength: number; pattern: string | null; transform: 'none'|'upper'; placeholder: string } | null;
         visualSlot: string | null; surchargeMinor: Minor; visibleWhen: Condition | null; sort: number;
         metadataFields: { key: string; label: string; type: 'lookup'|'text'|'number'|'boolean'; lookupType: string | null; required: boolean }[];
-        defaultValueCode: string | null; referenceOnly: boolean;
+        defaultValueCode: string | null; referenceOnly: boolean; legacyKey: string | null;   // legacyKey internal
         values: { code: string; label: string; description: string; imageMediaId: string | null; surchargeMinor: Minor;
                   supplierCode: string | null; visualToken: string | null; isOff: boolean; sort: number;
                   metadata: Record<string, string | number | boolean>; referenceOnly: boolean }[];
@@ -264,7 +265,8 @@ type CatalogSnapshot = {
     code: string; name: string; shortLabel: string; description: string; sort: number; heroMediaId: string | null;
     measurementSet: 'suit'|'shirt'|'blazer'; visualModel: 'suit'|'shirt'|'blazer';
     defaultMaterialCode: string; referenceOnly: boolean;
-    components: { componentCode: string; required: boolean; defaultIncluded: boolean; surchargeMinor: Minor; includeLabel: string | null; sort: number }[];
+    components: { componentCode: string; required: boolean; defaultIncluded: boolean; surchargeMinor: Minor; includeLabel: string | null; sort: number;
+                  metadata: Record<string, string | number | boolean> }[];      // metadata internal
     bandPrices: Record<string, Minor>;
     settings: { groups: Record<string, { available: boolean; surchargeOverrideMinor: Minor | null }>;
                 attributes: Record<string, { available: boolean; defaultValueCode: string | null; surchargeOverrideMinor: Minor | null }>;
@@ -283,7 +285,7 @@ type CatalogSnapshot = {
     supplier: { id: string; name: string; articleCode: string | null } | null; millName: string | null; displayMillName: boolean;
     collection: string | null; seasonCode: string | null;
   }[];
-  rules: { code: string; productCodes: string[]; when: Condition; effect: 'forbid'|'require'; attributeCode: string; valueCodes: string[]; message: string }[];
+  rules: { code: string; name: string; productCodes: string[]; when: Condition; effect: 'forbid'|'require'; attributeCode: string; valueCodes: string[]; message: string }[];
   templates: { code: string; productCode: string; name: string; subtitle: string; description: string; story: string;
                materialCode: string; includedComponents: string[]; selections: Record<string, string>;
                occasions: string[]; climates: string[]; featured: boolean; sort: number;
@@ -292,6 +294,7 @@ type CatalogSnapshot = {
 ```
 
 - Only `active` rows are compiled. Arrays are sorted by `sort`, then `code`. `checksum = sha256(canonicalJson(snapshot without version/publishedAt))`, so “unpublished changes” = `checksum(compile(working)) !== current.checksum`.
+- Internal fields (added in WP-03 for the import round trip; stripped from the customer projection): `groups[].metadata` (for example `referenceMenuPrice`), `products[].components[].metadata` (for example the vest `referencePrice`), `attributes[].legacyKey` and `rules[].name`. They carry the provenance that CATALOG-ADMIN §10 requires through snapshot → working copy → compile, and the rule name that §9 strips. `publishedAt` is empty and `version` is 0 for an unpublished compile or import; publishing stamps both. Arrays are put in canonical order by `normalizeSnapshot()` (entities by `sort`, then `code`; code sets alphabetically; rules as compiled).
 - `CustomerCatalog` = `toCustomerCatalog(snapshot)` removes the fields listed in CATALOG-ADMIN §9. `materials[].supplier` becomes null, and `millName` stays only when `displayMillName` is set.
 - Size budget: the imported suit catalog is about 300 KB as JSON. Releases above 5 MB are the publish error `release_too_large`.
 
