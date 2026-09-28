@@ -1,6 +1,16 @@
 import { test, expect, type Page } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 
+/** The start screen (S-01): choose a garment, then start designing. */
+async function startGarment(page: Page, name: string) {
+  await expect(page.getByRole('heading', { name: 'Choose a garment' })).toBeVisible();
+  await page
+    .getByRole('group', { name: 'Garment' })
+    .getByRole('button', { name: new RegExp(name) })
+    .click();
+  await page.getByRole('button', { name: 'Start designing' }).click();
+  await expect(page.getByRole('heading', { name: /Good style/ })).toBeVisible();
+}
 async function openDetail(page: Page, branch: RegExp, leaf: RegExp) {
   await page.getByRole('tab', { name: 'Choose details' }).click();
   const crumb = page.getByRole('navigation', { name: 'Detail hierarchy' });
@@ -19,6 +29,7 @@ test('full human reference supports garment changes, camera keys, and responsive
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/');
+  await startGarment(page, 'Two-piece suit');
   const model = page.waitForResponse((r) => r.url().endsWith('/models/human-reference-v1.glb'));
   await page.getByRole('button', { name: '3D model', exact: true }).click();
   expect((await model).status()).toBe(200);
@@ -78,8 +89,9 @@ test('full human reference supports garment changes, camera keys, and responsive
   await expect(
     page.getByRole('button', { name: 'Slate windowpane', exact: true }).last(),
   ).toHaveAttribute('aria-pressed', 'true');
-  await page.getByRole('button', { name: /^Next Fit/ }).click();
-  await page.getByRole('button', { name: /Relaxed/ }).click();
+  // The suit fit is a jacket option (the Essentials tab ends with the fabric).
+  await openDetail(page, /^7 Jacket/, /^Fit/);
+  await page.getByRole('button', { name: 'Relaxed', exact: true }).click();
   await openDetail(page, /^7 Jacket/, /^Pocket/);
   await page.getByRole('button', { name: 'With flap', exact: true }).click();
   await page.getByRole('button', { name: /^Previous Lapels/ }).click();
@@ -140,6 +152,7 @@ test('failed human asset leaves an honest fallback and usable design controls', 
 }) => {
   await page.route('**/models/human-reference-v1.glb', (route) => route.abort());
   await page.goto('/');
+  await startGarment(page, 'Two-piece suit');
   await page.getByRole('button', { name: '3D model', exact: true }).click();
   await expect(page.getByText('3D preview unavailable', { exact: true })).toBeVisible();
   await openDetail(page, /The essentials/, /^Fabric/);

@@ -247,7 +247,6 @@ const FIXED_REGIONS: Record<string, RegionId> = {
   occasion: 'full',
   climate: 'full',
   fabric: 'torso',
-  fabricId: 'torso',
 };
 /** Where each visual part is drawn, for its include toggle (`include:<component>`). */
 const PART_REGIONS: Record<string, RegionId> = {
@@ -259,8 +258,8 @@ const PART_REGIONS: Record<string, RegionId> = {
 const isRegion = (value: string): value is RegionId => Object.hasOwn(REGIONS, value);
 
 export type FocusContext = {
-  /** The garment's release. Without it only the imported table is used (the v1 UI until WP-15). */
-  index?: RuntimeIndex;
+  /** The garment's release. */
+  index: RuntimeIndex;
   product?: 'suit' | 'shirt' | 'blazer';
   /** Render tokens of the garment (binding.ts), for choices that move the focus. */
   tokens?: Partial<Record<string, string>>;
@@ -274,11 +273,10 @@ export type FocusContext = {
  * back-pocket choice or thread colours applied only to cuffs; these read
  * registry slots, not catalog codes.
  */
-export function regionForLeaf(leafId: string, context: FocusContext = {}): RegionId {
+export function regionForLeaf(leafId: string, context: FocusContext): RegionId {
   const { product = 'suit', tokens = {}, changedKey, index } = context;
-  if (product === 'shirt' && (leafId === 'fabric' || leafId === 'fabricId')) return 'full';
+  if (product === 'shirt' && leafId === 'fabric') return 'full';
   if (FIXED_REGIONS[leafId]) return FIXED_REGIONS[leafId];
-  if (!index) return LEAF_REGIONS[leafId] ?? 'full';
   const include = /^include:(.+)$/.exec(leafId);
   if (include) {
     const part = index.components.get(include[1])?.visualPart;

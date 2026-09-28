@@ -8,12 +8,18 @@ import {
   type SuitGroup,
   type SuitSection,
 } from '../../src/modules/catalog/suit-customization';
-import { createDraft, applyCommand } from '../legacy/engine-v1';
 import { designOutline } from '../../src/modules/configuration/design-outline';
 import type { Command, CommandV2, Design } from '../../src/modules/configuration/types';
 import { garmentPatchFromLegacy } from '../../src/modules/configuration/upgrade';
 import { sketchSpec } from '../../src/visualization/sketch-spec';
-import { add, draftWith, referenceIndex, renderOf, select } from '../helpers/reference';
+import {
+  activeGarment,
+  add,
+  draftWith,
+  referenceIndex,
+  renderOf,
+  select,
+} from '../helpers/reference';
 import { regionForLeaf } from '../../src/visualization/focus-regions';
 import { shownIn3D } from '../../src/visualization/garments/coverage';
 
@@ -52,9 +58,6 @@ export const GOLDEN_FILES = {
 type Case = { id: string; commands: Command[] };
 const OFF_VALUES = new Set(['without', 'Without', 'By default', 'default', 'No bow tie', 'base']);
 const VEST_TOGGLE = 'style.vest.waistcoat.waistcoat';
-
-const design = (commands: Command[]) =>
-  commands.reduce((draft, command) => applyCommand(draft, command), createDraft()).design;
 
 /**
  * A case's v1 design commands as v2 commands for a garment of the case's
@@ -174,16 +177,56 @@ export function goldenCases(): Case[] {
   return cases;
 }
 
-/** Every leaf id of the three products' outlines (suit with a vest), plus every seed group. */
-function leafIds(outlines: { product: Design['product']; design: Design }[]) {
+/** The recorded (pre-catalog) id of an outline leaf of `product`: the inverse of leafFor. */
+function recordedId(id: string, product: Design['product']) {
+  const common: Record<string, string> = {
+    fabric: 'fabricId',
+    'include:vest': 'style.vest.waistcoat',
+  };
+  const detail: Record<Design['product'], Record<string, string>> = {
+    suit: {},
+    shirt: {
+      'style.shirt.shirt_fit': 'fit',
+      'style.shirt.shirt_collar': 'collar',
+      'style.shirt.shirt_cuffs': 'cuffs',
+    },
+    blazer: {
+      'style.jacket.jacket_fit': 'fit',
+      'style.jacket.jacket_lapel_type_combinated': 'lapel',
+      'style.jacket.jacket_pockets_type': 'pockets',
+      'style.jacket.jacket_style_combined': 'closure',
+    },
+  };
+  return detail[product][id] ?? common[id] ?? id;
+}
+
+/**
+ * Leaves of each product's outline (the suit with its vest), as [recorded id,
+ * outline id] pairs. The v1 suit also showed its jacket fit as an Essentials
+ * leaf `fit`; the catalog outline keeps it in the Jacket tab only.
+ */
+function outlineLeaves(product: Design['product']) {
+  const commands: CommandV2[] =
+    product === 'suit' ? [{ type: 'design', patch: { components: { vest: true } } }] : [];
+  const leaves = designOutline(
+    referenceIndex(),
+    activeGarment(draftWith(add(product), ...commands)),
+  )
+    .flatMap((branch) => branch.leaves)
+    .map((leaf) => [recordedId(leaf.id, product), leaf.id] as const);
+  return product === 'suit' ? [...leaves, ['fit', 'style.jacket.jacket_fit'] as const] : leaves;
+}
+
+/** Every recorded leaf id of the three products' outlines, plus every seed group. */
+function leafIds() {
   const ids = new Set<string>();
-  for (const { design } of outlines)
-    for (const branch of designOutline(design)) for (const leaf of branch.leaves) ids.add(leaf.id);
+  for (const product of PRODUCTS) for (const [id] of outlineLeaves(product)) ids.add(id);
   for (const menu of SUIT_CUSTOMIZATION_SEED.menus)
     for (const category of menu.categories)
       for (const group of category.groups) ids.add(`${menu.id}.${category.id}.${group.id}`);
   return [...ids].sort();
 }
+const PRODUCTS = ['suit', 'shirt', 'blazer'] as const;
 
 // JSON round trip: the goldens hold exactly what JSON can hold (undefined keys dropped).
 const plain = <T>(value: T): T => JSON.parse(JSON.stringify(value));
@@ -252,22 +295,15 @@ export function buildGoldens() {
       ]),
     ),
   };
-  const outlines = [
-    { product: 'suit' as const, design: design([customize({ [VEST_TOGGLE]: '1' })]) },
-    { product: 'shirt' as const, design: design([patch({ product: 'shirt' })]) },
-    { product: 'blazer' as const, design: design([patch({ product: 'blazer' })]) },
-  ];
-  const ids = leafIds(outlines);
+  const ids = leafIds();
   const byProduct = Object.fromEntries(
-    outlines.map(({ product, design }) => [
+    PRODUCTS.map((product) => [
       product,
       Object.fromEntries(
-        designOutline(design)
-          .flatMap((branch) => branch.leaves)
-          .map((leaf) => [
-            leaf.id,
-            regionForLeaf(leafFor(leaf.id, product), { index: referenceIndex(), product }),
-          ]),
+        outlineLeaves(product).map(([id, leaf]) => [
+          id,
+          regionForLeaf(leaf, { index: referenceIndex(), product }),
+        ]),
       ),
     ]),
   );

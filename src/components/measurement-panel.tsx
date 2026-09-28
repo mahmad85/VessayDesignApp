@@ -1,13 +1,14 @@
 'use client';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Camera, ArrowUpRight, Check, Info, Save, ArrowRight } from 'lucide-react';
-import type { Draft, Command } from '@/modules/configuration/types';
+import type { CommandV2, DraftV2 } from '@/modules/configuration/types';
 import {
-  definitionsFor,
-  requiredDefinitionsFor,
+  definitionsForProducts,
+  requiredDefinitionsForProducts,
   displayValue,
   toMillimeters,
+  type MeasurementSet,
 } from '@/modules/measurements/definitions';
 import type { SaiaPerson } from '@/integrations/3dlook';
 import { Button } from './ui/button';
@@ -15,6 +16,7 @@ import { Dialog } from './ui/dialog';
 import { SaiaMeasurementWidget } from './saia-measurement-widget';
 export function MeasurementPanel({
   draft,
+  measurementSets,
   busy,
   user,
   command,
@@ -23,10 +25,12 @@ export function MeasurementPanel({
   onDirty,
   onPreview,
 }: {
-  draft: Draft;
+  draft: DraftV2;
+  /** The measurement sets of every garment in the cart (CRT-004: one profile). */
+  measurementSets: MeasurementSet[];
   busy: boolean;
   user: { name: string; email: string } | null;
-  command: (c: Command) => Promise<Draft | null>;
+  command: (c: CommandV2) => Promise<DraftV2 | null>;
   setHighlight: (id: string) => void;
   onContinue: () => void;
   onDirty: (dirty: boolean) => void;
@@ -40,8 +44,11 @@ export function MeasurementPanel({
     [active, setActive] = useState('chest'),
     [fields, setFields] = useState<Record<string, string>>({}),
     [showAdvanced, setShowAdvanced] = useState(false);
-  const defs = definitionsFor(draft.design.product);
-  const commonDefs = requiredDefinitionsFor(draft.design.product);
+  const setsKey = measurementSets.join(',');
+  const [defs, commonDefs] = useMemo(() => {
+    const sets = (setsKey ? setsKey.split(',') : []) as MeasurementSet[];
+    return [definitionsForProducts(sets), requiredDefinitionsForProducts(sets)];
+  }, [setsKey]);
   const advancedDefs = defs.filter((m) => !commonDefs.includes(m));
   const hasErrors = Object.keys(fieldErrors).length > 0;
   const dirty = hasErrors || JSON.stringify(values) !== JSON.stringify(draft.measurements.values);
@@ -77,7 +84,7 @@ export function MeasurementPanel({
       const d = await r.json();
       if (!r.ok) throw new Error(d.error?.message || 'save_failed');
       const mapped = (d.draft.measurements ?? {}) as Record<string, number>;
-      const allowed = new Set(definitionsFor(draft.design.product).map((m) => m.id as string));
+      const allowed = new Set(defs.map((m) => m.id as string));
       const merged = { ...valuesRef.current };
       let applied = 0;
       for (const [id, value] of Object.entries(mapped))
@@ -100,7 +107,7 @@ export function MeasurementPanel({
         setCapture(false);
       }
     },
-    [command, draft.design.product, onDirty],
+    [command, defs, onDirty],
   );
   async function save(confirm: boolean) {
     if (hasErrors) return;

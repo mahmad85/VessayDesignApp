@@ -10,24 +10,67 @@ import {
   ShieldCheck,
   UserRound,
 } from 'lucide-react';
-import type { Draft, Command } from '@/modules/configuration/types';
-import { PRODUCTS, fabricFor } from '@/modules/catalog/catalog';
-import { definitionsFor, displayValue } from '@/modules/measurements/definitions';
+import type { CommandV2, DraftV2, Garment } from '@/modules/configuration/types';
+import type { RuntimeIndex } from '@/modules/catalog/snapshot';
+import {
+  designOutline,
+  lookupLabel,
+  type OutlineLeaf,
+} from '@/modules/configuration/design-outline';
+import {
+  definitionsForProducts,
+  displayValue,
+  type MeasurementSet,
+} from '@/modules/measurements/definitions';
+
+const STYLING: Record<string, string> = {
+  suit: 'The shirt and shoes are styling references.',
+  shirt: 'Trousers and shoes are styling references.',
+  blazer: 'Shirt, trousers and shoes are styling references.',
+};
+const list = (items: string[]) =>
+  items.length < 2 ? items.join('') : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
+/** The option bound to the fit slot, and up to three other main style choices. */
+function summary(index: RuntimeIndex, garment: Garment) {
+  const leaves = designOutline(index, garment)
+    .filter((branch) => branch.id !== 'accents')
+    .flatMap((branch) => branch.leaves)
+    .filter((leaf): leaf is OutlineLeaf & { kind: 'catalog' } => leaf.kind === 'catalog');
+  const isFit = (leaf: OutlineLeaf) =>
+    leaf.group!.attributes.some((entry) => entry.attribute.visualSlot === 'fit');
+  return {
+    fit: leaves.find(isFit)?.value ?? '—',
+    finishing: leaves
+      .filter((leaf) => !isFit(leaf))
+      .slice(0, 3)
+      .map((leaf) => leaf.value),
+  };
+}
 import { Button } from './ui/button';
 export function ReviewPanel({
   draft,
+  garment,
+  index,
+  measurementSets,
   busy,
   command,
   edit,
 }: {
-  draft: Draft;
+  draft: DraftV2;
+  garment: Garment;
+  index: RuntimeIndex;
+  measurementSets: MeasurementSet[];
   busy: boolean;
-  command: (c: Command) => Promise<Draft | null>;
+  command: (c: CommandV2) => Promise<DraftV2 | null>;
   edit: (step: number) => void;
 }) {
   const [mode, setMode] = useState<'automated' | 'human'>('automated');
-  const d = draft.design;
-  const f = fabricFor(d.fabricId)!;
+  const product = index.products.get(garment.productCode);
+  const material = index.materials.get(garment.materialCode);
+  const { fit, finishing } = summary(index, garment);
+  const parts = garment.includedComponents.map(
+    (code) => index.components.get(code)?.name.toLowerCase() ?? code,
+  );
   const review = draft.review;
   function download() {
     const payload = {
@@ -67,40 +110,33 @@ export function ReviewPanel({
         <dl>
           <div>
             <dt>Garment</dt>
-            <dd>{PRODUCTS[d.product].name}</dd>
+            <dd>{product?.name ?? garment.productCode}</dd>
           </div>
           <div>
             <dt>Fabric</dt>
             <dd>
-              <span className="tiny-swatch" style={{ background: f.color }} />
-              {f.name}
+              <span className="tiny-swatch" style={{ background: material?.primaryHex }} />
+              {material?.name ?? garment.materialCode}
             </dd>
           </div>
           <div>
             <dt>Occasion & weather</dt>
             <dd>
-              {d.occasion || 'Not selected'} · {d.climate || 'Not selected'}
+              {lookupLabel(index, 'occasion', garment.preferences.occasion)} ·{' '}
+              {lookupLabel(index, 'climate', garment.preferences.climate)}
             </dd>
           </div>
           <div>
             <dt>Fit</dt>
-            <dd>{d.fit}</dd>
+            <dd>{fit}</dd>
           </div>
           <div>
             <dt>Finishing</dt>
-            <dd>
-              {d.product === 'shirt'
-                ? `${d.collar} collar · ${d.cuffs} cuffs`
-                : `${d.lapel} lapel · ${d.pockets} pockets · ${d.closure}`}
-            </dd>
+            <dd>{finishing.join(' · ') || '—'}</dd>
           </div>
         </dl>
         <p className="inclusion-note">
-          {d.product === 'suit'
-            ? 'Includes jacket and trousers. The shirt and shoes are styling references.'
-            : d.product === 'shirt'
-              ? 'Includes the shirt only. Trousers and shoes are styling references.'
-              : 'Includes the blazer only. Shirt, trousers and shoes are styling references.'}
+          Includes {list(parts)}. {STYLING[product?.visualModel ?? 'suit']}
         </p>
       </div>
       <div className="review-section">
@@ -113,7 +149,7 @@ export function ReviewPanel({
           </button>
         </div>
         <div className="measurement-summary">
-          {definitionsFor(d.product).map((m) => (
+          {definitionsForProducts(measurementSets).map((m) => (
             <div key={m.id}>
               <span>{m.label}</span>
               <strong>

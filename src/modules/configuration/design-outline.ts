@@ -1,42 +1,44 @@
-import { DETAIL_OPTIONS, PRODUCTS, fabricFor } from '../catalog/catalog';
+import { materialsFor } from '../catalog/garment';
+import { valueKey, type RuntimeIndex } from '../catalog/snapshot';
 import {
-  SUIT_CUSTOMIZATION_SEED,
-  defaultSuitCustomizations,
-  hasVest,
-  optionFor,
-  type SuitCategory,
-  type SuitGroup,
-  type SuitMenu,
-  type SuitSection,
-} from '../catalog/suit-customization';
-import type { Design } from './types';
+  effectiveSelections,
+  visibleStructure,
+  type StructureGroup,
+  type StructureInclude,
+} from '../catalog/structure';
+import type { Garment } from './types';
 
 // One hierarchy for every input surface: the field navigator, the selection
 // tags and the 2D focus all read from this outline, so they cannot drift apart.
+// Built from the catalog release (CATALOG-ADMIN §2.1): the fixed Essentials
+// leaves, then the visible groups of each customer tab. Leaf id = group code;
+// a part's include toggle is `include:<component code>`.
 
-export type LeafKind = 'product' | 'occasion' | 'climate' | 'fabric' | 'fit' | 'detail' | 'catalog';
+export type LeafKind = 'product' | 'occasion' | 'climate' | 'fabric' | 'component' | 'catalog';
 
 export type OutlineLeaf = {
-  /** Stable ID: a design field name, or `menu.category.group` for catalog groups. */
   id: string;
   branchId: BranchId;
   kind: LeafKind;
   label: string;
   /** Short customer-facing summary of the current choice. */
   value: string;
-  /** Design fields or customization selection keys edited by this leaf. */
+  /** Option (attribute) codes edited by this leaf; the field name for fixed leaves. */
   keys: string[];
-  /** The customer chose this explicitly, or it differs from the reference default. */
+  /** The customer chose this explicitly, or it differs from the product default. */
   customized: boolean;
   swatch?: string;
   asset?: string | null;
-  /** Subheading within a branch, used for accents. */
+  /** Subheading within a branch: the part name for accents. */
   section?: string;
-  /** Catalog group reference for catalog leaves. */
-  group?: SuitGroup;
+  /** The catalog group and its visible options, for catalog leaves. */
+  group?: StructureGroup;
+  /** The optional part, for include toggles. */
+  include?: StructureInclude;
 };
 
-export type BranchId = 'essentials' | 'jacket' | 'pants' | 'vest' | 'accents';
+/** `essentials`, a component code, or `accents`. */
+export type BranchId = string;
 
 export type OutlineBranch = {
   id: BranchId;
@@ -45,7 +47,7 @@ export type OutlineBranch = {
   leaves: OutlineLeaf[];
 };
 
-const SUIT_DEFAULTS = defaultSuitCustomizations();
+// Import helpers for the supplied seed labels (CATALOG-ADMIN §10).
 export const OFF_VALUES = new Set([
   'without',
   'Without',
@@ -54,10 +56,6 @@ export const OFF_VALUES = new Set([
   'No bow tie',
   'base',
 ]);
-
-function menu(id: SuitMenu['id']) {
-  return SUIT_CUSTOMIZATION_SEED.menus.find((item) => item.id === id)!;
-}
 
 /** Customer-readable text for a seed option label. */
 export function cleanOptionLabel(label: string) {
@@ -77,173 +75,137 @@ export function readableLabel(label: string) {
   return label;
 }
 
-/**
- * A group's first section can gate its detail sections, such as “Necktie: add”
- * before choosing a tie. Returns the sections that currently apply.
- */
-export function relevantSections(group: SuitGroup, values: Record<string, string>) {
-  const [first, ...rest] = group.sections;
-  if (!first || !rest.length) return group.sections;
-  const current = values[first.selectionKey];
-  const hasCustom = first.options.some((option) => option.value === 'personalizado');
-  if (hasCustom) return current === 'personalizado' ? group.sections : [first];
-  const off = first.options.find((option) => OFF_VALUES.has(option.value));
-  if (off) return current && current !== off.value ? group.sections : [first];
-  return group.sections;
+const NOT_CHOSEN = 'Not chosen';
+
+export function lookupLabel(index: RuntimeIndex, type: string, code: string | null) {
+  return code ? (index.lookups.get(type)?.get(code)?.label ?? code) : NOT_CHOSEN;
 }
 
-function sectionValue(section: SuitSection, values: Record<string, string>) {
-  const option = optionFor(section.selectionKey, values[section.selectionKey]);
-  return option ? cleanOptionLabel(option.label) : 'Not chosen';
+/** The customer label of a choice (or the text of a text option). */
+export function choiceLabel(index: RuntimeIndex, attributeCode: string, value: string | undefined) {
+  if (value === undefined || value.trim() === '') return NOT_CHOSEN;
+  const entry = index.attributes.get(attributeCode);
+  if (entry?.attribute.inputType === 'text') return value;
+  return index.values.get(valueKey(attributeCode, value))?.value.label ?? value;
 }
 
-/** Groups visible for the current suit configuration. Placeholder groups stay hidden. */
-export function visibleGroups(
-  menuId: SuitMenu['id'],
-  category: SuitCategory,
-  values: Record<string, string>,
-) {
-  const vest = hasVest(values);
-  if (category.id === 'vest' && menuId === 'accents' && !vest) return [];
-  return category.groups.filter(
-    (group) =>
-      group.label !== group.id &&
-      (group.shown || (category.id === 'vest' && vest)) &&
-      group.sections.length > 0,
-  );
-}
-
-function catalogLeaf(
-  menuId: SuitMenu['id'],
-  category: SuitCategory,
-  group: SuitGroup,
-  values: Record<string, string>,
+function groupLeaf(
+  index: RuntimeIndex,
+  item: StructureGroup,
   branchId: BranchId,
+  section?: string,
 ): OutlineLeaf {
-  const sections = relevantSections(group, values);
-  const keys = group.sections.map((section) => section.selectionKey);
+  const icon = item.group.iconMediaId ? index.media.get(item.group.iconMediaId)?.url : undefined;
   return {
-    id: `${menuId}.${category.id}.${group.id}`,
+    id: item.group.code,
     branchId,
     kind: 'catalog',
-    label: readableLabel(group.shortLabel),
-    value: sections.map((section) => sectionValue(section, values)).join(' · '),
-    keys,
-    customized: keys.some((key) => (values[key] ?? '') !== (SUIT_DEFAULTS[key] ?? '')),
-    asset: group.asset,
-    section: menuId === 'accents' ? readableLabel(category.label) : undefined,
-    group,
+    label: item.group.shortName || item.group.name,
+    value: item.attributes
+      .map((entry) => choiceLabel(index, entry.attribute.code, entry.value))
+      .join(' · '),
+    keys: item.attributes.map((entry) => entry.attribute.code),
+    customized: item.attributes.some((entry) =>
+      entry.attribute.inputType === 'text'
+        ? !!entry.value?.trim()
+        : (entry.value ?? null) !== entry.defaultValue,
+    ),
+    asset: icon ?? null,
+    section,
+    group: item,
   };
 }
 
-export function designOutline(design: Design): OutlineBranch[] {
-  const fabric = fabricFor(design.fabricId);
-  const confirmed = new Set(design.confirmed);
-  const essentials: OutlineLeaf[] = [
-    {
-      id: 'product',
-      branchId: 'essentials',
-      kind: 'product',
-      label: 'Garment',
-      value: PRODUCTS[design.product].name,
-      keys: ['product'],
-      customized: confirmed.has('product'),
-    },
-    {
-      id: 'occasion',
-      branchId: 'essentials',
-      kind: 'occasion',
-      label: 'Occasion',
-      value: design.occasion || 'Not chosen',
-      keys: ['occasion'],
-      customized: !!design.occasion,
-    },
-    {
-      id: 'climate',
-      branchId: 'essentials',
-      kind: 'climate',
-      label: 'Weather',
-      value: design.climate || 'Not chosen',
-      keys: ['climate'],
-      customized: !!design.climate,
-    },
-    {
-      id: 'fabricId',
-      branchId: 'essentials',
-      kind: 'fabric',
-      label: 'Fabric',
-      value: fabric?.name || 'Not chosen',
-      keys: ['fabricId'],
-      customized: confirmed.has('fabricId'),
-      swatch: fabric?.color,
-    },
-    {
-      id: 'fit',
-      branchId: 'essentials',
-      kind: 'fit',
-      label: 'Fit',
-      value: design.fit,
-      keys: ['fit'],
-      customized: confirmed.has('fit'),
-    },
-  ];
-  // Suit lapel, pocket and fastening choices live in the full jacket catalog.
-  if (design.product !== 'suit')
-    for (const key of design.product === 'shirt'
-      ? (['collar', 'cuffs'] as const)
-      : (['lapel', 'pockets', 'closure'] as const))
-      essentials.push({
-        id: key,
-        branchId: 'essentials',
-        kind: 'detail',
-        label: key === 'closure' ? 'Fastening' : key.charAt(0).toUpperCase() + key.slice(1),
-        value: design[key],
-        keys: [key],
-        customized: design[key] !== DETAIL_OPTIONS[key][0],
-      });
-  const branches: OutlineBranch[] = [
-    {
-      id: 'essentials',
-      label: 'The essentials',
-      description:
-        design.product === 'suit'
-          ? 'Garment, occasion, fabric and fit'
+export function designOutline(index: RuntimeIndex, garment: Garment): OutlineBranch[] {
+  const structure = visibleStructure(index, garment);
+  if (!structure) return [];
+  const { product } = structure;
+  const material = index.materials.get(garment.materialCode);
+  const confirmed = new Set(garment.confirmed);
+  const multiPart = structure.tabs.some((tab) => tab.kind === 'component');
+  const branches: OutlineBranch[] = [];
+  for (const tab of structure.tabs) {
+    if (tab.kind === 'essentials') {
+      branches.push({
+        id: tab.id,
+        label: tab.label,
+        description: multiPart
+          ? 'Garment, occasion, weather and fabric'
           : 'Garment, occasion, fabric, fit and finishing',
-      leaves: essentials,
-    },
-  ];
-  if (design.product !== 'suit') return branches;
-  const values = { ...SUIT_DEFAULTS, ...(design.customizations || {}) };
-  const style = menu('style');
-  const accents = menu('accents');
-  const styleBranch = (id: 'jacket' | 'pants' | 'vest', label: string, description: string) => {
-    const category = style.categories.find((item) => item.id === id);
-    return {
-      id,
-      label,
-      description,
-      leaves: category
-        ? visibleGroups('style', category, values).map((group) =>
-            catalogLeaf('style', category, group, values, id),
-          )
-        : [],
-    } satisfies OutlineBranch;
-  };
-  branches.push(
-    styleBranch('jacket', 'Jacket', 'Style, lapels, pockets, sleeves and back'),
-    styleBranch('pants', 'Trousers', 'Fit, length, pleats, fastening and pockets'),
-    styleBranch('vest', 'Vest', 'Add a waistcoat and shape its details'),
-    {
-      id: 'accents',
-      label: 'Accents',
-      description: 'Lining, monogram, buttons, threads and accessories',
-      leaves: accents.categories.flatMap((category) =>
-        visibleGroups('accents', category, values).map((group) =>
-          catalogLeaf('accents', category, group, values, 'accents'),
-        ),
+        leaves: [
+          {
+            id: 'product',
+            branchId: tab.id,
+            kind: 'product',
+            label: 'Garment',
+            value: product.name,
+            keys: ['product'],
+            customized: confirmed.has('product'),
+          },
+          {
+            id: 'occasion',
+            branchId: tab.id,
+            kind: 'occasion',
+            label: 'Occasion',
+            value: lookupLabel(index, 'occasion', garment.preferences.occasion),
+            keys: ['occasion'],
+            customized: !!garment.preferences.occasion,
+          },
+          {
+            id: 'climate',
+            branchId: tab.id,
+            kind: 'climate',
+            label: 'Weather',
+            value: lookupLabel(index, 'climate', garment.preferences.climate),
+            keys: ['climate'],
+            customized: !!garment.preferences.climate,
+          },
+          {
+            id: 'fabric',
+            branchId: tab.id,
+            kind: 'fabric',
+            label: 'Fabric',
+            value: material?.name ?? NOT_CHOSEN,
+            keys: ['material'],
+            customized: confirmed.has('material'),
+            swatch: material?.primaryHex,
+          },
+          ...tab.groups.map((item) => groupLeaf(index, item, tab.id)),
+        ],
+      });
+      continue;
+    }
+    const leaves: OutlineLeaf[] = [];
+    if (tab.include) {
+      const link = product.components.find(
+        (item) => item.componentCode === tab.include!.componentCode,
+      );
+      leaves.push({
+        id: `include:${tab.include.componentCode}`,
+        branchId: tab.id,
+        kind: 'component',
+        label: tab.include.label,
+        value: tab.include.included ? 'Added' : 'Not added',
+        keys: [],
+        customized: tab.include.included !== !!link?.defaultIncluded,
+        include: tab.include,
+      });
+    }
+    leaves.push(
+      ...tab.groups.map((item) =>
+        groupLeaf(index, item, tab.id, tab.kind === 'accents' ? item.component.name : undefined),
       ),
-    },
-  );
+    );
+    branches.push({
+      id: tab.id,
+      label: tab.label,
+      description:
+        tab.kind === 'accents'
+          ? 'Lining, monogram, buttons, threads and accessories'
+          : (tab.component?.description ?? ''),
+      leaves,
+    });
+  }
   return branches;
 }
 
@@ -255,17 +217,36 @@ export function findLeaf(outline: OutlineBranch[], leafId: string) {
   return undefined;
 }
 
-function valueOf(design: Design, key: string) {
-  if (key.includes('.')) return design.customizations?.[key] ?? SUIT_DEFAULTS[key] ?? '';
-  return String(design[key as keyof Design] ?? '');
-}
-
-/** Leaves, and their keys, whose values differ between two designs, in outline order. */
-export function changedLeaves(before: Design, after: Design) {
-  return designOutline(after).flatMap((branch) =>
+/**
+ * Leaves, and their keys, whose values differ between two versions of the
+ * same garment, in outline order (for chat suggestions and field edits alike).
+ */
+export function changedLeaves(index: RuntimeIndex, before: Garment, after: Garment) {
+  if (before.productCode !== after.productCode) return [{ leafId: 'product', keys: ['product'] }];
+  const was = effectiveSelections(index, before).selections;
+  const now = effectiveSelections(index, after).selections;
+  const included = (garment: Garment, code: string) => garment.includedComponents.includes(code);
+  return designOutline(index, after).flatMap((branch) =>
     branch.leaves.flatMap((leaf) => {
-      const keys = leaf.keys.filter((key) => valueOf(before, key) !== valueOf(after, key));
+      let keys: string[];
+      if (leaf.kind === 'occasion' || leaf.kind === 'climate')
+        keys = before.preferences[leaf.kind] !== after.preferences[leaf.kind] ? leaf.keys : [];
+      else if (leaf.kind === 'fabric')
+        keys = before.materialCode !== after.materialCode ? leaf.keys : [];
+      else if (leaf.kind === 'component')
+        keys =
+          included(before, leaf.include!.componentCode) !==
+          included(after, leaf.include!.componentCode)
+            ? [leaf.include!.componentCode]
+            : [];
+      else if (leaf.kind === 'catalog') keys = leaf.keys.filter((key) => was[key] !== now[key]);
+      else keys = [];
       return keys.length ? [{ leafId: leaf.id, keys }] : [];
     }),
   );
+}
+
+/** Fabrics offered for the garment's product, for the fabric editor. */
+export function fabricChoices(index: RuntimeIndex, garment: Garment) {
+  return materialsFor(index, garment.productCode);
 }

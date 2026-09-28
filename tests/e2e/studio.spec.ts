@@ -4,6 +4,16 @@ import AxeBuilder from '@axe-core/playwright';
 import { join } from 'node:path';
 
 const artifactDirectory = process.env.VESSY_E2E_ARTIFACT_DIR || 'artifacts';
+/** The start screen (S-01): choose a garment, then start designing. */
+async function startGarment(page: Page, name: string) {
+  await expect(page.getByRole('heading', { name: 'Choose a garment' })).toBeVisible();
+  await page
+    .getByRole('group', { name: 'Garment' })
+    .getByRole('button', { name: new RegExp(name) })
+    .click();
+  await page.getByRole('button', { name: 'Start designing' }).click();
+  await expect(page.getByRole('heading', { name: /Good style/ })).toBeVisible();
+}
 async function openDetail(page: Page, branch: RegExp, leaf: RegExp) {
   await page.getByRole('tab', { name: 'Choose details' }).click();
   const crumb = page.getByRole('navigation', { name: 'Detail hierarchy' });
@@ -19,14 +29,14 @@ test('design, chat, measurement and review journey', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: /Good style/ })).toBeVisible();
-  await page.getByRole('button', { name: 'Two-piece suit', exact: true }).click();
+  await startGarment(page, 'Two-piece suit');
   await page.getByRole('button', { name: 'Wedding', exact: true }).click();
   await page.getByRole('button', { name: 'All season', exact: true }).click();
   await page.getByRole('button', { name: 'Midnight navy', exact: true }).last().click();
-  await openDetail(page, /The essentials/, /^Fit Tailored/);
-  await page.getByRole('button', { name: /Classic Comfortably balanced/ }).click();
-  await expect(page.locator('.sketch-callout')).toContainText('Classic');
+  // The suit fit is a jacket option with the catalog's own choice labels.
+  await openDetail(page, /^7 Jacket/, /^Fit Slim Fit/);
+  await page.getByRole('button', { name: 'Regular', exact: true }).click();
+  await expect(page.locator('.sketch-callout')).toContainText('Regular');
   await page.getByRole('tab', { name: 'Ask your tailor' }).click();
   await page.getByLabel('Message your tailor').fill('Could you suggest a green fabric?');
   await page.getByRole('button', { name: 'Send message', exact: true }).click();
@@ -86,7 +96,7 @@ test('category changes need confirmation and update the available fabric control
   page,
 }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Two-piece suit', exact: true }).click();
+  await startGarment(page, 'Two-piece suit');
   await page.getByLabel('Garment', { exact: true }).selectOption('shirt');
   await expect(page.getByRole('dialog')).toBeVisible();
   await page.getByRole('button', { name: 'Keep my design' }).click();
@@ -111,16 +121,25 @@ test('category changes need confirmation and update the available fabric control
 test('mobile layout and unconfigured 3DLOOK capture remain usable', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: /Good style/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Choose a garment' })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
   );
   await mkdir(artifactDirectory, { recursive: true });
+  await page.screenshot({ path: join(artifactDirectory, '00-start-mobile.png'), fullPage: true });
+  await startGarment(page, 'Two-piece suit');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
+    true,
+  );
   await page.screenshot({ path: join(artifactDirectory, '04-design-mobile.png'), fullPage: true });
   await page.getByRole('button', { name: 'Preview', exact: true }).click();
   await expect(page.locator('.sketch-svg')).toBeVisible();
   await page.screenshot({ path: join(artifactDirectory, '05-preview-mobile.png'), fullPage: true });
-  await page.getByRole('button', { name: /^Fit: Tailored/ }).click();
+  await page
+    .getByRole('group', { name: 'Selection group' })
+    .getByRole('button', { name: /^Jacket/ })
+    .click();
+  await page.getByRole('button', { name: /^Fit: Slim Fit/ }).click();
   await expect(page.getByRole('heading', { name: 'Fit', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Preview', exact: true }).click();
   await page.getByRole('button', { name: '3D model', exact: true }).click();
@@ -173,7 +192,7 @@ test('verification, sign-in, guest claim and sign-out use real database sessions
   page,
 }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: /Good style/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Choose a garment' })).toBeVisible();
   const before = await (await page.request.get('/api/studio')).json();
   const email = `test-${crypto.randomUUID()}@vessy.invalid`;
   const password = 'Synthetic-only-password-123';
@@ -199,7 +218,7 @@ test('verification, sign-in, guest claim and sign-out use real database sessions
   await page.getByLabel('Email', { exact: true }).fill(email);
   await page.getByLabel('Password', { exact: true }).fill(password);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(page.getByRole('heading', { name: /Good style/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Choose a garment' })).toBeVisible();
   const after = await (await page.request.get('/api/studio')).json();
   expect(after.user.email).toBe(email);
   expect(after.draft.id).toBe(before.draft.id);
@@ -217,13 +236,32 @@ test('verification, sign-in, guest claim and sign-out use real database sessions
   expect(saiaPaidSession.status()).toBe(503);
   await page.getByRole('link', { name: 'Your account', exact: true }).click();
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
-  await expect(page.getByRole('heading', { name: /Good style/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Choose a garment' })).toBeVisible();
   expect((await (await page.request.get('/api/studio')).json()).user).toBeNull();
 });
 test('keyboard controls and accessibility checks across desktop and small layouts', async ({
   page,
 }) => {
   await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Choose a garment' })).toBeVisible();
+  const start = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+    .analyze();
+  expect(start.violations.map((v) => ({ id: v.id, nodes: v.nodes.map((n) => n.target) }))).toEqual(
+    [],
+  );
+  // The start screen works by keyboard alone.
+  const cards = page.getByRole('group', { name: 'Garment' });
+  const shirt = cards.getByRole('button', { name: /Dress shirt/ });
+  await shirt.focus();
+  await page.keyboard.press('Space');
+  await expect(shirt).toHaveAttribute('aria-pressed', 'true');
+  const suitCard = cards.getByRole('button', { name: /Two-piece suit/ });
+  await suitCard.focus();
+  await page.keyboard.press('Enter');
+  await expect(suitCard).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('button', { name: 'Start designing' }).focus();
+  await page.keyboard.press('Enter');
   await expect(page.getByRole('heading', { name: /Good style/ })).toBeVisible();
   const results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
@@ -255,7 +293,7 @@ test('field choices and the 2D drawing stay in sync across 2D/3D switches', asyn
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: /Good style/ })).toBeVisible();
+  await startGarment(page, 'Two-piece suit');
   const svg = page.locator('.sketch-svg');
   await expect(svg).toHaveAttribute('viewBox', '0 0 400 800');
   await openDetail(page, /^7 Jacket/, /^Pocket/);
@@ -298,4 +336,34 @@ test('field choices and the 2D drawing stay in sync across 2D/3D switches', asyn
   await mkdir(artifactDirectory, { recursive: true });
   await page.screenshot({ path: join(artifactDirectory, '07-design-2d-fields.png') });
   expect(errors).toEqual([]);
+});
+test('the start screen fits every customer width and starts the chosen garment', async ({
+  page,
+}) => {
+  await mkdir(artifactDirectory, { recursive: true });
+  for (const [width, height] of [
+    [1440, 900],
+    [768, 1024],
+    [390, 844],
+    [320, 740],
+  ]) {
+    await page.setViewportSize({ width, height });
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: 'Choose a garment' })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    await page.screenshot({
+      path: join(artifactDirectory, `08-start-${width}.png`),
+      fullPage: true,
+    });
+  }
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await startGarment(page, 'Blazer');
+  await expect(page.getByLabel('Garment', { exact: true })).toHaveValue('blazer');
+  // A single-part product shows its options in the Essentials only.
+  await page.getByRole('tab', { name: 'Choose details' }).click();
+  await expect(
+    page.getByRole('region', { name: 'All design details' }).getByRole('button'),
+  ).toHaveCount(1);
 });

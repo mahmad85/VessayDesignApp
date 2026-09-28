@@ -52,11 +52,12 @@ export function materialAllowed(index: RuntimeIndex, productCode: string, materi
   );
 }
 
-/** Fabrics a product offers, in catalog order. */
+/** Fabrics a product offers: its default fabric first, then catalog order. */
 export function materialsFor(index: RuntimeIndex, productCode: string) {
-  return index.catalog.materials.filter((material) =>
-    materialAllowed(index, productCode, material.code),
-  );
+  const first = index.products.get(productCode)?.defaultMaterialCode;
+  return index.catalog.materials
+    .filter((material) => materialAllowed(index, productCode, material.code))
+    .sort((a, b) => Number(b.code === first) - Number(a.code === first));
 }
 
 export function valueLabel(index: RuntimeIndex, attributeCode: string, value: string) {

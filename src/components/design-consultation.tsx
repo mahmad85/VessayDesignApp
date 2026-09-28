@@ -9,29 +9,57 @@ import {
   ChevronRight,
   ListChecks,
 } from 'lucide-react';
-import type { Draft, DesignPatch } from '@/modules/configuration/types';
-import {
-  PRODUCTS,
-  availableFabrics,
-  fabricFor,
-  OCCASIONS,
-  CLIMATES,
-  FITS,
-  type Product,
-} from '@/modules/catalog/catalog';
-import { nextQuestion } from '@/modules/configuration/guidance';
+import type { ChatSuggestion, DraftV2, Garment, GarmentPatch } from '@/modules/configuration/types';
+import type { RuntimeIndex } from '@/modules/catalog/snapshot';
+import { isSelectable, materialsFor, type AvailabilityMap } from '@/modules/catalog/garment';
+import { nextQuestionFor } from '@/modules/configuration/guidance';
+import { choiceLabel, lookupLabel } from '@/modules/configuration/design-outline';
+
 type Props = {
-  draft: Draft;
+  draft: DraftV2;
+  garment: Garment;
+  index: RuntimeIndex;
+  availability: AvailabilityMap;
   busy: boolean;
   mode: 'guided' | 'ai';
-  change: (patch: DesignPatch) => void;
-  chat: (message: string) => Promise<Draft | null>;
+  change: (patch: GarmentPatch) => void;
+  applySuggestion: (suggestion: ChatSuggestion) => void;
+  chat: (message: string) => Promise<DraftV2 | null>;
   onChooseDetails: () => void;
 };
-export function Consultation({ draft, busy, mode, change, chat, onChooseDetails }: Props) {
+
+/** Customer-readable parts of a suggested change, from the catalog. */
+function suggestionParts(index: RuntimeIndex, patch: GarmentPatch) {
+  const parts: string[] = [];
+  if (patch.productCode)
+    parts.push(index.products.get(patch.productCode)?.name ?? patch.productCode);
+  if (patch.materialCode)
+    parts.push(index.materials.get(patch.materialCode)?.name ?? patch.materialCode);
+  if (patch.preferences?.occasion)
+    parts.push(lookupLabel(index, 'occasion', patch.preferences.occasion));
+  if (patch.preferences?.climate)
+    parts.push(lookupLabel(index, 'climate', patch.preferences.climate));
+  for (const [code, value] of Object.entries(patch.selections ?? {}))
+    parts.push(choiceLabel(index, code, value));
+  for (const [code, include] of Object.entries(patch.components ?? {}))
+    parts.push(`${include ? 'Add' : 'Without'} ${index.components.get(code)?.name ?? code}`);
+  return parts;
+}
+
+export function Consultation({
+  draft,
+  garment,
+  index,
+  availability,
+  busy,
+  mode,
+  change,
+  applySuggestion,
+  chat,
+  onChooseDetails,
+}: Props) {
   const [text, setText] = useState('');
   const messages = useRef<HTMLDivElement>(null);
-  const d = draft.design;
   useEffect(() => {
     messages.current?.scrollTo({
       top: messages.current.scrollHeight,
@@ -43,38 +71,30 @@ export function Consultation({ draft, busy, mode, change, chat, onChooseDetails 
   async function send(e: React.FormEvent) {
     e.preventDefault();
     if (!text.trim() || busy) return;
-    const message = text;
-    const result = await chat(message);
+    const result = await chat(text);
     if (result) setText('');
   }
-  const question = !d.confirmed.includes('product')
-    ? 'product'
-    : !d.occasion
-      ? 'occasion'
-      : !d.climate
-        ? 'climate'
-        : !d.confirmed.includes('fabricId')
-          ? 'fabric'
-          : !d.confirmed.includes('fit')
-            ? 'fit'
-            : 'details';
+  const question = !garment.preferences.occasion
+    ? 'occasion'
+    : !garment.preferences.climate
+      ? 'climate'
+      : !garment.confirmed.includes('material')
+        ? 'fabric'
+        : 'details';
+  const lookup = (type: 'occasion' | 'climate') =>
+    (index.catalog.lookups[type] ?? []).map((item) => ({
+      label: item.label,
+      patch: { preferences: { [type]: item.code } } as GarmentPatch,
+    }));
   const choices =
-    question === 'product'
-      ? Object.entries(PRODUCTS).map(([value, p]) => ({
-          label: p.name,
-          patch: { product: value as Product },
-        }))
-      : question === 'occasion'
-        ? OCCASIONS.map((v) => ({ label: v, patch: { occasion: v } }))
-        : question === 'climate'
-          ? CLIMATES.map((v) => ({ label: v, patch: { climate: v } }))
-          : question === 'fit'
-            ? FITS.map((v) => ({ label: v, patch: { fit: v } }))
-            : question === 'fabric'
-              ? availableFabrics(d.product)
-                  .slice(0, 3)
-                  .map((v) => ({ label: v.name, patch: { fabricId: v.id } }))
-              : [];
+    question === 'occasion' || question === 'climate'
+      ? lookup(question)
+      : question === 'fabric'
+        ? materialsFor(index, garment.productCode)
+            .filter((material) => isSelectable(availability[material.code]))
+            .slice(0, 3)
+            .map((material) => ({ label: material.name, patch: { materialCode: material.code } }))
+        : [];
   return (
     <section className="consultation" aria-label="Tailoring conversation">
       <div
@@ -100,21 +120,13 @@ export function Consultation({ draft, busy, mode, change, chat, onChooseDetails 
                     <Sparkles size={12} /> A DIRECTION TO EXPLORE
                   </div>
                   <div className="suggestion-values">
-                    {Object.entries(m.suggestion)
-                      .filter(([k]) => k !== 'customizations')
-                      .map(([k, v]) => (
-                        <span key={k}>
-                          {k === 'fabricId'
-                            ? fabricFor(String(v))?.name
-                            : k === 'product'
-                              ? PRODUCTS[v as Product].name
-                              : String(v)}
-                        </span>
-                      ))}
+                    {suggestionParts(index, m.suggestion.patch).map((part) => (
+                      <span key={part}>{part}</span>
+                    ))}
                   </div>
                   <button
                     disabled={busy || m.basisRevision !== draft.revision}
-                    onClick={() => change(m.suggestion!)}
+                    onClick={() => applySuggestion(m.suggestion!)}
                   >
                     {m.basisRevision === draft.revision
                       ? 'Apply this suggestion'
@@ -138,7 +150,7 @@ export function Consultation({ draft, busy, mode, change, chat, onChooseDetails 
       <div className="conversation-next">
         <div className="question-line">
           <span className="step-dot" />
-          {nextQuestion(d)}
+          {nextQuestionFor(garment)}
         </div>
         <div className="quick-choices">
           {choices.map((c) => (
