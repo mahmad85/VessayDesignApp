@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createDraft, applyCommand } from '../src/modules/configuration/engine';
+import { createDraft, applyCommand } from './legacy/engine-v1';
 import {
   changedLeaves,
   designOutline,

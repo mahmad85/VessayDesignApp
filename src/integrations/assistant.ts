@@ -1,13 +1,40 @@
 import OpenAI from 'openai';
 import { zodTextFormat } from 'openai/helpers/zod';
 import { z } from 'zod';
-import { FABRICS, availableFabrics, fabricFor } from '@/modules/catalog/catalog';
-import { designPatch, type Draft, type DesignPatch } from '@/modules/configuration/types';
-import { nextQuestion } from '@/modules/configuration/guidance';
+import { FABRICS, availableFabrics, fabricFor, type Product } from '@/modules/catalog/catalog';
+import {
+  designPatch,
+  type ChatSuggestion,
+  type DesignPatch,
+  type DraftV2,
+  type Garment,
+} from '@/modules/configuration/types';
+import { nextQuestionFor } from '@/modules/configuration/guidance';
+import { garmentPatchFromLegacy } from '@/modules/configuration/upgrade';
+
+// Interim v2 adapter (WP-12): the reply logic still proposes the legacy fields
+// and converts them to a garment patch for the active garment. WP-16 grounds
+// the assistant in the catalog release (ADMIN-BACKEND §11).
+
+const PRODUCTS: readonly Product[] = ['suit', 'shirt', 'blazer'];
+const legacyProduct = (code: string | undefined): Product | undefined =>
+  PRODUCTS.find((product) => product === code);
+export function activeGarment(draft: DraftV2): Garment | null {
+  return draft.garments.find((garment) => garment.id === draft.activeGarmentId) ?? null;
+}
+function suggestionFor(draft: DraftV2, patch: DesignPatch): ChatSuggestion | undefined {
+  const garment = activeGarment(draft);
+  const converted = garmentPatchFromLegacy(
+    patch,
+    legacyProduct(patch.product ?? garment?.productCode) ?? 'suit',
+  );
+  return converted ? { garmentId: garment?.id ?? null, patch: converted } : undefined;
+}
+
 export function guidedReply(
-  draft: Draft,
+  draft: DraftV2,
   message: string,
-): { text: string; suggestion?: DesignPatch; mode: 'guided' } {
+): { text: string; suggestion?: ChatSuggestion; mode: 'guided' } {
   const s = message.toLowerCase();
   const patch: DesignPatch = {};
   if (/\b(shirt)\b/.test(s)) patch.product = 'shirt';
@@ -23,7 +50,7 @@ export function guidedReply(
   if (/relaxed|loose/.test(s)) patch.fit = 'Relaxed';
   else if (/classic|regular/.test(s)) patch.fit = 'Classic';
   else if (/tailored|slim/.test(s)) patch.fit = 'Tailored';
-  const product = patch.product || draft.design.product;
+  const product = patch.product || legacyProduct(activeGarment(draft)?.productCode) || 'suit';
   const fabrics = availableFabrics(product);
   const match = fabrics.find(
     (f) =>
@@ -41,13 +68,13 @@ export function guidedReply(
   if (match) patch.fabricId = match.id;
   else if (patch.climate === 'Warm') patch.fabricId = product === 'shirt' ? 'ivory' : 'sand-linen';
   else if (/suggest|recommend/.test(s)) patch.fabricId = product === 'shirt' ? 'sky' : 'navy-twill';
-  const has = Object.keys(patch).length > 0;
+  const suggestion = Object.keys(patch).length ? suggestionFor(draft, patch) : undefined;
   return {
     mode: 'guided',
-    text: has
+    text: suggestion
       ? `${patch.fabricId ? `${fabricFor(patch.fabricId)!.name} is a ${patch.climate === 'Warm' ? 'light-looking, warm-weather' : 'versatile'} direction to explore. ` : ''}I’ve put a suggestion together. Apply it to see the changes, then we’ll continue with the next choice.`
-      : `${nextQuestion(draft.design)} You can tell me an occasion, a colour, or how you would like it to fit.`,
-    ...(has ? { suggestion: patch } : {}),
+      : `${nextQuestionFor(activeGarment(draft))} You can tell me an occasion, a colour, or how you would like it to fit.`,
+    ...(suggestion ? { suggestion } : {}),
   };
 }
 const responseSchema = z.object({
@@ -70,9 +97,10 @@ const responseSchema = z.object({
     }),
   ),
 });
-export async function assistantReply(draft: Draft, message: string) {
+export async function assistantReply(draft: DraftV2, message: string) {
   if (!process.env.OPENAI_API_KEY || !process.env.OPENAI_MODEL) return guidedReply(draft, message);
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 20000, maxRetries: 1 });
+  const garment = activeGarment(draft);
   const response = await client.responses.parse({
     model: process.env.OPENAI_MODEL,
     store: false,
@@ -83,7 +111,11 @@ export async function assistantReply(draft: Draft, message: string) {
       {
         role: 'developer',
         content: JSON.stringify({
-          design: draft.design,
+          garment: garment && {
+            product: garment.productCode,
+            fabricId: garment.materialCode,
+            preferences: garment.preferences,
+          },
           catalog: FABRICS,
           allowed: designPatch.toJSONSchema(),
         }),
@@ -96,14 +128,13 @@ export async function assistantReply(draft: Draft, message: string) {
   const value = response.output_parsed;
   if (!value) throw new Error('Assistant output unavailable');
   const patch = designPatch.parse(Object.fromEntries(value.changes.map((c) => [c.field, c.value])));
-  if (
-    patch.fabricId &&
-    !fabricFor(patch.fabricId)?.products.includes(patch.product || draft.design.product)
-  )
+  const product = patch.product || legacyProduct(garment?.productCode) || 'suit';
+  if (patch.fabricId && !fabricFor(patch.fabricId)?.products.includes(product))
     throw new Error('Assistant proposed an incompatible fabric');
+  const suggestion = Object.keys(patch).length ? suggestionFor(draft, patch) : undefined;
   return {
     text: value.message.slice(0, 2500),
-    suggestion: Object.keys(patch).length ? patch : undefined,
+    ...(suggestion ? { suggestion } : {}),
     mode: 'ai' as const,
   };
 }

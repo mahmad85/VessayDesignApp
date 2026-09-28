@@ -152,3 +152,21 @@ export function displayValue(mm: number | undefined, unit: 'cm' | 'in') {
 export function toMillimeters(value: number, unit: 'cm' | 'in') {
   return Math.round(value * (unit === 'cm' ? 10 : 25.4) * 100) / 100;
 }
+/** The code-owned measurement sets products reference (CATALOG-ADMIN §3.1). */
+export type MeasurementSet = Product;
+function union(
+  sets: readonly MeasurementSet[],
+  pick: (set: MeasurementSet) => readonly Definition[],
+) {
+  const ids = new Set(sets.flatMap((set) => pick(set).map((m) => m.id as string)));
+  return MEASUREMENTS.filter((m) => ids.has(m.id));
+}
+type Definition = (typeof MEASUREMENTS)[number];
+/** Fields any garment in the cart accepts (CRT-004: one profile per draft). */
+export function definitionsForProducts(sets: readonly MeasurementSet[]) {
+  return union(sets, definitionsFor);
+}
+/** The union of the required fields over every garment in the cart (CRT-004). */
+export function requiredDefinitionsForProducts(sets: readonly MeasurementSet[]) {
+  return union(sets, requiredDefinitionsFor);
+}

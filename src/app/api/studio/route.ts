@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { identity, json, failure, body, checkOrigin } from '@/lib/http';
 import { getDraft, mutateDraft, enforceLimit } from '@/db/repository';
-import { commandEnvelope } from '@/modules/configuration/types';
+import { commandEnvelopeV2 } from '@/modules/configuration/types';
 export const runtime = 'nodejs';
 export async function GET(request: NextRequest) {
   try {
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     checkOrigin(request);
-    const input = commandEnvelope.parse(await body(request));
+    const input = commandEnvelopeV2.parse(await body(request));
     const who = await identity(request);
     await enforceLimit(who.owner + ':commands', 80);
     const draft = await mutateDraft(who.owner, input);

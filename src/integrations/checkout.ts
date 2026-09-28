@@ -1,5 +1,5 @@
-import { DomainError, type Draft } from '@/modules/configuration/types';
-export async function beginCheckout(draft: Draft): Promise<never> {
+import { DomainError, type DraftV2 } from '@/modules/configuration/types';
+export async function beginCheckout(draft: DraftV2): Promise<never> {
   if (
     !draft.review ||
     draft.review.inputRevision !== draft.revision ||

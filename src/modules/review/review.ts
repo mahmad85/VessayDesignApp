@@ -1,14 +1,29 @@
-import type { Draft, Finding, Review } from '../configuration/types';
-import { requiredDefinitionsFor } from '../measurements/definitions';
-export function missingDesign(d: Draft['design']) {
-  return ['product', 'fabricId', 'occasion', 'climate', 'fit', 'details'].filter(
-    (k) => !d.confirmed.includes(k),
-  );
+import type { DraftV2, Finding, Review } from '../configuration/types';
+import { requiredDefinitionsForProducts, type MeasurementSet } from '../measurements/definitions';
+
+// Deterministic draft check (v2: every garment in the cart). Superseded by the
+// automated order check in TASK-023 (orders/check-policy.ts).
+
+/** Garments whose design the customer has not accepted yet. */
+export function unacceptedGarments(draft: DraftV2) {
+  return draft.garments.filter((garment) => !garment.confirmed.includes('details'));
 }
-export function reviewDraft(draft: Draft, mode: 'automated' | 'human'): Review {
+
+export function reviewDraft(
+  draft: DraftV2,
+  mode: 'automated' | 'human',
+  measurementSets: readonly MeasurementSet[],
+): Review {
   const findings: Finding[] = [];
-  const missing = missingDesign(draft.design);
-  if (missing.length)
+  if (!draft.garments.length)
+    findings.push({
+      id: 'cart-empty',
+      severity: 'blocker',
+      title: 'Choose a garment',
+      description: 'Start a garment design before checking your order.',
+      target: 'design',
+    });
+  else if (unacceptedGarments(draft).length)
     findings.push({
       id: 'design-incomplete',
       severity: 'blocker',
@@ -16,7 +31,7 @@ export function reviewDraft(draft: Draft, mode: 'automated' | 'human'): Review {
       description: 'Review your fabric, occasion, weather, fit and finishing details.',
       target: 'design',
     });
-  const needed = requiredDefinitionsFor(draft.design.product).filter(
+  const needed = requiredDefinitionsForProducts(measurementSets).filter(
     (m) => !draft.measurements.values[m.id],
   );
   if (needed.length)

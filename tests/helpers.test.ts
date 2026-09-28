@@ -27,16 +27,23 @@ describe('test helpers', { timeout: PGLITE_TIMEOUT }, () => {
     const input = {
       actionId: crypto.randomUUID(),
       expectedRevision: draft.revision,
-      command: { type: 'design', patch: { fabricId: 'forest' } },
+      command: { type: 'add_garment', productCode: 'suit' },
     };
     const rejected = await postStudio(
       apiRequest('/api/studio', { json: input, cookies: guest, origin: 'https://evil.invalid' }),
     );
     expect(rejected.status).toBe(403);
     expect((await rejected.json()).error.code).toBe('invalid_origin');
-    const saved = await postStudio(apiRequest('/api/studio', { json: input, cookies: guest }));
+    const added = await postStudio(apiRequest('/api/studio', { json: input, cookies: guest }));
+    expect(added.status).toBe(200);
+    const fabric = {
+      actionId: crypto.randomUUID(),
+      expectedRevision: draft.revision + 1,
+      command: { type: 'design', patch: { materialCode: 'forest' } },
+    };
+    const saved = await postStudio(apiRequest('/api/studio', { json: fabric, cookies: guest }));
     expect(saved.status).toBe(200);
-    expect((await saved.json()).draft.design.fabricId).toBe('forest');
+    expect((await saved.json()).draft.garments[0].materialCode).toBe('forest');
   });
 
   it('creates a verified synthetic user with a working session cookie', async () => {

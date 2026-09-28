@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
-import { createDraft, applyCommand } from '../src/modules/configuration/engine';
+import { createDraft, applyCommand } from './legacy/engine-v1';
 import { designOutline } from '../src/modules/configuration/design-outline';
 import type { Command, Design } from '../src/modules/configuration/types';
 import { sketchSpec } from '../src/visualization/sketch-spec';
