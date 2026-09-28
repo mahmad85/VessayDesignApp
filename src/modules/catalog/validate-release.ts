@@ -7,7 +7,8 @@ import {
   valueKey,
   type CatalogIndex,
   type CatalogSnapshot,
-  type SnapshotAttribute,
+  type RuntimeAttribute,
+  type RuntimeProduct,
   type SnapshotProduct,
 } from './snapshot';
 import {
@@ -302,8 +303,8 @@ function checkProduct(
 }
 
 function checkDefault(
-  product: SnapshotProduct,
-  attribute: SnapshotAttribute,
+  product: RuntimeProduct,
+  attribute: RuntimeAttribute,
   error: Report<ReleaseErrorCode>,
 ) {
   const code = productDefault(product, attribute);

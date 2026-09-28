@@ -409,6 +409,7 @@ export type IndexedValue = IndexedAttribute & { value: SnapshotValue };
 
 /** Lookups by code for every entity in a snapshot (ADMIN-BACKEND §6 `index`). */
 export type CatalogIndex = {
+  catalog: CatalogSnapshot;
   products: Map<string, SnapshotProduct>;
   components: Map<string, SnapshotComponent>;
   groups: Map<string, IndexedGroup>;
@@ -422,8 +423,61 @@ export type CatalogIndex = {
   media: Map<string, SnapshotMedia>;
 };
 
+// The customer runtime (structure, garment, pricing, binding and outline) reads
+// only fields that the public projection keeps, so the same pure code runs on
+// the server over a snapshot and in the browser over /api/catalog/v/{version}.
+// A CatalogSnapshot and a CustomerCatalog both satisfy RuntimeCatalog, and a
+// CatalogIndex is assignable to a RuntimeIndex.
+export type RuntimeComponent = CustomerCatalog['components'][number];
+export type RuntimeGroup = RuntimeComponent['groups'][number];
+export type RuntimeAttribute = RuntimeGroup['attributes'][number];
+export type RuntimeValue = RuntimeAttribute['values'][number];
+export type RuntimeProduct = CustomerCatalog['products'][number];
+export type RuntimeProductComponent = RuntimeProduct['components'][number];
+export type RuntimeMaterial = Omit<CustomerCatalog['materials'][number], 'supplier'>;
+export type RuntimeRule = CustomerCatalog['rules'][number];
+export type RuntimeTemplate = CustomerCatalog['templates'][number];
+export type RuntimeMedia = CustomerCatalog['media'][string];
+export type RuntimeCatalog = Omit<CustomerCatalog, 'materials'> & { materials: RuntimeMaterial[] };
+export type RuntimeIndex = {
+  catalog: RuntimeCatalog;
+  products: Map<string, RuntimeProduct>;
+  components: Map<string, RuntimeComponent>;
+  groups: Map<string, { group: RuntimeGroup; component: RuntimeComponent }>;
+  attributes: Map<
+    string,
+    { group: RuntimeGroup; component: RuntimeComponent; attribute: RuntimeAttribute }
+  >;
+  /** Keyed by `valueKey(attributeCode, valueCode)`. */
+  values: Map<
+    string,
+    {
+      group: RuntimeGroup;
+      component: RuntimeComponent;
+      attribute: RuntimeAttribute;
+      value: RuntimeValue;
+    }
+  >;
+  materials: Map<string, RuntimeMaterial>;
+  rules: Map<string, RuntimeRule>;
+  templates: Map<string, RuntimeTemplate>;
+  lookups: Map<string, Map<string, SnapshotLookupValue>>;
+  media: Map<string, RuntimeMedia>;
+};
+
+/** Index a customer catalog (or a snapshot) for the runtime. */
+export function indexCatalog(catalog: RuntimeCatalog): RuntimeIndex {
+  return buildIndex(catalog);
+}
+
 export function indexSnapshot(snapshot: CatalogSnapshot): CatalogIndex {
-  const index: CatalogIndex = {
+  // The same objects, typed with the snapshot's full entity types.
+  return buildIndex(snapshot) as unknown as CatalogIndex;
+}
+
+function buildIndex(snapshot: RuntimeCatalog): RuntimeIndex {
+  const index: RuntimeIndex = {
+    catalog: snapshot,
     products: new Map(snapshot.products.map((item) => [item.code, item])),
     components: new Map(snapshot.components.map((item) => [item.code, item])),
     groups: new Map(),
