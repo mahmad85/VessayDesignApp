@@ -46,7 +46,7 @@ export type OutlineBranch = {
 };
 
 const SUIT_DEFAULTS = defaultSuitCustomizations();
-const OFF_VALUES = new Set(['without', 'Without', 'By default', 'default', 'No bow tie', 'base']);
+export const OFF_VALUES = new Set(['without', 'Without', 'By default', 'default', 'No bow tie', 'base']);
 
 function menu(id: SuitMenu['id']) {
   return SUIT_CUSTOMIZATION_SEED.menus.find((item) => item.id === id)!;
@@ -65,7 +65,7 @@ export function cleanOptionLabel(label: string) {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
-function readableLabel(label: string) {
+export function readableLabel(label: string) {
   if (label === label.toUpperCase()) return label.charAt(0) + label.slice(1).toLowerCase();
   return label;
 }

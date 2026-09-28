@@ -213,6 +213,7 @@ const materialSchema = z.strictObject({
     }),
   ),
   textureScaleCm: z.number().positive().nullable(),
+  metadata,
   referenceOnly: z.boolean(),
   supplier: z
     .strictObject({ id: z.string(), name: text(200), articleCode: z.string().nullable() })

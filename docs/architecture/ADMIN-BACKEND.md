@@ -281,7 +281,7 @@ type CatalogSnapshot = {
     care: string[]; descriptionShort: string; story: string; tags: string[]; usages: string[]; productCodes: string[];
     priceBand: string | null; priceOverrides: Record<string /* productCode */, Minor>;
     media: { mediaId: string; role: 'swatch'|'texture'|'closeup'|'drape'|'garment'; sort: number }[];
-    textureScaleCm: number | null; referenceOnly: boolean;
+    textureScaleCm: number | null; referenceOnly: boolean; metadata: Record<string, string | number | boolean>;
     supplier: { id: string; name: string; articleCode: string | null } | null; millName: string | null; displayMillName: boolean;
     collection: string | null; seasonCode: string | null;
   }[];
@@ -294,7 +294,7 @@ type CatalogSnapshot = {
 ```
 
 - Only `active` rows are compiled. Arrays are sorted by `sort`, then `code`. `checksum = sha256(canonicalJson(snapshot without version/publishedAt))`, so “unpublished changes” = `checksum(compile(working)) !== current.checksum`.
-- Internal fields (added in WP-03 for the import round trip; stripped from the customer projection): `groups[].metadata` (for example `referenceMenuPrice`), `products[].components[].metadata` (for example the vest `referencePrice`), `attributes[].legacyKey` and `rules[].name`. They carry the provenance that CATALOG-ADMIN §10 requires through snapshot → working copy → compile, and the rule name that §9 strips. `publishedAt` is empty and `version` is 0 for an unpublished compile or import; publishing stamps both. Arrays are put in canonical order by `normalizeSnapshot()` (entities by `sort`, then `code`; code sets alphabetically; rules as compiled).
+- Internal fields (added in WP-03 for the import round trip; stripped from the customer projection): `groups[].metadata` (for example `referenceMenuPrice`), `products[].components[].metadata` (for example the vest `referencePrice`), `attributes[].legacyKey` and `rules[].name`. `materials[].metadata` (added in WP-05) holds label metadata such as the imported `weightLabel` and `compositionLabel`; the projection keeps it without `referencePrice` and `source*` keys, like choice metadata. They carry the provenance that CATALOG-ADMIN §10 requires through snapshot → working copy → compile, and the rule name that §9 strips. `publishedAt` is empty and `version` is 0 for an unpublished compile or import; publishing stamps both. Arrays are put in canonical order by `normalizeSnapshot()` (entities by `sort`, then `code`; code sets alphabetically; rules as compiled).
 - `CustomerCatalog` = `toCustomerCatalog(snapshot)` removes the fields listed in CATALOG-ADMIN §9. `materials[].supplier` becomes null, and `millName` stays only when `displayMillName` is set.
 - Size budget: the imported suit catalog is about 300 KB as JSON. Releases above 5 MB are the publish error `release_too_large`.
 

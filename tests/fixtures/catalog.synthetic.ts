@@ -165,6 +165,7 @@ const material = (
   priceOverrides: {},
   media: [{ mediaId: `media-${code}`, role: 'swatch', sort: 0 }],
   textureScaleCm: null,
+  metadata: {},
   referenceOnly: false,
   supplier: { id: 'syn-supplier-1', name: 'SYNTHETIC Mill', articleCode: `ART-${code}` },
   millName: 'SYNTHETIC Mill',
