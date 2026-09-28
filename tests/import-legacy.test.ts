@@ -395,8 +395,12 @@ describe('legacy catalog import', () => {
 
   it('seeds every system lookup type with the §3.8 starting values', () => {
     expect(lookupTypes.map((type) => type.code)).toEqual(LOOKUP_TYPES.map((type) => type.code));
+    // `tag` is seeded as a type but has no values yet, so the release omits it.
     expect(Object.keys(snapshot.lookups).sort()).toEqual(
-      lookupTypes.map((type) => type.code).sort(),
+      lookupTypes
+        .map((type) => type.code)
+        .filter((code) => code !== 'tag')
+        .sort(),
     );
     expect(snapshot.lookups.occasion.map((value) => [value.code, value.label])).toEqual([
       ['office', 'Office'],
@@ -425,7 +429,6 @@ describe('legacy catalog import', () => {
       season: 4,
       stretch: 3,
       care: 6,
-      tag: 0,
     });
     for (const value of snapshot.lookups.colour_family)
       expect(value.metadata.hex).toMatch(/^#[0-9a-f]{6}$/);

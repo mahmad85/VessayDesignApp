@@ -480,8 +480,9 @@ export function importLegacyCatalog(sources: LegacySources = LEGACY_SOURCES): Le
     };
   });
 
+  // Types without values (the admin-curated `tag`) are omitted, as the compiler does.
   const lookups = Object.fromEntries(
-    LOOKUP_TYPES.map((type) => [
+    LOOKUP_TYPES.filter((type) => LOOKUP_VALUES[type.code]?.length).map((type) => [
       type.code,
       (LOOKUP_VALUES[type.code] ?? []).map((item, i) => ({
         code: item.code,
