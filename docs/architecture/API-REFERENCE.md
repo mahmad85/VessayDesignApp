@@ -300,13 +300,21 @@ type TemplateInput = { code: string; productId: string; materialId: string; name
 ### 3.8 Orders, fulfilment, reviews and customers (TASK-023, TASK-025)
 
 ```ts
-type OrderAdminDTO = OrderCustomerDTO & {
+// M6 runtime shape (2026-09-29): staff details have explicit allowlists, separate
+// from the customer response; immutable specification data is grouped in snapshot.
+type OrderAdminDTO = {
   id: string; rowVersion: number; customer: { userId: string; name: string; email: string }; needsAttention: boolean;
-  shippingAddress: unknown | null; catalogVersion: number; catalogReferenceOnly: boolean;
-  items: (OrderCustomerDTO['items'][number] & { id: string; rowVersion: number; supplier: { id: string; name: string } | null;
+  number: string; submittedAt: string; currency: string; totalMinor: number;
+  payment: string; tailorReview: string; fulfillment: string;
+  shippingAddress: unknown | null; customerEtaDate: string | null; opsTimezone: string;
+  snapshot: OrderSnapshotV1; // measurements=null and amendment.changedMeasurements=[] without measurement permission
+  items: { id: string; rowVersion: number; lineNo: number; status: string; supplier: { id: string; name: string } | null;
           supplierReference: string | null; dueDate: string | null; overdue: boolean; allowedTransitions: string[];
-          spec: unknown /* measurements redacted without orders.measurements.read */ })[];
-  reviewCases: ReviewCaseDTO[]; payments: { id: string; status: string; amountMinor: number; createdAt: string; providerSessionId: string | null }[];
+          releaseProblems: string[]; holdResumeStatus: string | null; tracking: unknown | null;
+          spec: OrderSnapshotV1['items'][number] }[]; // item spec has no measurements
+  reviewCases: { id: string; rowVersion: number; status: string; dueAt: string | null; decision: string | null;
+          customerResponse: string | null; customerMessage: string | null; measurementsVerifiedAt: string | null }[];
+  payments: { id: string; status: string; amountMinor: number; createdAt: string; providerSessionId: string | null }[];
   events: { id: string; type: string; from: string | null; to: string | null; reason: string | null; actor: string; visibleToCustomer: boolean; createdAt: string }[];
   notifications: { id: string; purpose: string; status: string; attempts: number }[];
   snapshots: { version: number; kind: string; createdAt: string }[];
@@ -325,7 +333,7 @@ type ReviewCaseDTO = { id: string; orderId: string; number: string; snapshotVers
 | `GET /api/admin/orders` | `orders.read` | `?tailorReview&payment&fulfillment&supplierId&overdue&needsAttention&readyToRelease&query(number/email)&from&to&cursor` | Paged `{id, number, submittedAt, customerName, itemCount, totalMinor, currency, tailorReview, payment, fulfillment, suppliers[], nextDueDate, overdue, needsAttention}` |
 | `GET /api/admin/orders/{id}` | `orders.read` | — | `OrderAdminDTO` |
 | `GET /api/admin/orders/{id}/snapshots/{version}` | `orders.read` | — | `OrderSnapshotV1` (measurements redacted without `orders.measurements.read`) |
-| `POST /api/admin/orders/{id}/items/{itemId}/assignment` | `orders.fulfillment.write` | `{rowVersion, supplierId, supplierReference?, dueDate: 'YYYY-MM-DD', reason?}` (a reason is required when changing an existing supplier or date) | Item DTO; 409 `supplier_inactive` / `transition_not_allowed` (after `in_production`) |
+| `POST /api/admin/orders/{id}/items/{itemId}/assignment` | `orders.fulfillment.write` | `{rowVersion, supplierId, supplierReference?, dueDate: 'YYYY-MM-DD', reason?}` (a reason is required when changing an existing supplier or date) | Item DTO; 409 `supplier_inactive` for a new inactive assignment; `transition_not_allowed` for manufacturer reassignment from `in_production` onward, including a hold from those states. Existing deadline/reference updates remain allowed on non-terminal items (FUL-002) |
 | `POST /api/admin/orders/{id}/assignment` | `orders.fulfillment.write` | `{rowVersion, supplierId, dueDate, reason?}` | `OrderAdminDTO` (applied to every current, non-cancelled item) |
 | `POST /api/admin/orders/{id}/items/{itemId}/transition` | `orders.fulfillment.write` (`orders.hold` for `on_hold`) | `{rowVersion, to, reason?, tracking?: {carrier, trackingNumber, trackingUrl?} \| {method:'hand_delivery', note}}` | Item DTO; 409 `transition_not_allowed` with `details.allowed` |
 | `POST /api/admin/orders/{id}/release` | `orders.fulfillment.write` | `{rowVersion}` | `OrderAdminDTO` (FUL-003 release guard for every item) |
@@ -340,6 +348,7 @@ type ReviewCaseDTO = { id: string; orderId: string; number: string; snapshotVers
 | `POST /api/admin/reviews/{id}/decision` | `reviews.decide` | `{rowVersion, decision:'no_changes'\|'changes_proposed', proposedMeasurements?: Record<measurementId, mm> (required and non-empty for changes_proposed; ids from the snapshot’s measurement set; 0 < mm ≤ 3000), customerMessage? (required for changes_proposed, ≤1500), notes? (internal, ≤2000), measurementsVerified?: boolean (only with no_changes)}` | DTO; 409 `order_state_invalid` unless the case is `in_review` |
 | `GET /api/admin/customers` | `customers.read` | `?query` (email or name, ≥3 characters) | `{items:[{userId, name, email, emailVerified, createdAt, orderCount}]}` (≤25) |
 | `GET /api/admin/customers/{userId}` | `customers.read` | — | `{user, orders:[summary], draft:{garments:[{productName, templateName, materialName, quantity}], measurementsConfirmed, updatedAt} \| null}`. Measurement values are never included |
+| `GET /api/admin/dashboard` | Authenticated staff with MFA; each tile filtered by its underlying permission | — | `{tiles:[{label, count, href}]}` for catalog changes/errors/warnings, review waiting/overdue/awaiting-customer, paid orders awaiting release, attention, overdue supplier items and failed notifications |
 
 ## 4. Authorisation matrix check (AC-18, AC-42)
 

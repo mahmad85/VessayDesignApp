@@ -18,7 +18,7 @@ import {
   requiredDefinitionsForProducts,
   toMillimeters,
 } from '../src/modules/measurements/definitions';
-import { beginCheckout } from '../src/integrations/checkout';
+import { orderFindings } from '../src/modules/orders/check-policy';
 import { guidedReply } from '../src/integrations/assistant';
 import {
   SUIT_CUSTOMIZATION_SEED,
@@ -95,7 +95,16 @@ describe('catalog and design invariants', () => {
   });
 
   it('invalidates review on changes and preserves the original snapshot', () => {
-    const checked = run(withSuit(), { type: 'review', mode: 'automated' });
+    const checked = withSuit();
+    checked.review = {
+      id: crypto.randomUUID(),
+      inputRevision: checked.revision,
+      policyVersion: 'check-policy-v1',
+      status: 'correction_required',
+      findings: orderFindings(checked, ctx),
+      aiAdvisory: 'not_configured',
+      createdAt: new Date().toISOString(),
+    };
     const edited = run(checked, { type: 'design', patch: { selections: { [FIT]: '0' } } });
     expect(checked.review).not.toBeNull();
     expect(edited.review).toBeNull();
@@ -188,13 +197,17 @@ describe('measurement provenance and checkout', () => {
     expect(toMillimeters(40, 'in')).toBe(1016);
   });
 
-  it('never enables payment or claims a submitted human review for the reference catalog', async () => {
-    for (const mode of ['automated', 'human'] as const) {
-      const d = run(withSuit(), { type: 'review', mode });
-      expect(d.review?.checkoutEligible).toBe(false);
-      await expect(beginCheckout(d)).rejects.toThrow('not eligible');
-      if (mode === 'human') expect(d.review?.status).toBe('not_submitted');
-    }
+  it('blocks production reference ordering and removes the pre-payment review command', () => {
+    expect(orderFindings(withSuit(), ctx, true)).toContainEqual(
+      expect.objectContaining({ id: 'catalog_not_orderable', severity: 'blocker' }),
+    );
+    expect(
+      commandEnvelopeV2.safeParse({
+        actionId: crypto.randomUUID(),
+        expectedRevision: 0,
+        command: { type: 'review', mode: 'human' },
+      }).success,
+    ).toBe(false);
   });
 
   it('guided suggestions are proposals and use category-compatible IDs', () => {

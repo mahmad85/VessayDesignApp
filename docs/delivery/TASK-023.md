@@ -1,8 +1,8 @@
 # TASK-023: Automated check, customer sign-off, order submission, post-payment tailor review and customer orders
 
-Status: ready (specified 2026-09-28, revised by D-020; depends on TASK-018 and TASK-022)
+Status: non-AI scope implemented and locally verified (2026-09-29); WP-38 OpenAI adapter deferred by the user under D-021 until the remaining functionality is complete.
 
-Implementation packages: WP-38 – WP-41 in [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md). Build and merge them in that order.
+Implementation packages: WP-38 – WP-41 in [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md). Build and merge them in that order, with WP-38's remaining AI work deferred under D-021 and not blocking independent non-AI work.
 
 - Approved baseline: D-019 and **D-020**; REVIEW-PAYMENTS.md v0.3; MEASUREMENTS-ORDERS.md ORD-001 to ORD-005.
 - Implementation authorisation/source: D-019 (order submission, admin order desk, tailor and support screens); D-020 (customer owns measurements and signs off; the automated check is enough to pay; optional tailor review after payment).
@@ -18,7 +18,7 @@ Implementation packages: WP-38 – WP-41 in [IMPLEMENTATION-PLAN.md](IMPLEMENTAT
 - Migration/compatibility implications: additive migration 0005. The draft `review` field changes to the `OrderCheck` shape, and older stored v2 reviews are treated as `null` (the customer re-runs the check).
 - Test fixtures (synthetic or authorised): synthetic customers, catalogs and prices; a stubbed AI advisory (success, timeout, and attempted blocking or approving output).
 - Verification plan: check-policy findings (blocking versus advice; AI can neither block nor clear); every submission check (1–11) tested, including a stale check and each missing sign-off; the sign-off stored with statement version, revision and measurement version; idempotent replay and a concurrent double submit (one order); the snapshot unchanged after publishing a new catalog (AC-17); pre-payment resubmit creates v2 and cancels an `awaiting_payment` case; cancel rules; the tailor-review state table (claim, both decisions, both customer responses, amendment v2 leaves item rows intact, overdue flag without completion); notification deduplication; e2e: check → sign-off with tailor review → place order → (fake payment) → tailor proposes → customer accepts → amendment visible.
-- Actual verification evidence: not started.
+- Actual verification evidence: [M5-EVIDENCE.md](M5-EVIDENCE.md), WP-38–41. Deterministic checks, immutable sign-off/orders, customer pages, transactional notifications, tailor decisions and amendments are implemented and covered by repository, HTTP and browser tests. The advisory privacy/validation/timeout contract uses injected test providers; no OpenAI order-advice adapter is connected.
 - Deviations and decision references: D-019, D-020.
-- Remaining limitations: live notification delivery, SLA staffing and the legal sign-off wording.
-- Changed files/commit: —
+- Remaining limitations: D-021 defers the OpenAI adapter and live AI evaluation until the remaining functionality is complete; advice stays unconfigured and no credential choice is pending for current work. Live mail, SLA staffing, sign-off wording, hosted PostgreSQL validation and production release remain gated. The M6 staff notification retry UI is outside this slice.
+- Changed files/commit: migration 0005, order modules/repository/routes, customer orders, admin reviews, notification dispatcher and `orders:maintain`, plus focused tests; local working tree, not merged or released.

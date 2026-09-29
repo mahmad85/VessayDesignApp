@@ -16,6 +16,8 @@
     "seed:suit-customization": "node scripts/build-suit-customization-seed.mjs",
     "db:migrate": "node --import tsx scripts/migrate.ts",
     "catalog:bootstrap": "node --import tsx scripts/catalog-bootstrap.ts",
+    "staff:grant": "node --import tsx scripts/staff-grant.ts",
+    "orders:maintain": "node --import tsx scripts/orders-maintenance.ts",
     "check": "npm run typecheck && npm run lint && npm test && npm run build",
     "lint": "eslint .",
     "format": "prettier --write .",

@@ -1,6 +1,6 @@
 # TASK-018: Staff roles, MFA, audit and admin shell
 
-Status: ready (specified 2026-09-28; depends on TASK-015 for `audit_events`)
+Status: in progress (implemented 2026-09-29; local browser verification in progress)
 
 Implementation packages: WP-19 – WP-21 in [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md). Build and merge them in that order.
 
@@ -13,12 +13,12 @@ Implementation packages: WP-19 – WP-21 in [IMPLEMENTATION-PLAN.md](IMPLEMENTAT
 - Dependencies and blocking questions: staff session lifetime policy (Q-025); the production email provider (Q-022) for staff account recovery.
 - Explicit non-goals: customer MFA, SSO, Better Auth `admin` plugin roles.
 - Data/API/asset contracts: API-REFERENCE §3.1; the permission matrix in ADMIN-BACKEND §3.1.
-- Loading/error/empty/recovery behaviour: a non-staff user at `/admin` gets 404. Staff without MFA are redirected to `/admin/security`. A lost authenticator uses the backup codes, or an owner’s CLI re-grant after identity verification (documented runbook).
+- Loading/error/empty/recovery behaviour: a non-staff user at `/admin` gets 404. Staff without MFA are redirected to `/admin/security`. A lost authenticator uses single-use backup codes. CLI re-grant does not reset MFA; recovery without backup codes awaits the approved Q-025 process. See [staff access](../operations/STAFF-ACCESS.md).
 - Authorisation and privacy requirements: roles are server-side only; MFA is always required in production; audit summaries contain no personal data.
 - Migration/compatibility implications: additive. Better Auth column and table names must match the plugin schema (ADMIN-BACKEND §4.2). Existing customer sign-in is unaffected when the user has no 2FA.
 - Test fixtures (synthetic or authorised): synthetic staff accounts created in test databases only.
 - Verification plan: a route-handler matrix test for every role and permission (API-REFERENCE §4); e2e TOTP enrolment using a TOTP code computed in the test from the returned secret; the last-owner guard; keyboard pass of the sidebar and security page.
-- Actual verification evidence: not started.
+- Actual verification evidence: `npm run check` passed locally with 274 tests in 28 files, including real Better Auth TOTP enrollment, challenge and backup-code tests. Browser and final post-review verification are in progress; details will be recorded in TEST-EVIDENCE.md.
 - Deviations and decision references: D-019.
 - Remaining limitations: staff recovery runbook and incident owner (Q-016).
-- Changed files/commit: —
+- Changed files/commit: implementation branch `codex/m3-m4-admin-catalog`, based on master `c8819a5`. Migration/schema/auth, `modules/staff`, staff repository/CLI/routes, admin shell/security/settings, account challenge, HTTP helpers, synthetic fixtures and tests. No external release.

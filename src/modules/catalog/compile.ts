@@ -1,6 +1,10 @@
 import type { Condition } from './conditions';
+import { newGarment } from './garment';
+import { quoteGarment } from '../pricing/quote';
+import { defaultsFor } from './structure';
 import {
   normalizeSnapshot,
+  indexSnapshot,
   valueKey,
   type CatalogSnapshot,
   type MetadataField,
@@ -583,7 +587,7 @@ export function compileWorkingCopy(rows: WorkingRows): CatalogSnapshot {
     ...materials.flatMap((material) => (material.priceBand ? [material.priceBand] : [])),
   ]);
 
-  return normalizeSnapshot({
+  const snapshot = normalizeSnapshot({
     schemaVersion: 1,
     version: 0,
     publishedAt: '',
@@ -606,6 +610,24 @@ export function compileWorkingCopy(rows: WorkingRows): CatalogSnapshot {
     rules,
     templates,
   });
+  const index = indexSnapshot(snapshot);
+  for (const template of snapshot.templates) {
+    const product = index.products.get(template.productCode);
+    if (!product) continue;
+    template.selections = { ...defaultsFor(index, product), ...template.selections };
+    template.includedComponents = [
+      ...new Set([
+        ...product.components.filter((c) => c.required).map((c) => c.componentCode),
+        ...template.includedComponents,
+      ]),
+    ];
+    const quote = quoteGarment(
+      index,
+      newGarment(index, product.code, 'template-price', template.code),
+    );
+    template.asShownPriceMinor = quote.status === 'priced' ? quote.unitMinor : null;
+  }
+  return normalizeSnapshot(snapshot);
 }
 
 /** Inactive lookup values, which validateRelease() reports as `lookup_inactive_in_use` when used. */

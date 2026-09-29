@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import type Stripe from 'stripe';
 // Paid single-use AI scan: a separate $5 service purchase, distinct from
-// garment checkout (which is itself unconnected — see integrations/checkout.ts).
+// garment checkout (integrations/payments/stripe-orders.ts).
 // This mirrors the vendor's own fail-closed posture: no Stripe charge is ever
 // created until 3DLOOK supplies a private, single-use scan-authorization
 // capability. See docs/integrations/3DLOOK.md, INT-002.

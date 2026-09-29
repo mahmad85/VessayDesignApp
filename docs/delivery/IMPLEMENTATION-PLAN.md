@@ -5,6 +5,14 @@ Status: ready for execution, 2026-09-28. This plan splits TASK-015 to TASK-027 i
 Authority: implementation is authorised by D-019 and D-020 (DECISIONS.md). Items marked “proposed” in the specs (tracking statuses, sign-off wording, commerce placeholders) may be built as specified. They remain subject to confirmation before **customer release**, not before implementation.
 Execution status (2026-09-28): **Phase 0 (WP-00a, WP-00b) and M1 (WP-01 – WP-08) are implemented and locally verified** on the branch `feature/phase0-m1-catalog-foundation`, at the user's request as one branch with one commit per package (instead of one branch per package). Evidence: [TASK-015](TASK-015.md), [TEST-EVIDENCE.md](../implementation/TEST-EVIDENCE.md). No package was split. **M2 progress:** WP-09 – WP-16 (TASK-016) are implemented and locally verified on the same branch ([TASK-016](TASK-016.md)); WP-12 – WP-14 changed the server contract before the studio UI was ported in WP-15, so those three commits passed `npm run check` but not the browser suite, which was ported and passed from WP-15 on. WP-17 and WP-18 (TASK-017) followed on 2026-09-29, so **M2 is complete** (local verification only: `npm run check` 262 tests, Playwright 12 of 12, goldens unchanged). Next: M3 from WP-19, then M4.
 
+## M5 working-tree progress — 2026-09-29
+
+The user explicitly requested M5 on the existing M3/M4 working tree. WP-37 and WP-39–43 are implemented with local tests and browser evidence; WP-38 has deterministic checks, migration and advisory validation. Under D-021 (2026-09-29), the user deferred its remaining OpenAI adapter and other AI work until the remaining functionality is complete. **The original full M5 scope is not closed**, but deferred AI does not block independent non-AI packages. M6 followed as the next slice, as recorded below. M4 acceptance remains open; no dependency merge or production release is implied. Evidence, verification results and limitations are in [M5-EVIDENCE.md](M5-EVIDENCE.md). These statuses supersede the earlier “Next: M3” progress note.
+
+## M6 working-tree progress — 2026-09-29
+
+**WP-44–47 are implemented and locally verified; WP-47 is the last completed package.** The order desk now assigns suppliers/deadlines, guards release, tracks fulfilment, prints current production sheets and supports customer lookup. Verification: 316 unit/integration tests, full 16/16 browser suite, final focused M6 pass, optimized build, 50 viewport captures with accessibility/overflow checks, keyboard activation, payload size and security/dependency review. [M6-EVIDENCE.md](M6-EVIDENCE.md) records the actual checks and remaining gates. This does not close deferred AI, independent M4 acceptance or production readiness. Next numbered packages are gated WP-48 (Q-024 storage decision) and optional WP-49 (Q-011 supplier data).
+
 ## 1. How to use this plan
 
 - Take the lowest-numbered package whose dependencies are merged. Packages in different tracks (§4) can run in parallel.
@@ -324,6 +332,7 @@ Total planning effort is roughly 67–133 focused days for a single stream. Runn
 - **Tests:** e2e: a suit and two shirts, with switching isolation, removal, quantities, union of measurements and totals; screenshots at 1440/390; keyboard.
 
 #### WP-38 · Migration 0005, check policy, `/api/studio/check` and AI advisory — L
+- **Status (2026-09-29):** non-AI scope and provider-independent advisory contract locally verified. The OpenAI adapter and live evaluation are deferred under D-021 until the remaining functionality is complete; independent non-AI packages may proceed. The AI scope below remains tracked for later completion.
 - **Spec:** ORDERS-FULFILLMENT §2.1; ADMIN-BACKEND §4.3, §7.1 (`OrderCheck`), §11 (advisory); REV-002–004; D-020.
 - **Depends on:** WP-37, WP-16.
 - **Build:** `migrations/0005_orders.sql`; `orders/check-policy.ts` (blocking and advice findings); `assistant.ts#adviseOrderCheck` (20 s, advice only, no measurement values); the order-repository `runOrderCheck` (idempotent by `actionId`); `POST /api/studio/check`; remove the `review` command; the S-08 **Check my order** UI (blocking findings with field links; advice; “Advice unavailable right now” copy); any edit clears the check.
@@ -361,6 +370,8 @@ Total planning effort is roughly 67–133 focused days for a single stream. Runn
 - **M5 exit:** a complete purchase journey with an optional tailor review, in test mode only.
 
 ### M6 — Fulfilment, suppliers, support and hardening (TASK-025)
+
+Execution update (2026-09-29): the user requested WP-44–47 together. **All four packages are implemented and locally verified** in the existing working tree. The unit/integration suite passes 316 tests; the full browser suite passes 16/16, with a subsequent focused M6 pass. See [M6-EVIDENCE.md](M6-EVIDENCE.md) for executed checks, screenshots, implementation clarifications and release gates. AI remains deferred under D-021.
 
 #### WP-44 · Fulfilment state machine and admin order endpoints — L
 - **Spec:** ORDERS-FULFILLMENT §7 FUL-001–005; API-REFERENCE §3.8 (orders).

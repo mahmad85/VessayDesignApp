@@ -6,7 +6,7 @@ Keep working in this repository. Do not regenerate a new prototype or replace th
 | --- | --- | --- |
 | TASK-002 | Publish isolated Replit staging | Connected Replit workspace, staging PostgreSQL, secret ownership; hosted persistence, origin, readiness and restore evidence |
 | TASK-003 | Replace reference catalog with versioned supplier catalog | Approved fabrics/IDs, prices/currency, stock, construction compatibility; catalog validation and immutable published revisions |
-| TASK-004 | Enable and evaluate the live AI stylist | OpenAI project/key/model and spend cap; real structured-output, incompatible-ID, refusal, timeout, stale-result and styling evaluation cases |
+| TASK-004 | Enable and evaluate the live AI stylist — deferred under D-021 until the remaining functionality is complete | OpenAI project/key/model and spend cap; real structured-output, incompatible-ID, refusal, timeout, stale-result and styling evaluation cases |
 | TASK-005 | Implement the licensed 3DLOOK contract | Product/plan, official API docs, sandbox credentials, sample results, supported capture flow, authentication and retention agreement |
 | TASK-006 | Normalize and review 3DLOOK results | Tailor-approved measurement definitions, source/quality mapping, edit provenance, retake versioning and model entitlement; no guessing missing values |
 | TASK-007 | Integrate production garment/model assets | Asset rights, GLB variants/material mappings, performance budget and visual validation; preserve current renderer's controls and product state |
@@ -18,7 +18,7 @@ Keep working in this repository. Do not regenerate a new prototype or replace th
 
 Before a production catalog can enable checkout, refactor review readiness from the current explicit reference-catalog blockers into a versioned policy supplied only by authoritative server-side catalog/quote/measurement data. Client or LLM flags must never make an order eligible.
 
-Prioritize TASK-002 through TASK-005 next. Product styling, manufacturing tolerances and legal/commercial promises require real owner inputs; an agent must not invent them.
+The user deferred AI features until the remaining functionality is complete (D-021, 2026-09-29). [M5 evidence](../delivery/M5-EVIDENCE.md) covers ordering, signed synthetic payment and optional tailor review; WP-38's OpenAI adapter remains deferred. **M6 WP-44–47 (TASK-025) is now implemented and locally verified; WP-47 is the last completed package.** [M6 evidence](../delivery/M6-EVIDENCE.md) records fulfilment, support and full-journey checks. Next numbered work is **WP-48 / TASK-026**, blocked on the Q-024 production storage/provider/SDK decision, and optional **WP-49 / TASK-027**, scheduled when Q-011 supplier data arrives. Independent M4 acceptance and hosted/vendor/commercial verification remain open. Neither M4 full acceptance nor deferred AI is claimed complete; AI stays parked. Product styling, manufacturing tolerances and legal/commercial promises require owner input.
 
 User-directed TASK-011 improves the full human reference without recurring model license fees. It supplies a bundled CC0 body and local garments, with local visual and interaction evidence. It does not close TASK-007: production garment assets, drape/fit validation, supported body coverage and external visual acceptance remain outstanding.
 

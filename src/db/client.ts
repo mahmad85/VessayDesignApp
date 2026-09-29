@@ -1,10 +1,18 @@
 import { readFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
-export const MIGRATIONS = ['0001_foundation', '0002_saia_measurement_scan', '0003_catalog'];
+export const MIGRATIONS = [
+  '0001_foundation',
+  '0002_saia_measurement_scan',
+  '0003_catalog',
+  '0004_staff',
+  '0005_orders',
+  '0006_payments',
+];
 import * as schema from './schema';
 import { drizzle as pgDrizzle } from 'drizzle-orm/node-postgres';
 import { drizzle as localDrizzle } from 'drizzle-orm/pglite';
 import { Pool } from 'pg';
+import { postgresTypes } from './postgres-types';
 import { PGlite } from '@electric-sql/pglite';
 export type Query = <T extends Record<string, unknown> = Record<string, unknown>>(
   sql: string,
@@ -26,7 +34,11 @@ export async function getDatabase(): Promise<Database> {
 }
 async function connect(): Promise<Database> {
   if (process.env.DATABASE_URL) {
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 8 });
+    const pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      max: 8,
+      types: postgresTypes,
+    });
     const query: Query = async (sql, params) => (await pool.query(sql, params)).rows;
     return {
       orm: pgDrizzle(pool, { schema }),

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { ArrowRight, Check } from 'lucide-react';
 import type { RuntimeIndex } from '@/modules/catalog/snapshot';
 import { Button } from './ui/button';
+import { formatPrice } from '@/lib/money';
 
 /**
  * S-01, minimal (TASK-016): a new cart starts by choosing a garment from the
@@ -12,19 +13,32 @@ export function StartScreen({
   index,
   busy,
   onStart,
+  initialProduct,
+  embedded = false,
 }: {
   index: RuntimeIndex;
   busy: boolean;
-  onStart: (productCode: string) => void;
+  onStart: (productCode: string, templateCode?: string) => void;
+  initialProduct?: string;
+  embedded?: boolean;
 }) {
   const products = index.catalog.products;
-  const [choice, setChoice] = useState(products[0]?.code ?? '');
+  const [choice, setChoice] = useState(
+    products.some((p) => p.code === initialProduct) ? initialProduct! : (products[0]?.code ?? ''),
+  );
+  const looks = index.catalog.templates
+    .filter((t) => t.productCode === choice)
+    .sort(
+      (a, b) =>
+        Number(b.featured) - Number(a.featured) || a.sort - b.sort || a.code.localeCompare(b.code),
+    );
+  const Container = embedded ? 'section' : 'main';
   return (
-    <main className="start-screen" id="studio-content">
+    <Container className="start-screen" id={embedded ? undefined : 'studio-content'}>
       <div className="eyebrow">
         <span className="small-star">✳</span> YOUR PERSONAL TAILOR
       </div>
-      <h1>Choose a garment</h1>
+      <h1>{index.catalog.templates.length ? 'Choose a starting point' : 'Choose a garment'}</h1>
       <p className="intro-copy">
         Start with a garment. You can change anything it offers as you go.
       </p>
@@ -56,8 +70,48 @@ export function StartScreen({
           );
         })}
       </div>
+      {!!looks.length && (
+        <section className="look-gallery" aria-label="Looks">
+          {looks.map((look) => {
+            const hero = look.heroMediaId ? index.media.get(look.heroMediaId) : null;
+            return (
+              <article className="look-card" key={look.code}>
+                {hero && (
+                  <span
+                    className="look-hero"
+                    role="img"
+                    aria-label={hero.alt}
+                    style={{ backgroundImage: `url("${hero.url}")` }}
+                  />
+                )}
+                <div>
+                  {look.featured && <small className="eyebrow">FEATURED LOOK</small>}
+                  <h2>{look.name}</h2>
+                  <p>{look.subtitle}</p>
+                  <strong>
+                    {look.asShownPriceMinor === null
+                      ? 'Price not yet available'
+                      : `As shown ${formatPrice(look.asShownPriceMinor, index.catalog.currency)}`}
+                  </strong>
+                  <p className="look-tags">
+                    {[
+                      ...look.occasions.map(
+                        (c) => index.lookups.get('occasion')?.get(c)?.label ?? c,
+                      ),
+                      ...look.climates.map((c) => index.lookups.get('climate')?.get(c)?.label ?? c),
+                    ].join(' · ')}
+                  </p>
+                  <Button disabled={busy} onClick={() => onStart(choice, look.code)}>
+                    Customise this look <ArrowRight size={16} />
+                  </Button>
+                </div>
+              </article>
+            );
+          })}
+        </section>
+      )}
       <Button disabled={busy || !choice} onClick={() => onStart(choice)}>
-        Start designing
+        {index.catalog.templates.length ? 'Start from scratch' : 'Start designing'}
         <ArrowRight size={16} />
       </Button>
       {index.catalog.referenceOnly && (
@@ -66,6 +120,6 @@ export function StartScreen({
           ordering.
         </p>
       )}
-    </main>
+    </Container>
   );
 }

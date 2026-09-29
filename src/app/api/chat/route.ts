@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
-import { identity, json, failure, body, checkOrigin } from '@/lib/http';
+import { json, failure, body, checkOrigin } from '@/lib/http';
+import { studioIdentity } from '@/lib/studio-identity';
 import {
   getDraft,
   saveChat,
@@ -23,9 +24,9 @@ export async function POST(request: NextRequest) {
   try {
     checkOrigin(request);
     const input = inputSchema.parse(await body(request));
-    const who = await identity(request);
+    const who = await studioIdentity(request);
     const replay = await replayChat(who.owner, input);
-    if (replay) return json(await studioState(replay), who.token);
+    if (replay) return json(await studioState(replay, who.owner), who.token);
     await enforceLimit(who.owner + ':chat', 12);
     await enforceLimit('assistant:global', 80);
     const current = await getDraft(who.owner);
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
         'Your draft has changed. Please send your message again.',
         409,
       );
-    const context = await loadEngineContext(pinnedVersions(current));
+    const context = await loadEngineContext(pinnedVersions(current), who.owner);
     const quote = quoteCart(context.current, current, context.availability);
     const answer = await assistantReply(current, input.message, {
       ...context,
@@ -52,7 +53,7 @@ export async function POST(request: NextRequest) {
       basisRevision: current.revision + 1,
       createdAt: new Date().toISOString(),
     });
-    return json(await studioState(draft), who.token);
+    return json(await studioState(draft, who.owner), who.token);
   } catch (e) {
     return failure(e);
   }

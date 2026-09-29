@@ -386,3 +386,75 @@ export async function restoreToWorkingCopy(actor: string, version: number): Prom
     return summary;
   });
 }
+
+/** Restore is idempotent and optionally publishes atomically after full validation. */
+export async function restoreCatalog(actor: string, version: number, raw: unknown) {
+  const input = z
+    .strictObject({
+      actionId: z.uuid(),
+      publishImmediately: z.boolean(),
+      notes: z.string().max(500),
+    })
+    .parse(raw);
+  const print = sha256Hex(canonicalJson({ version, ...input }));
+  return (await getDatabase()).transaction(async (query) => {
+    await query('SELECT pg_advisory_xact_lock($1)', [PUBLISH_LOCK]);
+    const [prior] = await query(
+      "SELECT summary FROM audit_events WHERE action='catalog.restore_requested' AND summary->'after'->>'actionId'=$1",
+      [input.actionId],
+    );
+    if (prior) {
+      const after = (
+        prior.summary as { after: { fingerprint: string; publishedVersion: number | null } }
+      ).after;
+      if (after.fingerprint !== print)
+        throw new DomainError('action_conflict', 'This action identifier was already used.', 409);
+      return {
+        restored: true,
+        ...(after.publishedVersion ? { published: { version: after.publishedVersion } } : {}),
+      };
+    }
+    const [row] = await query<{ snapshot: unknown }>(
+      'SELECT snapshot FROM catalog_releases WHERE version=$1',
+      [version],
+    );
+    if (!row) throw new DomainError('not_found', 'That catalog release does not exist.', 404);
+    await loadSnapshotIntoWorkingCopy(query, parseSnapshot(row.snapshot), actor);
+    await writeAudit(query, {
+      actor,
+      action: 'catalog.restored',
+      entityType: 'catalog_release',
+      entityId: String(version),
+      summary: { fields: ['working_copy'], after: { version } },
+    });
+    let published: PublishResult | undefined;
+    if (input.publishImmediately) {
+      const current = await currentIn(query);
+      const working = await loadWorkingRows(query);
+      const compiled = compileWorkingCopy(working);
+      const report = validateRelease(compiled, { inactiveLookups: inactiveLookups(working) });
+      published = await publishLocked(query, actor, {
+        actionId: input.actionId,
+        expectedCurrentVersion: current?.version ?? null,
+        notes: input.notes,
+        acknowledgeWarnings: true,
+        warningsChecksum: report.warningsChecksum,
+      });
+    }
+    await writeAudit(query, {
+      actor,
+      action: 'catalog.restore_requested',
+      entityType: 'catalog_release',
+      entityId: String(version),
+      summary: {
+        fields: ['working_copy'],
+        after: {
+          actionId: input.actionId,
+          fingerprint: print,
+          publishedVersion: published?.version ?? null,
+        },
+      },
+    });
+    return { restored: true, ...(published ? { published } : {}) };
+  });
+}

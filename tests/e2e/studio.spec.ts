@@ -84,14 +84,12 @@ test('design, chat, measurement and review journey', async ({ page }) => {
     fullPage: true,
   });
   await page.getByRole('button', { name: 'Confirm measurements' }).click();
-  await expect(page.getByRole('heading', { name: /Thoughtfully chosen/ })).toBeVisible();
-  await page.getByRole('button', { name: 'Check my draft' }).click();
-  await expect(page.getByText('Measurements need verification')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Continue to payment' })).toBeDisabled();
+  await expect(page.getByRole('heading', { name: 'Review & pay', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Check my order' }).click();
+  await expect(page.getByText('Advice: Your measurements')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Place order and pay' })).toBeDisabled();
   await page.screenshot({ path: join(artifactDirectory, '03-review-desktop.png'), fullPage: true });
-  await page.getByRole('radio', { name: /Expert review/ }).click();
-  await page.getByRole('button', { name: 'Check expert review availability' }).click();
-  await expect(page.getByText('NO REVIEW HAS BEEN SUBMITTED')).toBeVisible();
+  await expect(page.getByLabel('Add a tailor review', { exact: true })).toBeDisabled();
   expect(errors).toEqual([]);
 });
 test('category changes need confirmation and update the available fabric controls', async ({
@@ -174,7 +172,7 @@ test('the API prevents cross-origin mutation and guest data access', async ({ br
   const checkout = await a.request.post('/api/checkout', {
     headers: { Origin: 'http://localhost:3000' },
   });
-  expect(checkout.status()).toBe(409);
+  expect(checkout.status()).toBe(410);
   // 3DLOOK capture and the scan-service checkout both require a signed-in
   // owner — a guest cookie is not enough.
   const saiaSession = await a.request.post('/api/measurements/saia/session', {

@@ -47,7 +47,7 @@ describe('migration files', { timeout: PGLITE_TIMEOUT }, () => {
           "SELECT count(*)::int AS n FROM information_schema.tables WHERE table_schema='public'",
         )
       ).rows;
-      expect(n).toBe(40);
+      expect(n).toBe(50);
       const settings = await local.query('SELECT id FROM commerce_settings');
       expect(settings.rows).toHaveLength(1);
       await local.close();

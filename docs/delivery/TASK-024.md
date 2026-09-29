@@ -1,6 +1,6 @@
 # TASK-024: Stripe Checkout payment and reconciliation (test mode)
 
-Status: ready (specified 2026-09-28; depends on TASK-023)
+Status: verified locally with synthetic payments (2026-09-29; external Stripe sandbox not verified; not merged or released)
 
 Implementation packages: WP-42, WP-43 in [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md). Build and merge them in that order.
 
@@ -18,7 +18,7 @@ Implementation packages: WP-42, WP-43 in [IMPLEMENTATION-PLAN.md](IMPLEMENTATION
 - Migration/compatibility implications: additive 0006; `.env.example` gains `STRIPE_ORDER_WEBHOOK_SECRET`, `PAYMENTS_LIVE_ENABLED` and `PAYMENT_PROVIDER`.
 - Test fixtures (synthetic or authorised): signed synthetic events via `stripe.webhooks.generateTestHeaderString`; the fake provider in e2e. A manual test-mode run with the owner’s Stripe **test** keys is optional and must be recorded as sandbox evidence.
 - Verification plan: checkout works without any tailor approval, and a paid webhook opens the tailor review exactly once (also for duplicate events); tests for the guard matrix; reuse of an open session; a duplicate event; out-of-order events (`expired` after `completed`); an amount or currency mismatch → `needs_attention`; a livemode mismatch → 400; the redirect alone does not mark paid; e2e with the fake provider.
-- Actual verification evidence: not started.
+- Actual verification evidence: [M5-EVIDENCE.md](M5-EVIDENCE.md), WP-42–43. The adapter contract is checked with the installed Stripe SDK and a stubbed transport; signed synthetic webhook events exercise reconciliation. The browser purchase uses the guarded fake provider and a signed webhook, and confirms that the checkout return alone never marks an order paid.
 - Deviations and decision references: D-019.
-- Remaining limitations: live payments, refunds and tax remain gated.
-- Changed files/commit: —
+- Remaining limitations: no external Stripe test account/session was used. Live payments, refund operations, tax, shipping policy and production notification delivery remain gated. No card data, real customer mail or charges were sent.
+- Changed files/commit: migration 0006, payment adapters/repository/webhook and checkout routes, customer payment states and tests; old checkout now returns 410; local working tree, not merged or released.
