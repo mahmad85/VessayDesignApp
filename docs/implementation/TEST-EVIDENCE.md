@@ -119,3 +119,129 @@ Environment: Linux cloud container, Node 22.22.2, bundled Chromium with SwiftSha
 Visually inspected 3D renders: default suit front/side/back and close-up; double-breasted 6-button; Mandarin; peak/wide and shawl/slim lapels; relaxed fit with vest; blazer with neutral trousers front and side; dress shirt; measurement mode (unchanged); the 390×844 phone preview; and the "shown in the 2D drawing" hint for lining. Inspection led to four corrections before the final run: straight tapered trousers, a longer jacket hem, waistband clearance under the jacket (visible only on the blazer) and a straight back drape over the seat.
 
 Not established: real mid-range phone frame rate or generation time, tailor review of shapes, cloth folds, or screen-reader certification.
+
+## WP-00a — Baseline verification on `master`, 28 September 2026
+
+Environment: Windows 11, Node 22.17.1, npm 11.6.2, Playwright 1.63.0 with its bundled Chromium (software WebGL). Commit `20741c2` (unchanged `master`), run on branch `feature/phase0-m1-catalog-foundation` before any code change. Playwright started its own development server with the synthetic configuration in `playwright.config.ts`.
+
+| Executed check | Result |
+| --- | --- |
+| `npm run check` (typecheck, lint, Vitest, production build) | Passed. Vitest: 29 tests across 4 files |
+| `npm run test:e2e` | 9 of 9 passed in 1.5 min. The logged “Could not load /models/human-reference-v1.glb” error comes from the deliberate asset-failure scenario, which passed |
+| `npm run format:check` | **Failed: 42 files reported.** 26 of them differ only by line endings (this checkout uses `core.autocrlf=true`, so files are CRLF on disk while Prettier expects LF). The other 16 have genuine formatting drift already committed on `master`: `src/app/api/measurements/saia/[captureToken]/route.ts`, `src/app/api/scan-service/{checkout,policy,webhook}/route.ts`, `src/components/{measurement-panel,saia-measurement-widget}.tsx`, `src/db/{saia-repository,schema}.ts`, `src/integrations/3dlook.ts`, `src/lib/{http,saia-draft,scan-service-policy}.ts`, `tests/e2e/studio.spec.ts`, `assets/human-source/LICENSE.md`, `public/models/LICENSE-CC0.md` and `public/models/human-reference-v1.manifest.json` |
+
+The e2e run rewrites the committed screenshots under `artifacts/`; they were restored from Git after the baseline run so the existing evidence stays unchanged. Unrelated formatting drift was not reformatted. Files changed by later packages are formatted as they are touched (`npx prettier --check --end-of-line auto <files>`).
+
+Shared test helpers added in WP-00a (synthetic data only):
+
+| Helper | Purpose | Smoke test |
+| --- | --- | --- |
+| `tests/helpers/db.ts` | `setupTestDatabase()`: a migrated PGlite database in a new temporary directory per test file | `tests/helpers.test.ts`; now also used by `tests/repository.test.ts` |
+| `tests/helpers/http.ts` | `apiRequest()`: a `NextRequest` with an `Origin` header, cookies and a JSON body, for calling route handlers directly; `cookiesFrom()` | Calls `GET`/`POST /api/studio`, including the 403 `invalid_origin` path |
+| `tests/helpers/users.ts` | `createSyntheticUser()`: signs up through Better Auth, verifies the email in the test database and returns a session cookie | The session resolves to the user in `GET /api/studio`; an unverified variant stays unverified |
+
+After WP-00a: Vitest 33 tests across 5 files passed; typecheck and lint passed; Prettier passed on the new and changed test files.
+
+## WP-00b — Golden visual outputs before any renderer change, 28 September 2026
+
+Environment as WP-00a. Generated with `node --import tsx tests/golden/generate.ts` on the unchanged renderers (`sketch-spec.ts`, `focus-regions.ts`, `garments/coverage.ts` untouched).
+
+| Golden | Content |
+| --- | --- |
+| `tests/golden/sketch-spec.json` | `sketchSpec()` for 473 SYNTHETIC designs: suit defaults; each of the 434 seed choices applied one at a time (with the vest and the group’s gate opened where the choice needs them to be drawn); suit fit, fabric and skin tone; shirt and blazer defaults plus every legacy fit, detail and fabric option. Stored as one baseline per product plus each case’s exact differences (lossless; 87 KB instead of 652 KB) |
+| `tests/golden/regions.json` | `regionForLeaf()` for all 54 leaf ids (every seed group plus the legacy leaves), per product outline, and the contextual cases (thread scope, changed back-pocket key, shirt fabric) |
+| `tests/golden/shown-in-3d.json` | `shownIn3D()` for the same 54 leaf ids (24 drawn in 3D) |
+
+| Executed check | Result |
+| --- | --- |
+| `npx vitest run tests/golden.test.ts` on the unchanged code | 4 tests passed |
+| Mutation check: one button colour constant in `sketch-spec.ts` changed temporarily | The comparison failed on exactly `suit/accents.jacket.buttons_color.colors=1`; the constant was restored from Git and the test passed again |
+
+Rule for later packages: a golden may be regenerated only with a written justification in the PR and an explicit reviewer sign-off; never to make a failing comparison pass.
+
+## TASK-015 (M1, WP-01 – WP-08) — Catalog foundation, 28 September 2026
+
+Environment as WP-00a: Windows 11, Node 22.17.1, npm 11.6.2, local PGlite databases in temporary directories, Playwright 1.63.0 with bundled Chromium. Branch `feature/phase0-m1-catalog-foundation`. No hosted PostgreSQL, no external service, no real customer or supplier data. The catalog content is the user-supplied reference seed (D-014), reference-only; every other fixture is labelled SYNTHETIC.
+
+| Executed check | Result |
+| --- | --- |
+| `npm run check` | Passed: typecheck, lint, **152 Vitest tests in 15 files**, production build |
+| `npm run test:e2e` | **10 of 10 passed** (1.4 min), including the new `tests/e2e/catalog.spec.ts`: `GET /api/ready` through the real development server bootstrapped catalog v1 on the existing QA database and returned 200 `ready` with `no-store`; a second check stayed ready. The existing studio and human-preview journeys are unchanged. The existing QA database from the baseline run re-ran every migration on start without error |
+| `npm run catalog:bootstrap` twice on a temporary PGlite directory (`DATABASE_URL` set empty so the local `.env` value is not used) | First run: “Published catalog v1 from the reference data (reference-only).” (about 5 s including database start and migrations). Second run: “A catalog release already exists (current v1); nothing to publish.” |
+| Prettier on every new and changed file (`--end-of-line auto`) | Passed |
+
+Automated coverage added (tests, not claims):
+
+| Test file | What it proves |
+| --- | --- |
+| `tests/migrations.test.ts` (11) | `0003_catalog.sql` is split-safe; all migrations run twice on one directory as whole files and as `;`-split statements; the Drizzle mirror matches the migrated database (tables, columns, types, nullability, primary keys); constraint smoke tests; the audit writer commits and rolls back with its transaction and accepts only scalar summaries |
+| `tests/money.test.ts` (8) | `parseMoney` exact parsing and rejections; currency allowlist; canonical JSON key-order independence |
+| `tests/catalog-snapshot.test.ts` (13) | The SYNTHETIC fixture parses and covers every condition type; every operator, nesting, the depth-6 and 50-node limits and unknown codes |
+| `tests/visual-registry.test.ts` (9) | Every selection key the renderers read has a slot (source scan); tokens equal the seed and imported values; deriving 3D coverage from slots reproduces `coverage.ts`; region ids |
+| `tests/import-legacy.test.ts` (15) | Determinism; 434 seed choices accounted for (428 active + 6 documented archived placeholders); shirt, blazer, vest, fabric, media, lookup and binding mapping; reference-only throughout |
+| `tests/catalog-working-copy.test.ts` (6) | Import → load → compile equals the import; reloading is a no-op; draft and archived rows excluded; live availability kept; a SYNTHETIC snapshot round-trips every entity type; restoring the import gives the original checksum |
+| `tests/validate-release.test.ts` (41) | One failing fixture per error and per warning code; the import has no errors; warnings checksum; effective selections and rules; the customer projection strip list and size; diff |
+| `tests/release-repository.test.ts` (9) | Bootstrap v1 (reference-only, warnings acknowledged by `system:bootstrap`, first publication stamped, audit rows); idempotent re-run; release LRU; `nothing_to_publish`; `publish_blocked`; `warnings_unacknowledged`; concurrent publishes → one `stale_release`; action replay and `action_conflict`; restore v1 then publish → v5 with v1’s checksum and `restored_from_version = 1` |
+| `tests/catalog-readiness.test.ts` (3) | Production without a release → 503 `catalog_unavailable` and `/api/ready` 503 `not_ready`/`catalog_missing`; auto-bootstrap off → not ready; default development → ready with v1 |
+
+Measured on the import: snapshot 336 KB, customer projection 283 KB, validation report 125 KB (210 `reference_price_unset`, 470 `rights_unconfirmed`, 16 `price_missing`, 14 `image_missing`, 8 `supplier_missing`, 1 `reference_only_present`).
+
+Test-harness note: the suites that start PGlite or load the whole catalog take a few seconds each and exceeded Vitest’s 5-second default when all files ran in parallel. They now use an explicit 30-second limit (`PGLITE_TIMEOUT` in `tests/helpers/db.ts`); no assertion changed.
+
+Not verified: hosted PostgreSQL (the `;`-split path is exercised on PGlite only), true parallel publish sessions (PGlite serialises transactions on one connection, so the concurrency test proves the lock-and-version logic only), any admin or customer surface using releases (later tasks), and production operation. The e2e run rewrote the committed human-preview screenshots; they were restored from Git because M1 changes no UI.
+
+### CI fix on the M1 pull request, 28 September 2026
+
+The GitHub `Validate` workflow failed at `npm ci` on this branch and on `master`: `package-lock.json` had been written by npm 11 and lacked the top-level `@emnapi/runtime` and `@emnapi/core` entries that npm 10 (bundled with Node 22, used by CI and by a default Replit Node 22) requires. The lock was regenerated with `npx npm@10 install --package-lock-only`: only entries were added (no existing version changed; npm 11's `"peer": true` flags were dropped). `npm ci --dry-run` passes with npm 10.9.9 and 11.6.2; the old lock reproduced CI's exact error with npm 10.
+
+The next CI step, `npm run format:check`, would then have failed on the formatting drift recorded under WP-00a. The 12 affected source and test files (including `design-outline.ts`, whose WP-05 export made a line too long) were formatted with Prettier, with no logic change. The two CC0 licence texts and the generated `human-reference-v1.manifest.json` were added to `.prettierignore` so they stay verbatim and byte-identical with their build script. `tests/repository.test.ts` got the same explicit `PGLITE_TIMEOUT` as the other PGlite suites; it timed out once under parallel load now that start-up runs migration 0003.
+
+Re-run locally: `npm run check` passed (152 tests, build); `prettier --list-different --end-of-line auto .` reported nothing (the CRLF-only differences of this Windows checkout do not occur on the Linux runner); `npm run test:e2e` 10 of 10 passed.
+
+## TASK-016 (M2, WP-09 – WP-16) — Customer runtime on catalog releases, 28 September 2026
+
+Environment as TASK-015: Windows 11, Node 22.17.1, local PGlite databases (temporary directories for Vitest, `.data/qa-postgres` for Playwright), Playwright 1.63.0 with bundled Chromium. Branch `feature/phase0-m1-catalog-foundation`, one commit per package. No hosted PostgreSQL, no live model, no external service; drafts, releases and fixtures are SYNTHETIC or the reference import.
+
+| Executed check | Result |
+| --- | --- |
+| `npm run check` | Passed: typecheck, lint, **237 Vitest tests in 21 files**, production build |
+| `npm run format:check` | Passed (after normalising CRLF-only working-copy differences on this Windows checkout; no content change) |
+| `npm run test:e2e` | **11 of 11 passed** (3.5 min) on the ported studio and human-preview journeys plus the new start-screen test |
+| Golden comparison (`tests/golden.test.ts`) | 4 of 4 passed with **no golden file changed**: all 473 sketch specifications, every focus region and the 3D coverage list are reproduced from v2 garments on the imported release through `renderValues` |
+| axe (WCAG 2.2 A/AA tags) | No violations on the start screen, the studio and the option editor |
+
+Automated coverage added or ported (tests, not claims):
+
+| Test file | What it proves |
+| --- | --- |
+| `tests/catalog-structure.test.ts` (11) | Customer tabs (§2.1): suit parts and accents in order; the vest tab with only its toggle until included; personalizado and off-value gating with inert hidden values; shirt and blazer flattened into Essentials with the blazer's product settings; material conditions; the 10-pass cycle limit |
+| `tests/catalog-garment.test.ts` (22) | `applyGarmentPatch` error codes, forbid and require rules as impact, rejected self-violating choices, product change with confirmation, preferences, parts, text rules, inert values; `validateGarment`; `rebaseGarment` keeping, replacing and removing choices, withdrawn fabrics, parts and products, new rules |
+| `tests/draft-upgrade.test.ts` (14) | One block per ADMIN-BACKEND §7.2 row on nine SYNTHETIC v1 drafts recorded from the old engine; determinism; idempotence; upgraded codes valid in the release |
+| `tests/configuration.test.ts` (21) | The v1 engine assertions ported to v2 (each kept) plus garment isolation, removal confirmation, the 10-garment limit, quantities, the measurement union (CRT-004), design_incomplete details, silent and consented rebase |
+| `tests/repository.test.ts` (7), `tests/helpers.test.ts` (4) | Ported owner isolation, replay, concurrency, guest claim and rate limit; a stored v1 draft, revision and replayed action result (command and chat) upgraded on read |
+| `tests/catalog-routes.test.ts` (7) | `/api/catalog/current` (no-store); `/api/catalog/v/{version}` immutable, schema-valid, without any internal field, 404 for unknown or malformed versions; `/api/media/{id}` 308 for static media; the studio envelope; the 60-second availability overlay and its bust; `catalogUpdates` after a SYNTHETIC withdrawal of a choice, 409 `catalog_update_required`, and a consented `rebase_catalog` |
+| `tests/visual-binding.test.ts` (7), `tests/visual-registry.test.ts` (10), `tests/design-outline.test.ts` (8), `tests/garments.test.ts` (5) | Render values, the Not illustrated flag, focus and coverage from the catalog; the renderers read only registry slots and contain no catalog selection key; the catalog outline; 3D geometry on v2 garments |
+| `tests/assistant.test.ts` (11) | Stubbed model: unknown codes and incompatible or out-of-stock fabrics dropped with the message kept; valid multi-intent output kept whole; changes validated against a suggested product; empty-cart suggestions need a product; the developer context excludes descriptions and stories (instruction text planted there), supplier fields, stock, measurements and other garments; guided keyword cases |
+
+Not verified: a live model (readiness item R3; the OpenAI adapter only ran against a stub); the impact and catalog-update dialogs in a browser (the imported release has no rules, so they are covered by unit and route tests only); the WP-12 – WP-14 commits individually against the browser suite (the server switched to draft v2 before the UI was ported in WP-15; each commit passed `npm run check`); hosted PostgreSQL; real-device performance.
+
+## TASK-017 (M2, WP-17 – WP-18) — Pricing engine and customer price display, 29 September 2026
+
+Environment as TASK-016. All prices are SYNTHETIC: the PRICING.md worked-example fixture, and the same amounts applied to the reference catalog by the browser-test hook `POST /api/test/catalog` (404 unless `VESSY_E2E_HOOKS=true`, set only for the Playwright server; never in production). The reference catalog itself stays unpriced.
+
+| Executed check | Result |
+| --- | --- |
+| `npm run check` | Passed: typecheck, lint, **262 Vitest tests in 23 files**, production build |
+| `npm run format:check` | Passed |
+| `npm run test:e2e` | **12 of 12 passed** (4.1 min), including the new `tests/e2e/pricing.spec.ts` |
+| axe (WCAG 2.2 A/AA tags) | No violations with the Price details disclosure open |
+
+| Test file | What it proves |
+| --- | --- |
+| `tests/pricing.test.ts` (21) | PRICING.md E1 – E7 exactly, the E3 lines and category breakdown; override precedence; hidden-inert selections; one group fee; text activation; quantity; every unavailable reason; the unpriced reference catalog; the cart total and delivery; never zero; price wording; the double-charge warning |
+| `tests/price-display.test.ts` (4) | The quote in studio responses; the review finding derived from the actual quote; repricing of an open draft on its next read after a new release (PRC-007); E3 = 93400 on the reference catalog with SYNTHETIC prices; an unpriced fabric makes the quote unavailable; the hook's production guard |
+| `tests/e2e/pricing.spec.ts` (1) | “Price not yet available” and no “$0” on the reference catalog; $799 after publishing; “+$100”, “Customising adds $16”, “+$9”, “+$10”; $934 with the E3 breakdown in the keyboard-operated disclosure at 1440 and 390 without horizontal scroll; axe; unavailable again for an unpriced fabric. Screenshots `artifacts/09-price-details-1440.png`, `10-price-details-390.png`, `11-price-unavailable-1440.png` |
+
+Found and fixed while testing: the selection-tag group row could widen the page at 390 px in the mobile Preview pane (visible once a vest is added); it now scrolls sideways within the pane.
+
+Not verified: real prices, currency or tax (Q-011, Q-019); persisted quotes and `acceptTotal` (TASK-023); the admin pricing matrix and simulator (TASK-020); hosted PostgreSQL.

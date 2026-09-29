@@ -15,7 +15,8 @@ export async function POST(request: NextRequest) {
     const readiness = providerScanAuthorizationReadiness();
     return json(
       {
-        error: 'Paid AI measurement scanning is not available yet because secure one-use provider authorization is not configured.',
+        error:
+          'Paid AI measurement scanning is not available yet because secure one-use provider authorization is not configured.',
         code: readiness.code,
         required: readiness.required,
       },

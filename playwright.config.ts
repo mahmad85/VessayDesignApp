@@ -39,6 +39,8 @@ export default defineConfig({
       BETTER_AUTH_SECRET: 'synthetic-test-secret-never-use-for-production',
       NEXT_TELEMETRY_DISABLED: '1',
       VESSY_DEV_DATABASE_PATH: process.env.VESSY_QA_DATABASE_PATH || '.data/qa-postgres',
+      // Enables the SYNTHETIC catalog hook (/api/test/catalog) for this development server only.
+      VESSY_E2E_HOOKS: 'true',
     },
   },
 });

@@ -1,20 +1,21 @@
 'use client';
+import { useState } from 'react';
 import { Check, ChevronLeft, ChevronRight } from 'lucide-react';
-import type { Draft, DesignPatch } from '@/modules/configuration/types';
+import type { Garment, GarmentPatch } from '@/modules/configuration/types';
+import type { RuntimeIndex } from '@/modules/catalog/snapshot';
+import { isSelectable, type AvailabilityMap } from '@/modules/catalog/garment';
+import type { StructureAttribute } from '@/modules/catalog/structure';
+import { formatPrice } from '@/lib/money';
+import { priceEffect } from '@/modules/pricing/explain';
 import {
-  CLIMATES,
-  DETAIL_OPTIONS,
-  FITS,
-  OCCASIONS,
-  PRODUCTS,
-  availableFabrics,
-  type Product,
-} from '@/modules/catalog/catalog';
-import { defaultSuitCustomizations } from '@/modules/catalog/suit-customization';
+  attributeSurcharge,
+  componentSurcharge,
+  groupSurcharge,
+  valueSurcharge,
+} from '@/modules/pricing/quote';
 import {
-  cleanOptionLabel,
+  fabricChoices,
   findLeaf,
-  relevantSections,
   type BranchId,
   type OutlineBranch,
   type OutlineLeaf,
@@ -23,15 +24,15 @@ import {
 export type NavPath = { branch?: BranchId; leaf?: string };
 
 type Props = {
-  draft: Draft;
+  index: RuntimeIndex;
+  garment: Garment;
   outline: OutlineBranch[];
+  availability: AvailabilityMap;
   busy: boolean;
-  change: (patch: DesignPatch) => void;
+  change: (patch: GarmentPatch) => void;
   path: NavPath;
   navigate: (path: NavPath) => void;
 };
-
-const SUIT_DEFAULTS = defaultSuitCustomizations();
 
 function LeafIcon({ leaf }: { leaf: OutlineLeaf }) {
   if (leaf.swatch)
@@ -47,7 +48,8 @@ function LeafIcon({ leaf }: { leaf: OutlineLeaf }) {
   );
 }
 
-export function DesignNavigator({ draft, outline, busy, change, path, navigate }: Props) {
+export function DesignNavigator(props: Props) {
+  const { index, outline, path, navigate } = props;
   const branch = outline.find((item) => item.id === path.branch);
   const leaf = path.leaf ? findLeaf(outline, path.leaf) : undefined;
   const allLeaves = outline.flatMap((item) => item.leaves);
@@ -79,9 +81,9 @@ export function DesignNavigator({ draft, outline, busy, change, path, navigate }
   );
 
   if (leaf && branch) {
-    const index = allLeaves.findIndex((item) => item.id === leaf.id);
-    const previous = allLeaves[index - 1];
-    const next = allLeaves[index + 1];
+    const position = allLeaves.findIndex((item) => item.id === leaf.id);
+    const previous = allLeaves[position - 1];
+    const next = allLeaves[position + 1];
     return (
       <section className="navigator" aria-label={`${leaf.label} options`}>
         {crumbs}
@@ -99,7 +101,7 @@ export function DesignNavigator({ draft, outline, busy, change, path, navigate }
           </div>
         </div>
         <div className="nav-editor">
-          <LeafEditor draft={draft} leaf={leaf} busy={busy} change={change} />
+          <LeafEditor {...props} leaf={leaf} />
         </div>
         <div className="nav-steps">
           {previous ? (
@@ -214,180 +216,269 @@ export function DesignNavigator({ draft, outline, busy, change, path, navigate }
           );
         })}
       </ul>
-      <p className="customization-notice">
-        Reference options only. Availability, prices and manufacturing codes have not been approved
-        for ordering.
-      </p>
+      {index.catalog.referenceOnly && (
+        <p className="customization-notice">
+          Reference options only. Availability, prices and manufacturing codes have not been
+          approved for ordering.
+        </p>
+      )}
     </section>
   );
 }
 
-function LeafEditor({
-  draft,
-  leaf,
-  busy,
-  change,
-}: {
-  draft: Draft;
-  leaf: OutlineLeaf;
-  busy: boolean;
-  change: (patch: DesignPatch) => void;
-}) {
-  const d = draft.design;
-  const choiceList = (
-    label: string,
-    options: readonly string[],
-    current: string,
-    patch: (value: string) => DesignPatch,
-  ) => (
+function choiceList(
+  label: string,
+  options: { value: string; label: string; hint?: string }[],
+  current: string | null,
+  busy: boolean,
+  pick: (value: string) => void,
+) {
+  return (
     <div className="nav-choices" role="group" aria-label={label}>
       {options.map((option) => (
         <button
-          key={option}
+          key={option.value}
           disabled={busy}
-          aria-pressed={current === option}
-          onClick={() => change(patch(option))}
+          aria-pressed={current === option.value}
+          onClick={() => pick(option.value)}
         >
-          {option}
-          {current === option && <Check size={13} />}
+          {option.label}
+          {option.hint && <small className="price-effect">{option.hint}</small>}
+          {current === option.value && <Check size={13} />}
         </button>
       ))}
     </div>
   );
+}
+
+function TextOption({
+  entry,
+  busy,
+  save,
+}: {
+  entry: StructureAttribute;
+  busy: boolean;
+  save: (text: string) => void;
+}) {
+  const [text, setText] = useState(entry.value ?? '');
+  const rules = entry.attribute.textRules;
+  const id = `text-${entry.attribute.code}`;
+  return (
+    <form
+      className="customization-text"
+      onSubmit={(e) => {
+        e.preventDefault();
+        save(text);
+      }}
+    >
+      <label htmlFor={id}>{entry.attribute.name}</label>
+      <input
+        id={id}
+        value={text}
+        maxLength={rules?.maxLength}
+        placeholder={rules?.placeholder}
+        disabled={busy}
+        onChange={(e) => setText(e.target.value)}
+      />
+      <button type="submit" className="button button-secondary" disabled={busy}>
+        Save
+      </button>
+      {rules && <small>Up to {rules.maxLength} characters.</small>}
+    </form>
+  );
+}
+
+function LeafEditor({
+  index,
+  garment,
+  availability,
+  busy,
+  change,
+  leaf,
+}: Props & { leaf: OutlineLeaf }) {
+  const media = (id: string | null) => (id ? index.media.get(id)?.url : undefined);
+  const product = index.products.get(garment.productCode)!;
+  const currency = index.catalog.currency;
+  // Price effects are catalog data for display; quotes are computed on the server.
+  const effect = (amountMinor: number) =>
+    amountMinor > 0 ? priceEffect(amountMinor, currency) : undefined;
   switch (leaf.kind) {
     case 'product':
       return (
         <div className="nav-cards" role="group" aria-label="Garment">
-          {Object.entries(PRODUCTS).map(([value, product]) => (
+          {index.catalog.products.map((product) => (
             <button
-              key={value}
+              key={product.code}
               disabled={busy}
-              aria-pressed={d.product === value}
-              onClick={() => change({ product: value as Product })}
+              aria-pressed={garment.productCode === product.code}
+              onClick={() => change({ productCode: product.code })}
             >
               <strong>{product.name}</strong>
               <small>{product.description}</small>
-              {d.product === value && <Check size={14} />}
+              {garment.productCode === product.code && <Check size={14} />}
             </button>
           ))}
         </div>
       );
     case 'occasion':
-      return choiceList('Occasion', OCCASIONS, d.occasion, (v) => ({
-        occasion: v as DesignPatch['occasion'],
-      }));
-    case 'climate':
-      return choiceList('Weather', CLIMATES, d.climate, (v) => ({
-        climate: v as DesignPatch['climate'],
-      }));
-    case 'fabric':
+    case 'climate': {
+      const type = leaf.kind;
+      return choiceList(
+        type === 'occasion' ? 'Occasion' : 'Weather',
+        (index.catalog.lookups[type] ?? []).map((item) => ({
+          value: item.code,
+          label: item.label,
+        })),
+        garment.preferences[type],
+        busy,
+        (value) => change({ preferences: { [type]: value } }),
+      );
+    }
+    case 'fabric': {
+      const fabrics = fabricChoices(index, garment);
+      const current = index.materials.get(garment.materialCode);
+      const composition = current?.composition.length
+        ? current.composition
+            .map(
+              (item) =>
+                `${item.percent}% ${index.lookups.get('fibre')?.get(item.fibre)?.label ?? item.fibre}`,
+            )
+            .join(', ')
+        : String(current?.metadata.compositionLabel ?? '');
       return (
         <div className="fabric-list" role="group" aria-label="Choose fabric">
-          {availableFabrics(d.product).map((f) => (
-            <button
-              key={f.id}
-              disabled={busy}
-              aria-pressed={d.fabricId === f.id}
-              className={`fabric-option ${d.fabricId === f.id ? 'selected' : ''}`}
-              onClick={() => change({ fabricId: f.id })}
-            >
-              <span
-                className={`fabric-swatch pattern-${f.pattern}`}
-                style={{ backgroundColor: f.color }}
+          {fabrics.map((fabric) => {
+            const status = availability[fabric.code];
+            const selected = garment.materialCode === fabric.code;
+            const unavailable = !isSelectable(status);
+            return (
+              <button
+                key={fabric.code}
+                disabled={busy || (unavailable && !selected)}
+                aria-pressed={selected}
+                aria-describedby={
+                  unavailable || status === 'low_stock' ? `${fabric.code}-status` : undefined
+                }
+                className={`fabric-option ${selected ? 'selected' : ''}`}
+                onClick={() => change({ materialCode: fabric.code })}
               >
-                {d.fabricId === f.id && (
-                  <span className="swatch-check">
-                    <Check size={12} />
-                  </span>
+                <span
+                  className={`fabric-swatch pattern-${fabric.renderPattern}`}
+                  style={{ backgroundColor: fabric.primaryHex }}
+                >
+                  {selected && (
+                    <span className="swatch-check">
+                      <Check size={12} />
+                    </span>
+                  )}
+                </span>
+                <span>{fabric.name}</span>
+                {(unavailable || status === 'low_stock') && (
+                  <small className="fabric-status" id={`${fabric.code}-status`}>
+                    {unavailable ? 'Currently unavailable' : 'Limited availability'}
+                  </small>
                 )}
-              </span>
-              <span>{f.name}</span>
-            </button>
-          ))}
-          <p className="fine-print nav-fabric-note">
-            Reference fabrics ·{' '}
-            {availableFabrics(d.product).find((f) => f.id === d.fabricId)?.composition}
-          </p>
+              </button>
+            );
+          })}
+          {current && (
+            <p className="fine-print nav-fabric-note">
+              {current.referenceOnly ? 'Reference fabrics' : current.name}
+              {composition ? ` · ${composition}` : ''}
+            </p>
+          )}
         </div>
       );
-    case 'fit':
-      return (
-        <div className="fit-options">
-          {FITS.map((fit, i) => (
-            <button
-              disabled={busy}
-              key={fit}
-              aria-pressed={d.fit === fit}
-              onClick={() => change({ fit })}
-            >
-              <span className={`fit-drawing fit-${i}`}>
-                <i />
-              </span>
-              <strong>{fit}</strong>
-              <small>
-                {i === 0
-                  ? 'A closer silhouette'
-                  : i === 1
-                    ? 'Comfortably balanced'
-                    : 'A little more room'}
-              </small>
-              {d.fit === fit && <Check size={15} />}
-            </button>
-          ))}
-        </div>
-      );
-    case 'detail': {
-      const key = leaf.id as keyof typeof DETAIL_OPTIONS;
+    }
+    case 'component': {
+      const include = leaf.include!;
+      const link = product.components.find((item) => item.componentCode === include.componentCode);
       return choiceList(
-        leaf.label,
-        DETAIL_OPTIONS[key],
-        d[key],
-        (v) => ({ [key]: v }) as DesignPatch,
+        include.label,
+        [
+          { value: 'no', label: 'Not added' },
+          {
+            value: 'yes',
+            label: 'Added',
+            hint: link ? effect(componentSurcharge(link)) : undefined,
+          },
+        ],
+        include.included ? 'yes' : 'no',
+        busy,
+        (value) => change({ components: { [include.componentCode]: value === 'yes' } }),
       );
     }
     case 'catalog': {
-      const values = { ...SUIT_DEFAULTS, ...(d.customizations || {}) };
-      const sections = relevantSections(leaf.group!, values);
+      const groupMinor = groupSurcharge(product, leaf.group!.group);
       return (
         <div className="customization-sections">
-          {sections.map((section) => (
-            <section key={section.selectionKey} aria-labelledby={`${section.selectionKey}-label`}>
-              <div className="customization-section-heading">
-                <strong id={`${section.selectionKey}-label`}>{section.label}</strong>
-                {section.note && <span>{section.note}</span>}
-              </div>
-              <div className="customization-options" role="group" aria-label={section.label}>
-                {section.options.map((option) => {
-                  const selected = values[section.selectionKey] === option.value;
-                  return (
-                    <button
-                      key={option.id}
-                      disabled={busy}
-                      aria-pressed={selected}
-                      onClick={() =>
-                        change({ customizations: { [section.selectionKey]: option.value } })
-                      }
-                    >
-                      <span
-                        className="customization-option-image"
-                        style={
-                          option.asset ? { backgroundImage: `url("${option.asset}")` } : undefined
-                        }
-                      >
-                        {!option.asset && option.label.slice(0, 2).toUpperCase()}
-                        {selected && (
-                          <span className="swatch-check">
-                            <Check size={12} />
+          {groupMinor > 0 && (
+            <p className="price-hint">Customising adds {formatPrice(groupMinor, currency)}</p>
+          )}
+          {leaf.group!.attributes.map((entry) => {
+            const { attribute } = entry;
+            const labelId = `${attribute.code}-label`;
+            const attributeMinor = attributeSurcharge(product, attribute);
+            return (
+              <section key={attribute.code} aria-labelledby={labelId}>
+                <div className="customization-section-heading">
+                  <strong id={labelId}>{attribute.name}</strong>
+                  {attribute.helpText && <span>{attribute.helpText}</span>}
+                  {attributeMinor > 0 && (
+                    <span className="price-hint">
+                      Changing this adds {formatPrice(attributeMinor, currency)}
+                    </span>
+                  )}
+                </div>
+                {attribute.inputType === 'text' ? (
+                  <TextOption
+                    key={`${attribute.code}:${entry.value ?? ''}`}
+                    entry={entry}
+                    busy={busy}
+                    save={(text) => change({ selections: { [attribute.code]: text } })}
+                  />
+                ) : (
+                  <div className="customization-options" role="group" aria-label={attribute.name}>
+                    {entry.values.map((value) => {
+                      const selected = entry.value === value.code;
+                      const image = media(value.imageMediaId);
+                      return (
+                        <button
+                          key={value.code}
+                          disabled={busy}
+                          aria-pressed={selected}
+                          onClick={() => change({ selections: { [attribute.code]: value.code } })}
+                        >
+                          <span
+                            className="customization-option-image"
+                            style={image ? { backgroundImage: `url("${image}")` } : undefined}
+                          >
+                            {!image && (
+                              <span aria-hidden>{value.label.slice(0, 2).toUpperCase()}</span>
+                            )}
+                            {selected && (
+                              <span className="swatch-check">
+                                <Check size={12} />
+                              </span>
+                            )}
                           </span>
-                        )}
-                      </span>
-                      <span>{cleanOptionLabel(option.label)}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-          ))}
+                          <span>{value.label}</span>
+                          {effect(valueSurcharge(product, attribute, value.code)) && (
+                            <small className="price-effect">
+                              {effect(valueSurcharge(product, attribute, value.code))}
+                            </small>
+                          )}
+                          {attribute.visualSlot && value.visualToken === null && (
+                            <small className="not-illustrated">Not illustrated</small>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+            );
+          })}
         </div>
       );
     }

@@ -16,7 +16,8 @@ export function scanServiceCustomerTerms(amountCents = SCAN_SERVICE_FEE_CENTS) {
   return {
     amount,
     summary: `Pay ${amount} for one scan. Get ${amount} off your next eligible garment order. Your saved measurements stay available to reuse.`,
-    noOrder: 'If you do not place an eligible garment order, the scan remains a measurement service fee.',
+    noOrder:
+      'If you do not place an eligible garment order, the scan remains a measurement service fee.',
     repeats: 'Repeat scans require another eligible permission.',
   };
 }
@@ -27,16 +28,31 @@ export function providerScanAuthorizationReadiness() {
     code: privateCredentialPresent
       ? 'single_use_authorization_adapter_not_implemented'
       : 'single_use_provider_authorization_not_configured',
-    required: 'A private 3DLOOK capability that mints an expiring, single-use customer scan authorization.',
+    required:
+      'A private 3DLOOK capability that mints an expiring, single-use customer scan authorization.',
   } as const;
 }
 export function scanCheckoutFingerprint(ownerId: string, draftId: string, revision: number) {
   return createHash('sha256')
-    .update(JSON.stringify({ ownerId, draftId, revision, amountCents: SCAN_SERVICE_FEE_CENTS, currency: SCAN_SERVICE_CURRENCY }))
+    .update(
+      JSON.stringify({
+        ownerId,
+        draftId,
+        revision,
+        amountCents: SCAN_SERVICE_FEE_CENTS,
+        currency: SCAN_SERVICE_CURRENCY,
+      }),
+    )
     .digest('hex');
 }
 export function scanServiceStripeTransition(event: Stripe.Event) {
-  if (!['payment_intent.succeeded', 'payment_intent.payment_failed', 'payment_intent.canceled'].includes(event.type))
+  if (
+    ![
+      'payment_intent.succeeded',
+      'payment_intent.payment_failed',
+      'payment_intent.canceled',
+    ].includes(event.type)
+  )
     return null;
   const intent = event.data.object as Stripe.PaymentIntent;
   if (intent.metadata?.vessyService !== 'measurement_scan') return null;
@@ -48,36 +64,59 @@ export function scanServiceStripeTransition(event: Stripe.Event) {
     intentId: intent.id,
     amountCents: intent.amount,
     currency: intent.currency,
-    status: event.type === 'payment_intent.succeeded'
-      ? ('paid' as const)
-      : event.type === 'payment_intent.canceled'
-        ? ('cancelled' as const)
-        : ('payment_failed' as const),
+    status:
+      event.type === 'payment_intent.succeeded'
+        ? ('paid' as const)
+        : event.type === 'payment_intent.canceled'
+          ? ('cancelled' as const)
+          : ('payment_failed' as const),
     grantsAccess: event.type === 'payment_intent.succeeded',
   };
 }
 export type ScanServiceEventStore = {
   claimEvent: (eventId: string, eventType: string) => Promise<boolean>;
-  getPayment: (paymentId: number) => Promise<{
-    id: number; ownerId: string; draftId: string; revision: number;
-    amountCents: number; currency: string; stripePaymentIntentId: string | null;
-  } | undefined>;
-  updatePayment: (paymentId: number, status: 'paid' | 'payment_failed' | 'cancelled') => Promise<void>;
+  getPayment: (paymentId: number) => Promise<
+    | {
+        id: number;
+        ownerId: string;
+        draftId: string;
+        revision: number;
+        amountCents: number;
+        currency: string;
+        stripePaymentIntentId: string | null;
+      }
+    | undefined
+  >;
+  updatePayment: (
+    paymentId: number,
+    status: 'paid' | 'payment_failed' | 'cancelled',
+  ) => Promise<void>;
   grantPaidService: (payment: {
-    id: number; ownerId: string; draftId: string; revision: number;
-    amountCents: number; currency: string;
+    id: number;
+    ownerId: string;
+    draftId: string;
+    revision: number;
+    amountCents: number;
+    currency: string;
   }) => Promise<void>;
 };
-export async function processScanServiceEventWithStore(event: Stripe.Event, store: ScanServiceEventStore) {
+export async function processScanServiceEventWithStore(
+  event: Stripe.Event,
+  store: ScanServiceEventStore,
+) {
   const transition = scanServiceStripeTransition(event);
   if (!transition) return false;
   const payment = await store.getPayment(transition.paymentId);
-  if (!payment
-    || payment.ownerId !== transition.ownerId
-    || payment.amountCents !== transition.amountCents
-    || payment.currency.toLowerCase() !== transition.currency.toLowerCase()
-    || payment.stripePaymentIntentId !== transition.intentId)
-    throw new Error('Stripe scan-service payment does not match the stored Vessy service purchase.');
+  if (
+    !payment ||
+    payment.ownerId !== transition.ownerId ||
+    payment.amountCents !== transition.amountCents ||
+    payment.currency.toLowerCase() !== transition.currency.toLowerCase() ||
+    payment.stripePaymentIntentId !== transition.intentId
+  )
+    throw new Error(
+      'Stripe scan-service payment does not match the stored Vessy service purchase.',
+    );
   if (!(await store.claimEvent(event.id, event.type))) return true;
   await store.updatePayment(payment.id, transition.status);
   if (transition.grantsAccess) await store.grantPaidService(payment);

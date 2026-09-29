@@ -2,8 +2,7 @@
 
 import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
-import { fabricFor } from '@/modules/catalog/catalog';
-import type { Design } from '@/modules/configuration/types';
+import type { RenderInput } from './binding';
 import { sketchSpec, shoeStyle } from './sketch-spec';
 import { outfitParts, type GarmentPart, type Role } from './garments/garments';
 import { patternTexture, weaveNormal } from './garments/materials';
@@ -15,13 +14,20 @@ function lighter(hex: string, amount: number) {
   return new THREE.Color(hex).lerp(new THREE.Color('#ffffff'), amount);
 }
 
-function useMaterials(design: Design) {
-  const spec = sketchSpec(design);
-  const fabric = fabricFor(design.fabricId)!;
-  const shirtProduct = design.product === 'shirt';
+function useMaterials(render: RenderInput) {
+  const spec = sketchSpec(render);
+  const fabric = render.material;
+  const shirtProduct = render.visualModel === 'shirt';
   const buttonColor = spec.jacket?.buttonColor ?? '#2f2a25';
   const shoe = shoeStyle(spec.shoes);
-  const key = [fabric.id, shirtProduct, buttonColor, shoe.color, design.product].join('|');
+  const key = [
+    fabric.color,
+    fabric.pattern,
+    shirtProduct,
+    buttonColor,
+    shoe.color,
+    render.visualModel,
+  ].join('|');
   const materials = useMemo(() => {
     const pattern = patternTexture(fabric);
     const weave = weaveNormal(fabric.pattern);
@@ -52,7 +58,7 @@ function useMaterials(design: Design) {
       side: THREE.DoubleSide,
     });
     const trouser =
-      design.product === 'suit'
+      render.visualModel === 'suit'
         ? cloth
         : new THREE.MeshPhysicalMaterial({
             color: '#56524b',
@@ -122,14 +128,14 @@ function Part({ part, material }: { part: GarmentPart; material: THREE.Material 
   return <mesh geometry={part.geometry} material={material} castShadow receiveShadow />;
 }
 
-export function Outfit({ design }: { design: Design }) {
-  const spec = sketchSpec(design);
+export function Outfit({ render }: { render: RenderInput }) {
+  const spec = sketchSpec(render);
   const shape = JSON.stringify({ ...spec, fabric: undefined, skinTone: undefined });
   // Rebuilt only when a shape-affecting choice changes.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const parts = useMemo(() => outfitParts(sketchSpec(design)), [shape]);
+  const parts = useMemo(() => outfitParts(sketchSpec(render)), [shape]);
   useEffect(() => () => parts.forEach((p) => p.geometry.dispose()), [parts]);
-  const materials = useMaterials(design);
+  const materials = useMaterials(render);
   return (
     <group name="generated-outfit">
       {parts.map((part) => (

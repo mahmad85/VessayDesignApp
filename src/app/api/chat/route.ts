@@ -1,7 +1,16 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { identity, json, failure, body, checkOrigin } from '@/lib/http';
-import { getDraft, saveChat, replayChat, enforceLimit } from '@/db/repository';
+import {
+  getDraft,
+  saveChat,
+  replayChat,
+  enforceLimit,
+  studioState,
+  loadEngineContext,
+} from '@/db/repository';
+import { pinnedVersions } from '@/modules/configuration/engine';
+import { quoteCart } from '@/modules/pricing/quote';
 import { assistantReply } from '@/integrations/assistant';
 import { DomainError } from '@/modules/configuration/types';
 export const runtime = 'nodejs';
@@ -16,7 +25,7 @@ export async function POST(request: NextRequest) {
     const input = inputSchema.parse(await body(request));
     const who = await identity(request);
     const replay = await replayChat(who.owner, input);
-    if (replay) return json({ draft: replay }, who.token);
+    if (replay) return json(await studioState(replay), who.token);
     await enforceLimit(who.owner + ':chat', 12);
     await enforceLimit('assistant:global', 80);
     const current = await getDraft(who.owner);
@@ -26,7 +35,16 @@ export async function POST(request: NextRequest) {
         'Your draft has changed. Please send your message again.',
         409,
       );
-    const answer = await assistantReply(current, input.message);
+    const context = await loadEngineContext(pinnedVersions(current));
+    const quote = quoteCart(context.current, current, context.availability);
+    const answer = await assistantReply(current, input.message, {
+      ...context,
+      quote: {
+        status: quote.status,
+        totalMinor: quote.totalMinor ?? undefined,
+        currency: quote.currency,
+      },
+    });
     const draft = await saveChat(who.owner, input, {
       id: crypto.randomUUID(),
       role: 'assistant',
@@ -34,7 +52,7 @@ export async function POST(request: NextRequest) {
       basisRevision: current.revision + 1,
       createdAt: new Date().toISOString(),
     });
-    return json({ draft }, who.token);
+    return json(await studioState(draft), who.token);
   } catch (e) {
     return failure(e);
   }

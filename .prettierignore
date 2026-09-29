@@ -8,3 +8,7 @@ artifacts
 docs
 AGENTS.md
 next-env.d.ts
+# Verbatim upstream licence texts and a generated build output (TASK-011) stay as supplied.
+assets/human-source/LICENSE.md
+public/models/LICENSE-CC0.md
+public/models/human-reference-v1.manifest.json

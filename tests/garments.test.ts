@@ -1,9 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
-import { createDraft, applyCommand } from '../src/modules/configuration/engine';
-import { designOutline } from '../src/modules/configuration/design-outline';
-import type { Command, Design } from '../src/modules/configuration/types';
+import type { CommandV2, DraftV2 } from '../src/modules/configuration/types';
+import { visibleStructure } from '../src/modules/catalog/structure';
 import { sketchSpec } from '../src/visualization/sketch-spec';
+import {
+  activeGarment,
+  add,
+  draftWith,
+  referenceIndex,
+  renderOf,
+  select,
+} from './helpers/reference';
 import {
   jacketField,
   outfitParts,
@@ -14,14 +21,15 @@ import {
 import { shownIn3D } from '../src/visualization/garments/coverage';
 import { torsoCenterZ } from '../src/visualization/garments/body-profile';
 
-// Synthetic drafts only.
-const design = (...commands: Command[]) =>
-  commands.reduce((d, c) => applyCommand(d, c), createDraft()).design;
-const custom = (values: Record<string, string>): Command => ({
-  type: 'design',
-  patch: { customizations: values },
-});
-const parts = (d: Design) => outfitParts(sketchSpec(d));
+// SYNTHETIC v2 garments on the imported reference release (ported from the
+// v1 designs in WP-14; every assertion kept).
+type Design = DraftV2;
+const FIT = 'style.jacket.jacket_fit.jacket-fit';
+const start = (product: string, ...commands: CommandV2[]) => draftWith(add(product), ...commands);
+const design = (...commands: CommandV2[]) => start('suit', ...commands);
+const custom = select;
+const withVest: CommandV2 = { type: 'design', patch: { components: { vest: true } } };
+const parts = (d: Design) => outfitParts(sketchSpec(renderOf(d)));
 const keys = (d: Design) => parts(d).map((p) => p.key);
 function signature(d: Design) {
   let sum = 0;
@@ -36,9 +44,9 @@ function signature(d: Design) {
 describe('generated 3D garments', () => {
   it('produce finite geometry for every product and closure style', () => {
     const designs = [
-      createDraft().design,
-      design({ type: 'design', patch: { product: 'shirt' } }),
-      design({ type: 'design', patch: { product: 'blazer', fit: 'Relaxed' } }),
+      design(),
+      start('shirt'),
+      start('blazer', select({ [FIT]: 'relaxed' })),
       ...['simple_1', 'simple_3', 'crossed_2', 'crossed_4', 'crossed_6', 'mao'].map((style) =>
         design(custom({ 'style.jacket.jacket_style_combined.jacket-style-combined': style })),
       ),
@@ -52,7 +60,7 @@ describe('generated 3D garments', () => {
   });
 
   it('draws the chosen construction, not only a label', () => {
-    const base = keys(createDraft().design);
+    const base = keys(design());
     expect(base).toEqual(expect.arrayContaining(['lapel-left', 'collar-left', 'pocket-1']));
     const mao = keys(
       design(custom({ 'style.jacket.jacket_style_combined.jacket-style-combined': 'mao' })),
@@ -80,19 +88,19 @@ describe('generated 3D garments', () => {
       ),
     ).find((p) => p.key === 'sleeve-buttons')!;
     expect(sleeve.matrices).toHaveLength(8);
-    expect(keys(design(custom({ 'style.vest.waistcoat.waistcoat': '1' })))).toContain('vest');
+    expect(keys(design(withVest))).toContain('vest');
     expect(keys(design(custom({ 'style.pants.pants_cuff.pants-cuff': '1' })))).toContain(
       'turn-up-left',
     );
-    const shirt = keys(design({ type: 'design', patch: { product: 'shirt' } }));
+    const shirt = keys(start('shirt'));
     expect(shirt).not.toContain('jacket');
     expect(shirt).toContain('sleeve-left');
   });
 
   it('changes 3D geometry for every main shape choice', () => {
-    const base = signature(createDraft().design);
-    const changes: Command[] = [
-      { type: 'design', patch: { fit: 'Relaxed' } },
+    const base = signature(design());
+    const changes: CommandV2[] = [
+      select({ [FIT]: 'relaxed' }),
       custom({ 'style.jacket.jacket_style_combined.jacket-style-combined': 'simple_1' }),
       custom({ 'style.jacket.jacket_lapel_type_combinated.jacket-lapel-type': 'peak' }),
       custom({ 'style.jacket.jacket_lapel_type_combinated.jacket-wide-lapel': 'width' }),
@@ -104,17 +112,14 @@ describe('generated 3D garments', () => {
       custom({ 'style.pants.pants_length.pants-length': 'bermuda' }),
       custom({ 'style.pants.pants_break.pants-break': 'full' }),
       custom({ 'style.pants.pants_cuff.pants-cuff': '1' }),
-      custom({ 'style.vest.waistcoat.waistcoat': '1' }),
+      withVest,
     ];
     for (const change of changes)
       expect(signature(design(change)), JSON.stringify(change)).not.toBe(base);
-    const vest = design(custom({ 'style.vest.waistcoat.waistcoat': '1' }));
+    const vest = design(withVest);
     expect(
       signature(
-        design(
-          custom({ 'style.vest.waistcoat.waistcoat': '1' }),
-          custom({ 'style.vest.waistcoat_bottom.waistcoat-bottom': 'straight' }),
-        ),
+        design(withVest, custom({ 'style.vest.waistcoat_bottom.waistcoat-bottom': 'straight' })),
       ),
     ).not.toBe(signature(vest));
   });
@@ -141,18 +146,19 @@ describe('generated 3D garments', () => {
   });
 
   it('marks only real outline choices as drawn in 3D', () => {
-    const vest = design(custom({ 'style.vest.waistcoat.waistcoat': '1' }));
-    const leaves = new Set([
-      ...designOutline(vest).flatMap((b) => b.leaves.map((l) => l.id)),
-      ...designOutline(design({ type: 'design', patch: { product: 'blazer' } })).flatMap((b) =>
-        b.leaves.map((l) => l.id),
+    const index = referenceIndex();
+    const leaves = new Set(
+      [design(withVest), start('blazer'), start('shirt')].flatMap(
+        (d) =>
+          visibleStructure(index, activeGarment(d))?.tabs.flatMap((tab) =>
+            tab.groups.map((group) => group.group.code),
+          ) ?? [],
       ),
-      ...designOutline(design({ type: 'design', patch: { product: 'shirt' } })).flatMap((b) =>
-        b.leaves.map((l) => l.id),
-      ),
-    ]);
-    for (const id of leaves) if (shownIn3D(id)) expect(leaves.has(id)).toBe(true);
-    expect(shownIn3D('accents.jacket.lining')).toBe(false);
-    expect(shownIn3D('style.jacket.jacket_lapel_type_combinated')).toBe(true);
+    );
+    for (const code of index.groups.keys())
+      if (shownIn3D(code, index)) expect(leaves.has(code), code).toBe(true);
+    expect(shownIn3D('accents.jacket.lining', index)).toBe(false);
+    expect(shownIn3D('style.jacket.jacket_lapel_type_combinated', index)).toBe(true);
+    expect(shownIn3D('include:vest', index)).toBe(true);
   });
 });

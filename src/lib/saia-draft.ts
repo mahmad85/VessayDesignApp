@@ -33,7 +33,11 @@ export function sanitizeProviderPersonId(value: unknown) {
 // The raw provider person ID never reaches the database; only a keyed
 // fingerprint of it is stored, so a leaked draft row cannot be replayed
 // against the vendor.
-export function fingerprintSaiaProviderResult(ownerId: string, providerPersonId: string, secret: string) {
+export function fingerprintSaiaProviderResult(
+  ownerId: string,
+  providerPersonId: string,
+  secret: string,
+) {
   if (!secret) throw new Error('capture_not_configured');
   return createHmac('sha256', secret).update(`${ownerId}\0${providerPersonId}`).digest('base64url');
 }

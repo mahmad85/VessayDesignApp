@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { Product } from '../catalog/catalog';
+import { codeSchema } from '../catalog/snapshot';
 export const designPatch = z
   .object({
     product: z.enum(['suit', 'shirt', 'blazer']).optional(),
@@ -99,11 +100,147 @@ export const commandEnvelope = z.object({
   expectedRevision: z.number().int().nonnegative(),
   command: commandSchema,
 });
+
+// Draft v2 garments (ADMIN-BACKEND.md §7.1, CRT-001). A garment pins the
+// catalog release it was configured against; every code refers to that release.
+
+export type GarmentConfirmation = 'product' | 'material' | 'preferences' | 'details';
+export type Garment = {
+  /** uuid; for an upgraded v1 draft it equals the draft id (deterministic). */
+  id: string;
+  productCode: string;
+  templateCode: string | null;
+  catalogVersion: number;
+  materialCode: string;
+  /** Component codes, required ones included. */
+  includedComponents: string[];
+  /** Attribute code → value code, or the text of a text option. */
+  selections: Record<string, string>;
+  preferences: { occasion: string | null; climate: string | null };
+  confirmed: GarmentConfirmation[];
+  /** 1–5 identical copies for the same measurement profile (CRT-002). */
+  quantity: number;
+};
+export const garmentPatch = z
+  .object({
+    productCode: codeSchema.optional(),
+    materialCode: codeSchema.optional(),
+    preferences: z
+      .object({
+        occasion: codeSchema.nullable().optional(),
+        climate: codeSchema.nullable().optional(),
+      })
+      .strict()
+      .optional(),
+    components: z
+      .record(codeSchema, z.boolean())
+      .refine((value) => Object.keys(value).length <= 10)
+      .optional(),
+    selections: z
+      .record(z.string().min(1).max(180), z.string().max(180))
+      .refine((value) => Object.keys(value).length <= 100)
+      .optional(),
+  })
+  .strict();
+export type GarmentPatch = z.infer<typeof garmentPatch>;
+/** A change the customer must accept: removed or replaced choices (CATALOG-ADMIN §5.3, §7.8). */
+export type Impact = {
+  garmentId: string;
+  kind:
+    | 'selection_removed'
+    | 'selection_replaced'
+    | 'component_removed'
+    | 'material_unavailable'
+    | 'product_unavailable';
+  attributeCode?: string;
+  from?: string;
+  to?: string;
+  message: string;
+};
+
+/** The pre-D-019 draft (no `schemaVersion`), read only to upgrade it (ADMIN-BACKEND §7.2). */
+export type DraftV1 = Draft;
+export type SkinTone = Design['skinTone'];
+export type ChatSuggestion = { garmentId: string | null; patch: GarmentPatch };
+export type ChatMessageV2 = Omit<ChatMessage, 'suggestion'> & { suggestion?: ChatSuggestion };
+export type DraftV2 = {
+  schemaVersion: 2;
+  id: string;
+  revision: number;
+  createdAt: string;
+  updatedAt: string;
+  /** The garment commands target when they name none; null when the cart is empty. */
+  activeGarmentId: string | null;
+  /** 0–10 garments (CRT-001). */
+  garments: Garment[];
+  skinTone: SkinTone;
+  /** One measurement profile per draft (CRT-004). */
+  measurements: Measurements;
+  messages: ChatMessageV2[];
+  /** The `review` command result, as today, until TASK-023 replaces it with the order check. */
+  review: Review | null;
+  orders: { orderId: string; number: string; submittedAt: string }[];
+};
+
+export const MAX_GARMENTS = 10;
+const garmentId = z.uuid();
+export const commandSchemaV2 = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('add_garment'),
+    productCode: codeSchema,
+    templateCode: codeSchema.nullable().optional(),
+  }),
+  z.object({
+    type: z.literal('remove_garment'),
+    garmentId,
+    confirm: z.boolean().optional(),
+  }),
+  z.object({ type: z.literal('select_garment'), garmentId }),
+  z.object({
+    type: z.literal('design'),
+    garmentId: garmentId.optional(),
+    patch: garmentPatch,
+    confirmCategoryChange: z.boolean().optional(),
+    confirmImpact: z.boolean().optional(),
+  }),
+  z.object({
+    type: z.literal('set_quantity'),
+    garmentId,
+    quantity: z.number().int().min(1).max(5),
+  }),
+  z.object({ type: z.literal('accept_design'), garmentId: garmentId.optional() }),
+  z.object({
+    type: z.literal('rebase_catalog'),
+    garmentId,
+    confirmImpact: z.boolean(),
+  }),
+  z.object({
+    type: z.literal('appearance'),
+    skinTone: z.enum(['porcelain', 'warm', 'tan', 'deep']),
+  }),
+  z.object({
+    type: z.literal('measurements'),
+    values: z.record(z.string(), z.number().finite().positive().max(3000)),
+    confirm: z.boolean(),
+    source: z.enum(['customer', '3dlook']).optional(),
+  }),
+  // Kept as today until TASK-023 replaces it with POST /api/studio/check.
+  z.object({ type: z.literal('review'), mode: z.enum(['automated', 'human']) }),
+]);
+export type CommandV2 = z.infer<typeof commandSchemaV2>;
+export const commandEnvelopeV2 = z.object({
+  actionId: z.uuid(),
+  expectedRevision: z.number().int().nonnegative(),
+  command: commandSchemaV2,
+});
+
 export class DomainError extends Error {
   constructor(
     public code: string,
     message: string,
     public status = 422,
+    /** Optional structured context, returned as `error.details` (ADMIN-BACKEND §2 “Errors”). */
+    public details?: Record<string, unknown>,
   ) {
     super(message);
   }

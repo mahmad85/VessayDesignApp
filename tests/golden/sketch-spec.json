@@ -1,0 +1,2051 @@
+{
+  "baselines": {
+    "suit": {
+      "product": "suit",
+      "skinTone": "warm",
+      "fabric": { "color": "#25374b", "pattern": "twill" },
+      "fit": "slim",
+      "jacket": {
+        "style": "simple_2",
+        "lapelType": "standard",
+        "lapelWidth": "standard",
+        "pockets": "2b",
+        "sleeveButtons": 3,
+        "sleeveHoles": false,
+        "vent": "1",
+        "chestPocket": "1",
+        "buttonColor": "#2f2a25",
+        "threads": null,
+        "lining": "default",
+        "halfCanvas": false,
+        "monogram": {
+          "font": "bold_script",
+          "threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/03_MONOGRAM/02_Thread_Color/01_color_41.png"
+        },
+        "elbowPatches": null,
+        "neckLining": null,
+        "pocketSquare": { "on": false }
+      },
+      "trousers": {
+        "color": null,
+        "fit": "normal",
+        "length": "long",
+        "break": "half",
+        "pleats": 0,
+        "fastening": "1",
+        "frontPocket": "diagonal",
+        "backPocket": "A1",
+        "cuffs": false,
+        "suspenderButtons": false,
+        "waist": "0",
+        "belt": false,
+        "braces": false
+      },
+      "vest": null,
+      "shirt": { "collar": "Spread", "cuffs": "Button" },
+      "tie": { "on": false },
+      "bowtie": { "on": false },
+      "shoes": "",
+      "socks": { "on": false }
+    },
+    "shirt": {
+      "product": "shirt",
+      "skinTone": "warm",
+      "fabric": { "color": "#e8e6dc", "pattern": "plain" },
+      "fit": "slim",
+      "jacket": null,
+      "trousers": {
+        "color": "#56524b",
+        "fit": "normal",
+        "length": "long",
+        "break": "half",
+        "pleats": 0,
+        "fastening": "0",
+        "frontPocket": "diagonal",
+        "backPocket": "A1",
+        "cuffs": false,
+        "suspenderButtons": false,
+        "waist": "0",
+        "belt": false,
+        "braces": false
+      },
+      "vest": null,
+      "shirt": { "collar": "Spread", "cuffs": "Button" },
+      "tie": { "on": false },
+      "bowtie": { "on": false },
+      "shoes": "",
+      "socks": { "on": false }
+    },
+    "blazer": {
+      "product": "blazer",
+      "skinTone": "warm",
+      "fabric": { "color": "#25374b", "pattern": "twill" },
+      "fit": "slim",
+      "jacket": {
+        "style": "simple_2",
+        "lapelType": "standard",
+        "lapelWidth": "standard",
+        "pockets": "2b",
+        "sleeveButtons": 3,
+        "sleeveHoles": false,
+        "vent": "2",
+        "chestPocket": "1",
+        "buttonColor": "#2f2a25",
+        "threads": null,
+        "lining": "default",
+        "halfCanvas": false,
+        "monogram": null,
+        "elbowPatches": null,
+        "neckLining": null,
+        "pocketSquare": { "on": false }
+      },
+      "trousers": {
+        "color": "#56524b",
+        "fit": "normal",
+        "length": "long",
+        "break": "half",
+        "pleats": 0,
+        "fastening": "0",
+        "frontPocket": "diagonal",
+        "backPocket": "A1",
+        "cuffs": false,
+        "suspenderButtons": false,
+        "waist": "0",
+        "belt": false,
+        "braces": false
+      },
+      "vest": null,
+      "shirt": { "collar": "Spread", "cuffs": "Button" },
+      "tie": { "on": false },
+      "bowtie": { "on": false },
+      "shoes": "",
+      "socks": { "on": false }
+    }
+  },
+  "cases": {
+    "suit/defaults": {},
+    "suit/style.jacket.jacket_style_combined.jacket-style-combined=simple_1": {
+      "jacket.style": "simple_1"
+    },
+    "suit/style.jacket.jacket_style_combined.jacket-style-combined=simple_2": {},
+    "suit/style.jacket.jacket_style_combined.jacket-style-combined=simple_3": {
+      "jacket.style": "simple_3"
+    },
+    "suit/style.jacket.jacket_style_combined.jacket-style-combined=crossed_2": {
+      "jacket.style": "crossed_2"
+    },
+    "suit/style.jacket.jacket_style_combined.jacket-style-combined=crossed_4": {
+      "jacket.style": "crossed_4"
+    },
+    "suit/style.jacket.jacket_style_combined.jacket-style-combined=crossed_6": {
+      "jacket.style": "crossed_6"
+    },
+    "suit/style.jacket.jacket_style_combined.jacket-style-combined=mao": { "jacket.style": "mao" },
+    "suit/style.jacket.jacket_style_combined.personalize-fabrics-split=0": {},
+    "suit/style.jacket.jacket_style_combined.personalize-fabrics-split=1": {},
+    "suit/style.jacket.jacket_fit.jacket-fit=1": {},
+    "suit/style.jacket.jacket_fit.jacket-fit=0": { "fit": "regular" },
+    "suit/style.jacket.jacket_lapel_type_combinated.jacket-lapel-type=standard": {},
+    "suit/style.jacket.jacket_lapel_type_combinated.jacket-lapel-type=peak": {
+      "jacket.lapelType": "peak"
+    },
+    "suit/style.jacket.jacket_lapel_type_combinated.jacket-lapel-type=round": {
+      "jacket.lapelType": "round"
+    },
+    "suit/style.jacket.jacket_lapel_type_combinated.jacket-wide-lapel=narrow": {
+      "jacket.lapelWidth": "narrow"
+    },
+    "suit/style.jacket.jacket_lapel_type_combinated.jacket-wide-lapel=standard": {},
+    "suit/style.jacket.jacket_lapel_type_combinated.jacket-wide-lapel=width": {
+      "jacket.lapelWidth": "width"
+    },
+    "suit/style.jacket.jacket_pockets_type.jacket-pockets-type=0": { "jacket.pockets": "0" },
+    "suit/style.jacket.jacket_pockets_type.jacket-pockets-type=2": { "jacket.pockets": "2" },
+    "suit/style.jacket.jacket_pockets_type.jacket-pockets-type=2a": { "jacket.pockets": "2a" },
+    "suit/style.jacket.jacket_pockets_type.jacket-pockets-type=2b": {},
+    "suit/style.jacket.jacket_pockets_type.jacket-pockets-type=3": { "jacket.pockets": "3" },
+    "suit/style.jacket.jacket_pockets_type.jacket-pockets-type=3a": { "jacket.pockets": "3a" },
+    "suit/style.jacket.jacket_pockets_type.jacket-pockets-type=2c": { "jacket.pockets": "2c" },
+    "suit/style.jacket.jacket_pockets_type.jacket-pockets-type=3c": { "jacket.pockets": "3c" },
+    "suit/style.jacket.jacket_pockets_type.jacket-pockets-type=2d": { "jacket.pockets": "2d" },
+    "suit/style.jacket.jacket_pockets_type.jacket-pockets-type=3d": { "jacket.pockets": "3d" },
+    "suit/style.jacket.jacket_sleeve_buttons_combinated.jacket-sleeve-buttons=0": {
+      "jacket.sleeveButtons": 0
+    },
+    "suit/style.jacket.jacket_sleeve_buttons_combinated.jacket-sleeve-buttons=2": {
+      "jacket.sleeveButtons": 2
+    },
+    "suit/style.jacket.jacket_sleeve_buttons_combinated.jacket-sleeve-buttons=3": {},
+    "suit/style.jacket.jacket_sleeve_buttons_combinated.jacket-sleeve-buttons=4": {
+      "jacket.sleeveButtons": 4
+    },
+    "suit/style.jacket.jacket_sleeve_buttons_combinated.jacket-sleeve-buttonholes=1": {
+      "jacket.sleeveHoles": true
+    },
+    "suit/style.jacket.jacket_sleeve_buttons_combinated.jacket-sleeve-buttonholes=0": {},
+    "suit/style.jacket.jacket_vent.jacket-vent=0": { "jacket.vent": "0" },
+    "suit/style.jacket.jacket_vent.jacket-vent=1": {},
+    "suit/style.jacket.jacket_vent.jacket-vent=2": { "jacket.vent": "2" },
+    "suit/style.jacket.jacket_chest_pocket.jacket-chest-pocket=0": { "jacket.chestPocket": "0" },
+    "suit/style.jacket.jacket_chest_pocket.jacket-chest-pocket=1": {},
+    "suit/style.jacket.jacket_chest_pocket.jacket-chest-pocket=patched_1": {
+      "jacket.chestPocket": "patched_1"
+    },
+    "suit/style.jacket.jacket_chest_pocket.jacket-chest-pocket=patched_2": {
+      "jacket.chestPocket": "patched_2"
+    },
+    "suit/style.pants.pants_chinos.pants-chinos=0": {},
+    "suit/style.pants.pants_chinos.pants-chinos=1": {},
+    "suit/style.pants.pants_fit.pants-fit=normal": {},
+    "suit/style.pants.pants_fit.pants-fit=fit": { "trousers.fit": "slim" },
+    "suit/style.pants.pants_length.pants-length=long": {},
+    "suit/style.pants.pants_length.pants-length=bermuda": { "trousers.length": "bermuda" },
+    "suit/style.pants.pants_break.pants-break=no": { "trousers.break": "no" },
+    "suit/style.pants.pants_break.pants-break=half": {},
+    "suit/style.pants.pants_break.pants-break=full": { "trousers.break": "full" },
+    "suit/style.pants.pants_peg.pants-peg=0": {},
+    "suit/style.pants.pants_peg.pants-peg=1": { "trousers.pleats": 1 },
+    "suit/style.pants.pants_peg.pants-peg=2": { "trousers.pleats": 2 },
+    "suit/style.pants.pants_belt.pants-belt=0": { "trousers.fastening": "0" },
+    "suit/style.pants.pants_belt.pants-belt=1": {},
+    "suit/style.pants.pants_belt.pants-belt=0_hidden": { "trousers.fastening": "0_hidden" },
+    "suit/style.pants.pants_belt.pants-belt=1_hidden": { "trousers.fastening": "1_hidden" },
+    "suit/style.pants.pants_pockets.pants-front-pocket=diagonal": {},
+    "suit/style.pants.pants_pockets.pants-front-pocket=rounded": {
+      "trousers.frontPocket": "rounded"
+    },
+    "suit/style.pants.pants_pockets.pants-front-pocket=rounded_chinos": {
+      "trousers.frontPocket": "rounded_chinos"
+    },
+    "suit/style.pants.pants_pockets.pants-back-pocket-combine=0": { "trousers.backPocket": "0" },
+    "suit/style.pants.pants_pockets.pants-back-pocket-combine=A1": {},
+    "suit/style.pants.pants_pockets.pants-back-pocket-combine=B1": { "trousers.backPocket": "B1" },
+    "suit/style.pants.pants_pockets.pants-back-pocket-combine=C1": { "trousers.backPocket": "C1" },
+    "suit/style.pants.pants_pockets.pants-back-pocket-combine=A2": { "trousers.backPocket": "A2" },
+    "suit/style.pants.pants_pockets.pants-back-pocket-combine=B2": { "trousers.backPocket": "B2" },
+    "suit/style.pants.pants_pockets.pants-back-pocket-combine=C2": { "trousers.backPocket": "C2" },
+    "suit/style.pants.pants_cuff.pants-cuff=0": {},
+    "suit/style.pants.pants_cuff.pants-cuff=1": { "trousers.cuffs": true },
+    "suit/style.pants.suspender_buttons.suspender-buttons=0": {},
+    "suit/style.pants.suspender_buttons.suspender-buttons=1": { "trousers.suspenderButtons": true },
+    "suit/style.pants.active_waist.active-waist=0": {},
+    "suit/style.pants.active_waist.active-waist=2": { "trousers.waist": "2" },
+    "suit/style.pants.active_waist.active-waist=1": { "trousers.waist": "1" },
+    "suit/style.vest.waistcoat.waistcoat=0": {},
+    "suit/style.vest.waistcoat.waistcoat=1": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/style.vest.waistcoat_style_combined.waistcoat-style-combined=simple_4": {
+      "vest": {
+        "style": "simple_4",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/style.vest.waistcoat_style_combined.waistcoat-style-combined=simple_5": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/style.vest.waistcoat_style_combined.waistcoat-style-combined=crossed_6": {
+      "vest": {
+        "style": "crossed_6",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/style.vest.waistcoat_lapel.waistcoat-lapel=no": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/style.vest.waistcoat_lapel.waistcoat-lapel=notched": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "notched",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/style.vest.waistcoat_lapel.waistcoat-lapel=peak": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "peak",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/style.vest.waistcoat_lapel.waistcoat-lapel=rounded": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "rounded",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/style.vest.waistcoat_lapel_width.waistcoat-lapel-width=narrow": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/style.vest.waistcoat_lapel_width.waistcoat-lapel-width=normal": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/style.vest.waistcoat_bottom.waistcoat-bottom=straight": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "straight",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/style.vest.waistcoat_bottom.waistcoat-bottom=cut": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/style.vest.waistcoat_chest_pocket.waistcoat-chest-pocket=1": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": true,
+        "pockets": "2"
+      }
+    },
+    "suit/style.vest.waistcoat_chest_pocket.waistcoat-chest-pocket=0": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/style.vest.waistcoat_pockets.waistcoat-pockets=0": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "0"
+      }
+    },
+    "suit/style.vest.waistcoat_pockets.waistcoat-pockets=2": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/style.vest.waistcoat_pockets.waistcoat-pockets=2a": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2a"
+      }
+    },
+    "suit/style.vest.waistcoat_pockets.waistcoat-pockets=2b": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2b"
+      }
+    },
+    "suit/style.vest.waistcoat_wedding.waistcoat-wedding=0": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/style.vest.waistcoat_wedding.waistcoat-wedding=1": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.jacket.half_canvas.canvas=base": {},
+    "suit/accents.jacket.half_canvas.canvas=half_canvas": { "jacket.halfCanvas": true },
+    "suit/accents.jacket.lining.internal-lining=default": {},
+    "suit/accents.jacket.lining.internal-lining=personalizado": {
+      "jacket.lining": "personalizado"
+    },
+    "suit/accents.jacket.lining.internal-lining=unlined": { "jacket.lining": "unlined" },
+    "suit/accents.jacket.lining.internal-lining=padded": { "jacket.lining": "padded" },
+    "suit/accents.jacket.lining.lining-fabrics=98": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/01_Berck_98.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=116": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/02_Wall_Street_116.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=81": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/03_Inoniz_81.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=96": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/04_Cergy_96.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=173": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/05_Hodei_173.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=236": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/06_Kayak_Waves_236.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=174": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/07_Cleon_174.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=186": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/08_Kaloos_186.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=110": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/09_Arica_110.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=188": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/10_Nour_188.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=168": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/11_Battler_168.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=189": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/12_Zain_189.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=217": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/13_Hari_217.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=219": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/14_Evie_219.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=79": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/15_Porlens_79.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=218": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/16_Zubair_218.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=215": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/17_Swanson_215.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=216": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/18_Halliday_216.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=184": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/19_Charlotte_184.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=111": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/20_Lipari_111.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=169": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/21_Aybek_169.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=164": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/22_Darina_164.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=167": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/23_Hilda_167.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=222": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/24_Parkleys_222.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=224": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/25_Claydens_224.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=213": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/26_Kairo_213.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=220": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/27_Boyles_220.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=227": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/28_Dorsets_227.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=194": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/29_Laxton_194.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=196": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/30_Beray_196.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=231": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/31_Denholms_231.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=221": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/32_Swaless_221.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=230": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/33_Tindalls_230.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=223": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/34_Shelleys_223.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=198": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/35_Crosby_198.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=229": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/36_Graunds_229.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=191": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/37_Milne_191.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=233": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/38_Bradlys_233.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=282": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/39_Epoque_282.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=286": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/40_Labin_286.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=281": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/41_Equestrian_281.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=280": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/42_Dream_280.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=279": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/43_Cosmic_279.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=278": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/44_Bird_278.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=276": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/45_Hendrix_276.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=275": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/46_Bowie_275.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=274": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/47_Dylan_274.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=272": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/48_Parker_272.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=271": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/49_Ellington_271.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=269": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/50_Jacksons_269.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=283": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/51_Shadow_283.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=284": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/52_Dubrovnik_284.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=285": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/53_Lovran_285.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=266": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/54_Stewart_266.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=287": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/55_Rab_287.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=288": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/56_Zlarin_288.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=289": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/57_Florencia_289.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=290": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/58_Napoles_290.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=291": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/59_Trieste_291.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=292": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/60_Catania_292.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=293": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/61_Lecce_293.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=294": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/62_Ravenna_294.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=251": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/63_Eleandor_251.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=199": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/64_Snella_199.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=197": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/65_Munroe_197.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=225": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/66_Bransons_225.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=226": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/67_Horsts_226.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=195": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/68_Lacey_195.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=193": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/69_Hensonn_193.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=192": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/70_Fearne_192.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=234": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/71_Newburys_234.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=246": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/72_Liana_246.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=249": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/73_Griffissor_249.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=250": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/74_Fintgerald_250.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=268": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/75_Gees_268.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=252": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/76_Hickson_252.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=253": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/77_Arturiens_253.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=254": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/78_Jeanfran_254.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=255": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/79_Orlanfield_255.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=256": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/80_Beltrarn_256.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=257": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/81_Gwen_257.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=264": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/82_Jones_264.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=265": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/83_Levan_265.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=200": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/84_Rayner_200.jpg"
+    },
+    "suit/accents.jacket.lining.lining-fabrics=267": {
+      "jacket.lining": "personalizado",
+      "jacket.liningAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/02_INTERNAL_LINING/02_Lining_fabrics/85_Sunshine_267.jpg"
+    },
+    "suit/accents.jacket.initials.font=bold_script": {},
+    "suit/accents.jacket.initials.font=script": { "jacket.monogram.font": "script" },
+    "suit/accents.jacket.initials.font=times_roman": { "jacket.monogram.font": "times_roman" },
+    "suit/accents.jacket.initials.font=block": { "jacket.monogram.font": "block" },
+    "suit/accents.jacket.initials.font=calligraphy": { "jacket.monogram.font": "calligraphy" },
+    "suit/accents.jacket.initials.thread-color=41": {},
+    "suit/accents.jacket.initials.thread-color=53": {
+      "jacket.monogram.threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/03_MONOGRAM/02_Thread_Color/02_color_53.png"
+    },
+    "suit/accents.jacket.initials.thread-color=42": {
+      "jacket.monogram.threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/03_MONOGRAM/02_Thread_Color/03_color_42.png"
+    },
+    "suit/accents.jacket.initials.thread-color=43": {
+      "jacket.monogram.threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/03_MONOGRAM/02_Thread_Color/04_color_43.png"
+    },
+    "suit/accents.jacket.initials.thread-color=44": {
+      "jacket.monogram.threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/03_MONOGRAM/02_Thread_Color/05_color_44.png"
+    },
+    "suit/accents.jacket.initials.thread-color=54": {
+      "jacket.monogram.threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/03_MONOGRAM/02_Thread_Color/06_color_54.png"
+    },
+    "suit/accents.jacket.initials.thread-color=49": {
+      "jacket.monogram.threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/03_MONOGRAM/02_Thread_Color/07_color_49.png"
+    },
+    "suit/accents.jacket.initials.thread-color=51": {
+      "jacket.monogram.threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/03_MONOGRAM/02_Thread_Color/08_color_51.png"
+    },
+    "suit/accents.jacket.initials.thread-color=52": {
+      "jacket.monogram.threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/03_MONOGRAM/02_Thread_Color/09_color_52.png"
+    },
+    "suit/accents.jacket.initials.thread-color=45": {
+      "jacket.monogram.threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/03_MONOGRAM/02_Thread_Color/10_color_45.png"
+    },
+    "suit/accents.jacket.initials.thread-color=46": {
+      "jacket.monogram.threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/03_MONOGRAM/02_Thread_Color/11_color_46.png"
+    },
+    "suit/accents.jacket.initials.thread-color=47": {
+      "jacket.monogram.threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/03_MONOGRAM/02_Thread_Color/12_color_47.png"
+    },
+    "suit/accents.jacket.initials.thread-color=48": {
+      "jacket.monogram.threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/03_MONOGRAM/02_Thread_Color/13_color_48.png"
+    },
+    "suit/accents.jacket.initials.thread-color=50": {
+      "jacket.monogram.threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/03_MONOGRAM/02_Thread_Color/14_color_50.png"
+    },
+    "suit/accents.jacket.initials.thread-color=40": {
+      "jacket.monogram.threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/03_MONOGRAM/02_Thread_Color/15_color_40.png"
+    },
+    "suit/accents.jacket.panuelos.pocket-squares=without": {},
+    "suit/accents.jacket.panuelos.pocket-squares=personalizado": { "jacket.pocketSquare.on": true },
+    "suit/accents.jacket.panuelos.products=768": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/01_Siena_Gideon_Pocket_Square_768.png",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=811": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/02_Coral_Reef_Pocket_Square_811.png",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=810": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/03_Daffodil_Yellow_Pocket_Square_810.png",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=779": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/04_Siena_Verona_Pocket_Square_779.png",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=778": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/05_Siena_Riesi_Pocket_Square_778.png",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=777": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/06_Siena_Parma_Pocket_Square_777.png",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=776": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/07_Siena_Lisard_Pocket_Square_776.png",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=775": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/08_Siena_Lioni_Pocket_Square_775.png",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=774": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/09_Siena_Liberi_Pocket_Square_774.png",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=773": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/10_Siena_Lena_Pocket_Square_773.png",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=772": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/11_Siena_Kera_Pocket_Square_772.png",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=771": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/12_Siena_Kendal_Pocket_Square_771.png",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=770": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/13_Siena_Heaven_Pocket_Square_770.png",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=769": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/14_Siena_Halki_Pocket_Square_769.png",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=416": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/15_Light_Pink_Pocket_Square_416.png",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=767": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/16_Siena_Genova_Pocket_Square_767.png",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=766": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/17_Siena_Florance_Pocket_Square_766.png",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=765": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/18_Siena_Firenze_Pocket_Square_765.png",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=764": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/19_Siena_Delroy_Pocket_Square_764.png",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=763": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/20_Siena_Crespo_Pocket_Square_763.png",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=762": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/21_Siena_Brady_Pocket_Square_762.png",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=418": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/22_Plum_Pocket_Square_418.jpg",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=453": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/23_Sky_Blue_Pocket_Square_453.jpg",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=423": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/24_Marine_Blue_Pocket_Square_423.jpg",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=422": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/25_Noire_Pocket_Square_422.jpg",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=421": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/26_Pearl_White_Pocket_Square_421.jpg",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.panuelos.products=420": {
+      "jacket.pocketSquare.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/04_POCKET_SQUARES/02_Products/27_Garnet_Red_Pocket_Square_420.jpg",
+      "jacket.pocketSquare.on": true
+    },
+    "suit/accents.jacket.buttons_color.buttons=By default": {},
+    "suit/accents.jacket.buttons_color.buttons=personalizado": {},
+    "suit/accents.jacket.buttons_color.colors=1": {
+      "jacket.buttonAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/05_BUTTONS/02_Colors/01_Brown_1.jpg",
+      "jacket.buttonColor": "#6b4a31"
+    },
+    "suit/accents.jacket.buttons_color.colors=2": {
+      "jacket.buttonAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/05_BUTTONS/02_Colors/02_Dark_Grey_2.jpg",
+      "jacket.buttonColor": "#4b4d50"
+    },
+    "suit/accents.jacket.buttons_color.colors=3": {
+      "jacket.buttonAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/05_BUTTONS/02_Colors/03_Navy_Blue_3.jpg",
+      "jacket.buttonColor": "#27344a"
+    },
+    "suit/accents.jacket.buttons_color.colors=4": {
+      "jacket.buttonAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/05_BUTTONS/02_Colors/04_Khaki_4.jpg",
+      "jacket.buttonColor": "#a39574"
+    },
+    "suit/accents.jacket.buttons_color.colors=5": {
+      "jacket.buttonAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/05_BUTTONS/02_Colors/05_Off-white_5.jpg",
+      "jacket.buttonColor": "#ece6d6"
+    },
+    "suit/accents.jacket.buttons_color.colors=6": {
+      "jacket.buttonAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/05_BUTTONS/02_Colors/06_Anthrazit_6.jpg",
+      "jacket.buttonColor": "#3a3b3d"
+    },
+    "suit/accents.jacket.buttons_color.colors=50": {
+      "jacket.buttonAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/05_BUTTONS/02_Colors/07_Shiny_Gold_Brass_50.jpg",
+      "jacket.buttonColor": "#c6a15a"
+    },
+    "suit/accents.jacket.buttons_color.colors=51": {
+      "jacket.buttonAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/05_BUTTONS/02_Colors/08_Gold_Brass_51.jpg",
+      "jacket.buttonColor": "#b08d4c"
+    },
+    "suit/accents.jacket.buttons_color.colors=52": {
+      "jacket.buttonAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/05_BUTTONS/02_Colors/09_Silver_Brass_52.jpg",
+      "jacket.buttonColor": "#c7c9cb"
+    },
+    "suit/accents.jacket.buttons_color.colors=53": {
+      "jacket.buttonAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/05_BUTTONS/02_Colors/10_Antique_Silver_Brass_53.jpg",
+      "jacket.buttonColor": "#9c9a92"
+    },
+    "suit/accents.jacket.button_holes_threads.button-threads-holes=By default": {},
+    "suit/accents.jacket.button_holes_threads.button-threads-holes=all": {
+      "jacket.threads": { "scope": "all" }
+    },
+    "suit/accents.jacket.button_holes_threads.button-threads-holes=cuff": {
+      "jacket.threads": { "scope": "cuff" }
+    },
+    "suit/accents.jacket.button_holes_threads.button-threads-holes=lapel": {
+      "jacket.threads": { "scope": "lapel" }
+    },
+    "suit/accents.jacket.button_holes_threads.button-holes=41": {
+      "jacket.threads": {
+        "scope": "all",
+        "holeAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/02_BUTTON_HOLES/01_color_41.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-holes=53": {
+      "jacket.threads": {
+        "scope": "all",
+        "holeAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/02_BUTTON_HOLES/02_color_53.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-holes=42": {
+      "jacket.threads": {
+        "scope": "all",
+        "holeAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/02_BUTTON_HOLES/03_color_42.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-holes=43": {
+      "jacket.threads": {
+        "scope": "all",
+        "holeAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/02_BUTTON_HOLES/04_color_43.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-holes=44": {
+      "jacket.threads": {
+        "scope": "all",
+        "holeAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/02_BUTTON_HOLES/05_color_44.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-holes=54": {
+      "jacket.threads": {
+        "scope": "all",
+        "holeAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/02_BUTTON_HOLES/06_color_54.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-holes=49": {
+      "jacket.threads": {
+        "scope": "all",
+        "holeAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/02_BUTTON_HOLES/07_color_49.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-holes=51": {
+      "jacket.threads": {
+        "scope": "all",
+        "holeAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/02_BUTTON_HOLES/08_color_51.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-holes=52": {
+      "jacket.threads": {
+        "scope": "all",
+        "holeAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/02_BUTTON_HOLES/09_color_52.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-holes=45": {
+      "jacket.threads": {
+        "scope": "all",
+        "holeAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/02_BUTTON_HOLES/10_color_45.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-holes=46": {
+      "jacket.threads": {
+        "scope": "all",
+        "holeAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/02_BUTTON_HOLES/11_color_46.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-holes=47": {
+      "jacket.threads": {
+        "scope": "all",
+        "holeAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/02_BUTTON_HOLES/12_color_47.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-holes=48": {
+      "jacket.threads": {
+        "scope": "all",
+        "holeAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/02_BUTTON_HOLES/13_color_48.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-holes=50": {
+      "jacket.threads": {
+        "scope": "all",
+        "holeAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/02_BUTTON_HOLES/14_color_50.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-holes=40": {
+      "jacket.threads": {
+        "scope": "all",
+        "holeAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/02_BUTTON_HOLES/15_color_40.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-threads=41": {
+      "jacket.threads": {
+        "scope": "all",
+        "threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/03_BUTTON_THREADS/01_color_41.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-threads=53": {
+      "jacket.threads": {
+        "scope": "all",
+        "threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/03_BUTTON_THREADS/02_color_53.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-threads=42": {
+      "jacket.threads": {
+        "scope": "all",
+        "threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/03_BUTTON_THREADS/03_color_42.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-threads=43": {
+      "jacket.threads": {
+        "scope": "all",
+        "threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/03_BUTTON_THREADS/04_color_43.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-threads=44": {
+      "jacket.threads": {
+        "scope": "all",
+        "threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/03_BUTTON_THREADS/05_color_44.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-threads=54": {
+      "jacket.threads": {
+        "scope": "all",
+        "threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/03_BUTTON_THREADS/06_color_54.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-threads=49": {
+      "jacket.threads": {
+        "scope": "all",
+        "threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/03_BUTTON_THREADS/07_color_49.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-threads=51": {
+      "jacket.threads": {
+        "scope": "all",
+        "threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/03_BUTTON_THREADS/08_color_51.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-threads=52": {
+      "jacket.threads": {
+        "scope": "all",
+        "threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/03_BUTTON_THREADS/09_color_52.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-threads=45": {
+      "jacket.threads": {
+        "scope": "all",
+        "threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/03_BUTTON_THREADS/10_color_45.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-threads=46": {
+      "jacket.threads": {
+        "scope": "all",
+        "threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/03_BUTTON_THREADS/11_color_46.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-threads=47": {
+      "jacket.threads": {
+        "scope": "all",
+        "threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/03_BUTTON_THREADS/12_color_47.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-threads=48": {
+      "jacket.threads": {
+        "scope": "all",
+        "threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/03_BUTTON_THREADS/13_color_48.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-threads=50": {
+      "jacket.threads": {
+        "scope": "all",
+        "threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/03_BUTTON_THREADS/14_color_50.png"
+      }
+    },
+    "suit/accents.jacket.button_holes_threads.button-threads=40": {
+      "jacket.threads": {
+        "scope": "all",
+        "threadAsset": "/reference-assets/hockerty-suit/accents/01_Jacket/06_BUTTON_THREADS_HOLES/03_BUTTON_THREADS/15_color_40.png"
+      }
+    },
+    "suit/accents.jacket.patches.elbow-patches=Without": {},
+    "suit/accents.jacket.patches.elbow-patches=personalizado": { "jacket.elbowPatches": {} },
+    "suit/accents.jacket.patches.colors=55": {
+      "jacket.elbowPatches": {
+        "asset": "/reference-assets/hockerty-suit/accents/01_Jacket/07_ELBOW_PATCHES/02_Colors/01_item_55.jpg"
+      }
+    },
+    "suit/accents.jacket.patches.colors=56": {
+      "jacket.elbowPatches": {
+        "asset": "/reference-assets/hockerty-suit/accents/01_Jacket/07_ELBOW_PATCHES/02_Colors/02_item_56.jpg"
+      }
+    },
+    "suit/accents.jacket.patches.colors=57": {
+      "jacket.elbowPatches": {
+        "asset": "/reference-assets/hockerty-suit/accents/01_Jacket/07_ELBOW_PATCHES/02_Colors/03_item_57.jpg"
+      }
+    },
+    "suit/accents.jacket.patches.colors=58": {
+      "jacket.elbowPatches": {
+        "asset": "/reference-assets/hockerty-suit/accents/01_Jacket/07_ELBOW_PATCHES/02_Colors/04_item_58.jpg"
+      }
+    },
+    "suit/accents.jacket.patches.colors=59": {
+      "jacket.elbowPatches": {
+        "asset": "/reference-assets/hockerty-suit/accents/01_Jacket/07_ELBOW_PATCHES/02_Colors/05_item_59.jpg"
+      }
+    },
+    "suit/accents.jacket.neck_lining.neck-lining=By default": {},
+    "suit/accents.jacket.neck_lining.neck-lining=personalizado": { "jacket.neckLining": {} },
+    "suit/accents.jacket.neck_lining.colors=1": {
+      "jacket.neckLining": {
+        "asset": "/reference-assets/hockerty-suit/accents/01_Jacket/08_NECK_LINING/02_Colors/01_color_1.png"
+      }
+    },
+    "suit/accents.jacket.neck_lining.colors=2": {
+      "jacket.neckLining": {
+        "asset": "/reference-assets/hockerty-suit/accents/01_Jacket/08_NECK_LINING/02_Colors/02_color_2.png"
+      }
+    },
+    "suit/accents.jacket.neck_lining.colors=3": {
+      "jacket.neckLining": {
+        "asset": "/reference-assets/hockerty-suit/accents/01_Jacket/08_NECK_LINING/02_Colors/03_color_3.png"
+      }
+    },
+    "suit/accents.jacket.neck_lining.colors=4": {
+      "jacket.neckLining": {
+        "asset": "/reference-assets/hockerty-suit/accents/01_Jacket/08_NECK_LINING/02_Colors/04_color_4.png"
+      }
+    },
+    "suit/accents.jacket.neck_lining.colors=5": {
+      "jacket.neckLining": {
+        "asset": "/reference-assets/hockerty-suit/accents/01_Jacket/08_NECK_LINING/02_Colors/05_color_5.png"
+      }
+    },
+    "suit/accents.jacket.neck_lining.colors=6": {
+      "jacket.neckLining": {
+        "asset": "/reference-assets/hockerty-suit/accents/01_Jacket/08_NECK_LINING/02_Colors/06_color_6.png"
+      }
+    },
+    "suit/accents.jacket.neck_lining.colors=7": {
+      "jacket.neckLining": {
+        "asset": "/reference-assets/hockerty-suit/accents/01_Jacket/08_NECK_LINING/02_Colors/07_color_7.png"
+      }
+    },
+    "suit/accents.jacket.bowtie.bowtie=No bow tie": {},
+    "suit/accents.jacket.bowtie.bowtie=personalizado": { "bowtie.on": true },
+    "suit/accents.jacket.bowtie.products=386": {
+      "bowtie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/09_BOWTIE/02_Products/01_Essential_Red_Bowtie_386.png",
+      "bowtie.on": true
+    },
+    "suit/accents.jacket.bowtie.products=820": {
+      "bowtie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/09_BOWTIE/02_Products/02_Gold_Bowtie_820.png",
+      "bowtie.on": true
+    },
+    "suit/accents.jacket.bowtie.products=821": {
+      "bowtie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/09_BOWTIE/02_Products/03_Pink_Bowtie_821.png",
+      "bowtie.on": true
+    },
+    "suit/accents.jacket.bowtie.products=822": {
+      "bowtie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/09_BOWTIE/02_Products/04_Purple_Bowtie_822.png",
+      "bowtie.on": true
+    },
+    "suit/accents.jacket.bowtie.products=823": {
+      "bowtie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/09_BOWTIE/02_Products/05_Rose_Bowtie_823.png",
+      "bowtie.on": true
+    },
+    "suit/accents.jacket.bowtie.products=824": {
+      "bowtie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/09_BOWTIE/02_Products/06_Robin_Hood_Bowtie_824.png",
+      "bowtie.on": true
+    },
+    "suit/accents.jacket.bowtie.products=825": {
+      "bowtie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/09_BOWTIE/02_Products/07_Jade_Bowtie_825.png",
+      "bowtie.on": true
+    },
+    "suit/accents.jacket.bowtie.products=383": {
+      "bowtie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/09_BOWTIE/02_Products/08_Essential_Black_Bowtie_383.png",
+      "bowtie.on": true
+    },
+    "suit/accents.jacket.bowtie.products=384": {
+      "bowtie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/09_BOWTIE/02_Products/09_Essential_Dark_Blue_Bowtie_384.png",
+      "bowtie.on": true
+    },
+    "suit/accents.jacket.bowtie.products=385": {
+      "bowtie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/09_BOWTIE/02_Products/10_Floral_print_Bowtie_385.png",
+      "bowtie.on": true
+    },
+    "suit/accents.jacket.bowtie.products=387": {
+      "bowtie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/09_BOWTIE/02_Products/11_Essential_Red_grated_Striped_Bowtie_387.png",
+      "bowtie.on": true
+    },
+    "suit/accents.jacket.bowtie.products=388": {
+      "bowtie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/09_BOWTIE/02_Products/12_Essential_Blue_Dotted_Bowtie_388.png",
+      "bowtie.on": true
+    },
+    "suit/accents.jacket.bowtie.products=389": {
+      "bowtie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/09_BOWTIE/02_Products/13_Essential_White_Bowtie_389.png",
+      "bowtie.on": true
+    },
+    "suit/accents.jacket.tie.necktie=without": {},
+    "suit/accents.jacket.tie.necktie=personalizado": { "tie.on": true },
+    "suit/accents.jacket.tie.products=751": {
+      "tie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/10_NECKTIE/02_Products/01_Lazio_Kendal_Tie_751.png",
+      "tie.on": true
+    },
+    "suit/accents.jacket.tie.products=761": {
+      "tie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/10_NECKTIE/02_Products/02_Lazio_Verona_Tie_761.png",
+      "tie.on": true
+    },
+    "suit/accents.jacket.tie.products=760": {
+      "tie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/10_NECKTIE/02_Products/03_Lazio_Siros_Tie_760.png",
+      "tie.on": true
+    },
+    "suit/accents.jacket.tie.products=759": {
+      "tie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/10_NECKTIE/02_Products/04_Lazio_Schiza_Tie_759.png",
+      "tie.on": true
+    },
+    "suit/accents.jacket.tie.products=758": {
+      "tie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/10_NECKTIE/02_Products/05_Lazio_Riesi_Tie_758.png",
+      "tie.on": true
+    },
+    "suit/accents.jacket.tie.products=757": {
+      "tie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/10_NECKTIE/02_Products/06_Lazio_Parma_Tie_757.png",
+      "tie.on": true
+    },
+    "suit/accents.jacket.tie.products=756": {
+      "tie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/10_NECKTIE/02_Products/07_Lazio_Lisard_Tie_756.png",
+      "tie.on": true
+    },
+    "suit/accents.jacket.tie.products=755": {
+      "tie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/10_NECKTIE/02_Products/08_Lazio_Lioni_Tie_755.png",
+      "tie.on": true
+    },
+    "suit/accents.jacket.tie.products=754": {
+      "tie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/10_NECKTIE/02_Products/09_Lazio_Liberi_Tie_754.png",
+      "tie.on": true
+    },
+    "suit/accents.jacket.tie.products=753": {
+      "tie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/10_NECKTIE/02_Products/10_Lazio_Lena_Tie_753.png",
+      "tie.on": true
+    },
+    "suit/accents.jacket.tie.products=752": {
+      "tie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/10_NECKTIE/02_Products/11_Lazio_Kera_Tie_752.png",
+      "tie.on": true
+    },
+    "suit/accents.jacket.tie.products=741": {
+      "tie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/10_NECKTIE/02_Products/12_Lazio_Brady_Tie_741.png",
+      "tie.on": true
+    },
+    "suit/accents.jacket.tie.products=750": {
+      "tie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/10_NECKTIE/02_Products/13_Lazio_Heaven_Tie_750.png",
+      "tie.on": true
+    },
+    "suit/accents.jacket.tie.products=749": {
+      "tie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/10_NECKTIE/02_Products/14_Lazio_Halki_Tie_749.png",
+      "tie.on": true
+    },
+    "suit/accents.jacket.tie.products=748": {
+      "tie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/10_NECKTIE/02_Products/15_Lazio_Gideon_Tie_748.png",
+      "tie.on": true
+    },
+    "suit/accents.jacket.tie.products=747": {
+      "tie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/10_NECKTIE/02_Products/16_Lazio_Genova_Tie_747.png",
+      "tie.on": true
+    },
+    "suit/accents.jacket.tie.products=746": {
+      "tie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/10_NECKTIE/02_Products/17_lazio-florance_Tie_746.png",
+      "tie.on": true
+    },
+    "suit/accents.jacket.tie.products=745": {
+      "tie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/10_NECKTIE/02_Products/18_Lazio_Firenze_Tie_745.png",
+      "tie.on": true
+    },
+    "suit/accents.jacket.tie.products=744": {
+      "tie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/10_NECKTIE/02_Products/19_Lazio_Delroy_Tie_744.png",
+      "tie.on": true
+    },
+    "suit/accents.jacket.tie.products=743": {
+      "tie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/10_NECKTIE/02_Products/20_Lazio_Delos_Tie_743.png",
+      "tie.on": true
+    },
+    "suit/accents.jacket.tie.products=742": {
+      "tie.asset": "/reference-assets/hockerty-suit/accents/01_Jacket/10_NECKTIE/02_Products/21_Lazio_Crespo_Tie_742.png",
+      "tie.on": true
+    },
+    "suit/accents.jacket.suspenders.braces=without": {},
+    "suit/accents.jacket.suspenders.braces=personalizado": { "trousers.braces": true },
+    "suit/accents.jacket.suspenders.products=380": { "trousers.braces": true },
+    "suit/accents.jacket.suspenders.products=381": { "trousers.braces": true },
+    "suit/accents.jacket.shoes.shoes=By default": {},
+    "suit/accents.jacket.shoes.shoes=personalizado": {},
+    "suit/accents.jacket.shoes.products=145391": { "shoes": "145391" },
+    "suit/accents.jacket.shoes.products=275802": { "shoes": "275802" },
+    "suit/accents.jacket.shoes.products=300077": { "shoes": "300077" },
+    "suit/accents.jacket.shoes.products=398342": { "shoes": "398342" },
+    "suit/accents.jacket.shoes.products=876664": { "shoes": "876664" },
+    "suit/accents.jacket.shoes.products=999484": { "shoes": "999484" },
+    "suit/accents.jacket.shoes.products=1050838": { "shoes": "1050838" },
+    "suit/accents.pants.belt.belt=without": {},
+    "suit/accents.pants.belt.belt=personalizado": { "trousers.belt": true },
+    "suit/accents.pants.belt.products=814": { "trousers.belt": true },
+    "suit/accents.pants.belt.products=815": { "trousers.belt": true },
+    "suit/accents.pants.belt.products=816": { "trousers.belt": true },
+    "suit/accents.pants.socks.socks=without": {},
+    "suit/accents.pants.socks.socks=personalizado": { "socks.on": true },
+    "suit/accents.pants.socks.products=834": {
+      "socks.asset": "/reference-assets/hockerty-suit/accents/02_Pants/02_SOCKS/02_Products/01_Paris_Socks_834.png",
+      "socks.on": true
+    },
+    "suit/accents.pants.socks.products=842": {
+      "socks.asset": "/reference-assets/hockerty-suit/accents/02_Pants/02_SOCKS/02_Products/02_Montpellier_Socks_842.png",
+      "socks.on": true
+    },
+    "suit/accents.pants.socks.products=841": {
+      "socks.asset": "/reference-assets/hockerty-suit/accents/02_Pants/02_SOCKS/02_Products/03_Lille_Socks_841.png",
+      "socks.on": true
+    },
+    "suit/accents.pants.socks.products=840": {
+      "socks.asset": "/reference-assets/hockerty-suit/accents/02_Pants/02_SOCKS/02_Products/04_Estrasburgo_Socks_840.png",
+      "socks.on": true
+    },
+    "suit/accents.pants.socks.products=839": {
+      "socks.asset": "/reference-assets/hockerty-suit/accents/02_Pants/02_SOCKS/02_Products/05_Nantes_Socks_839.png",
+      "socks.on": true
+    },
+    "suit/accents.pants.socks.products=838": {
+      "socks.asset": "/reference-assets/hockerty-suit/accents/02_Pants/02_SOCKS/02_Products/06_Niza_Socks_838.png",
+      "socks.on": true
+    },
+    "suit/accents.pants.socks.products=837": {
+      "socks.asset": "/reference-assets/hockerty-suit/accents/02_Pants/02_SOCKS/02_Products/07_Toulouse_Socks_837.png",
+      "socks.on": true
+    },
+    "suit/accents.pants.socks.products=836": {
+      "socks.asset": "/reference-assets/hockerty-suit/accents/02_Pants/02_SOCKS/02_Products/08_Lyon_Socks_836.png",
+      "socks.on": true
+    },
+    "suit/accents.pants.socks.products=835": {
+      "socks.asset": "/reference-assets/hockerty-suit/accents/02_Pants/02_SOCKS/02_Products/09_Marsella_Socks_835.png",
+      "socks.on": true
+    },
+    "suit/accents.pants.socks.products=782": {
+      "socks.asset": "/reference-assets/hockerty-suit/accents/02_Pants/02_SOCKS/02_Products/10_Elif_Socks_782.png",
+      "socks.on": true
+    },
+    "suit/accents.pants.socks.products=791": {
+      "socks.asset": "/reference-assets/hockerty-suit/accents/02_Pants/02_SOCKS/02_Products/11_Vinia_Socks_791.png",
+      "socks.on": true
+    },
+    "suit/accents.pants.socks.products=789": {
+      "socks.asset": "/reference-assets/hockerty-suit/accents/02_Pants/02_SOCKS/02_Products/12_Vald_Socks_789.png",
+      "socks.on": true
+    },
+    "suit/accents.pants.socks.products=788": {
+      "socks.asset": "/reference-assets/hockerty-suit/accents/02_Pants/02_SOCKS/02_Products/13_Satish_Socks_788.png",
+      "socks.on": true
+    },
+    "suit/accents.pants.socks.products=787": {
+      "socks.asset": "/reference-assets/hockerty-suit/accents/02_Pants/02_SOCKS/02_Products/14_Monie_Socks_787.png",
+      "socks.on": true
+    },
+    "suit/accents.pants.socks.products=786": {
+      "socks.asset": "/reference-assets/hockerty-suit/accents/02_Pants/02_SOCKS/02_Products/15_Kaila_Socks_786.png",
+      "socks.on": true
+    },
+    "suit/accents.pants.socks.products=785": {
+      "socks.asset": "/reference-assets/hockerty-suit/accents/02_Pants/02_SOCKS/02_Products/16_Jerold_Socks_785.png",
+      "socks.on": true
+    },
+    "suit/accents.pants.socks.products=784": {
+      "socks.asset": "/reference-assets/hockerty-suit/accents/02_Pants/02_SOCKS/02_Products/17_Grett_Socks_784.png",
+      "socks.on": true
+    },
+    "suit/accents.vest.waistcoat_lining.internal-lining=default": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_lining.internal-lining=personalizado": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_lining_back.back-lining=default": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_lining_back.back-lining=personalizado": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_lining_back.back-lining=same_as_front": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_initials.font=bold_script": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_initials.font=script": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_initials.font=times_roman": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_initials.font=block": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_initials.font=calligraphy": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_initials.thread-color=41": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_initials.thread-color=53": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_initials.thread-color=42": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_initials.thread-color=43": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_initials.thread-color=44": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_initials.thread-color=54": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_initials.thread-color=49": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_initials.thread-color=51": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_initials.thread-color=52": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_initials.thread-color=45": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_initials.thread-color=46": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_initials.thread-color=47": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_initials.thread-color=48": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_initials.thread-color=50": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_initials.thread-color=40": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_metal_buttons.type-of-buttons=By default": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_metal_buttons.type-of-buttons=personalizado": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_metal_buttons.colors=50": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_metal_buttons.colors=51": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_metal_buttons.colors=52": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_metal_buttons.colors=53": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-threads-holes=By default": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-threads-holes=all": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-holes=41": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-holes=53": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-holes=42": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-holes=43": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-holes=44": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-holes=54": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-holes=49": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-holes=51": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-holes=52": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-holes=45": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-holes=46": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-holes=47": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-holes=48": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-holes=50": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-holes=40": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-threads=41": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-threads=53": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-threads=42": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-threads=43": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-threads=44": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-threads=54": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-threads=49": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-threads=51": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-threads=52": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-threads=45": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-threads=46": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-threads=47": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-threads=48": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-threads=50": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/accents.vest.waistcoat_button_holes_threads.button-threads=40": {
+      "vest": {
+        "style": "simple_5",
+        "lapel": "no",
+        "bottom": "cut",
+        "chestPocket": false,
+        "pockets": "2"
+      }
+    },
+    "suit/fit=Tailored": {},
+    "suit/fit=Classic": { "fit": "regular" },
+    "suit/fit=Relaxed": { "fit": "relaxed" },
+    "suit/fabricId=navy-twill": {},
+    "suit/fabricId=charcoal": { "fabric.color": "#4a4c50", "fabric.pattern": "plain" },
+    "suit/fabricId=sand-linen": { "fabric.color": "#b4a184", "fabric.pattern": "plain" },
+    "suit/fabricId=forest": { "fabric.color": "#34463d" },
+    "suit/fabricId=blue-check": { "fabric.color": "#4a6178", "fabric.pattern": "check" },
+    "suit/skinTone=porcelain": { "skinTone": "porcelain" },
+    "suit/skinTone=warm": {},
+    "suit/skinTone=tan": { "skinTone": "tan" },
+    "suit/skinTone=deep": { "skinTone": "deep" },
+    "shirt/defaults": {},
+    "shirt/fit=Tailored": {},
+    "shirt/fit=Classic": { "fit": "regular" },
+    "shirt/fit=Relaxed": { "fit": "relaxed" },
+    "shirt/collar=Spread": {},
+    "shirt/collar=Point": { "shirt.collar": "Point" },
+    "shirt/cuffs=Button": {},
+    "shirt/cuffs=French": { "shirt.cuffs": "French" },
+    "shirt/fabricId=ivory": {},
+    "shirt/fabricId=sky": { "fabric.color": "#9db8cf", "fabric.pattern": "twill" },
+    "shirt/fabricId=blue-stripe": { "fabric.color": "#b2c2d3", "fabric.pattern": "stripe" },
+    "blazer/defaults": {},
+    "blazer/fit=Tailored": {},
+    "blazer/fit=Classic": { "fit": "regular" },
+    "blazer/fit=Relaxed": { "fit": "relaxed" },
+    "blazer/lapel=Notch": {},
+    "blazer/lapel=Peak": { "jacket.lapelType": "peak" },
+    "blazer/pockets=Flap": { "jacket.pockets": "2" },
+    "blazer/pockets=Patch": {},
+    "blazer/closure=One button": { "jacket.style": "simple_1" },
+    "blazer/closure=Two buttons": {},
+    "blazer/fabricId=navy-twill": {},
+    "blazer/fabricId=charcoal": { "fabric.color": "#4a4c50", "fabric.pattern": "plain" },
+    "blazer/fabricId=sand-linen": { "fabric.color": "#b4a184", "fabric.pattern": "plain" },
+    "blazer/fabricId=forest": { "fabric.color": "#34463d" },
+    "blazer/fabricId=blue-check": { "fabric.color": "#4a6178", "fabric.pattern": "check" }
+  }
+}

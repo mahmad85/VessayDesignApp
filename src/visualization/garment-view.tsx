@@ -14,16 +14,16 @@ import * as THREE from 'three';
 import Image from 'next/image';
 import type { OrbitControls as Controls } from 'three-stdlib';
 import { RotateCcw, ZoomIn, ZoomOut, Move, Box } from 'lucide-react';
-import type { Design } from '@/modules/configuration/types';
+import type { RenderInput } from './binding';
 import { TailoredHuman } from './tailored-human';
 const SKIN = { porcelain: '#e2cbb6', warm: '#b99779', tan: '#987456', deep: '#604436' };
 function Mannequin({
-  design,
+  render,
   measure,
   highlight,
   measurementValue,
 }: {
-  design: Design;
+  render: RenderInput;
   measure: boolean;
   highlight?: string;
   measurementValue?: string;
@@ -31,10 +31,10 @@ function Mannequin({
   const skin = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
-        color: SKIN[design.skinTone],
+        color: SKIN[render.skinTone],
         roughness: 0.64,
       }),
-    [design.skinTone],
+    [render.skinTone],
   );
   useEffect(() => () => skin.dispose(), [skin]);
   // Circumference fields: rendered as a ring at [y, centerX, centerZ] with
@@ -107,7 +107,7 @@ function Mannequin({
   return (
     <group>
       <Suspense fallback={null}>
-        <TailoredHuman design={design} measure={measure} skin={skin} />
+        <TailoredHuman render={render} measure={measure} skin={skin} />
       </Suspense>
       {measure && highlight && (
         <>
@@ -124,7 +124,7 @@ function Mannequin({
   );
 }
 function Scene({
-  design,
+  render,
   measure,
   highlight,
   measurementValue,
@@ -132,7 +132,7 @@ function Scene({
   zoom,
   reset,
 }: {
-  design: Design;
+  render: RenderInput;
   measure: boolean;
   highlight?: string;
   measurementValue?: string;
@@ -190,7 +190,7 @@ function Scene({
       />
       <directionalLight position={[-3, 3, -2]} intensity={0.9} />
       <Mannequin
-        design={design}
+        render={render}
         measure={measure}
         highlight={highlight}
         measurementValue={measurementValue}
@@ -246,13 +246,13 @@ class ViewError extends Component<{ children: ReactNode }, { failed: boolean }> 
   }
 }
 export default function GarmentView({
-  design,
+  render,
   measure = false,
   highlight,
   measurementValue,
   photo,
 }: {
-  design: Design;
+  render: RenderInput;
   measure?: boolean;
   highlight?: string;
   measurementValue?: string;
@@ -283,7 +283,7 @@ export default function GarmentView({
           }
         >
           <Scene
-            design={design}
+            render={render}
             measure={measure}
             highlight={highlight}
             measurementValue={measurementValue}

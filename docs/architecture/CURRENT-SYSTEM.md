@@ -1,6 +1,6 @@
 # Current system (as built, 2026-09-28)
 
-Status: descriptive baseline at commit `4d20445`. It describes what the code does today, not the target. It is the starting point for D-019 and TASK-015 to TASK-026. When code and this file disagree, the code is authoritative; fix this file in the same change.
+Status: descriptive baseline at commit `4d20445`, updated for TASK-015 (M1), TASK-016 and TASK-017 (M2, 2026-09-28/29). It describes what the code does today, not the target. It is the starting point for D-019 and TASK-015 to TASK-026. When code and this file disagree, the code is authoritative; fix this file in the same change.
 
 ## Stack
 
@@ -20,12 +20,14 @@ Status: descriptive baseline at commit `4d20445`. It describes what the code doe
 
 ## Customer journey today
 
-1. `/` renders `Studio` (`src/components/studio.tsx`). A draft is created lazily on the first `GET /api/studio` (default product `suit`, fabric `navy-twill`, suit seed defaults).
-2. **Step 1 · Design.** The left pane toggles between *Ask your tailor* (chat, `design-consultation.tsx`) and *Choose details* (`design-navigator.tsx`). Both send the same `design` command. The right pane shows a 2D SVG technical drawing (`garment-sketch.tsx`, from `sketch-spec.ts`) or 3D (`garment-view.tsx`), which the customer can switch between. Selection tags (`selection-tags.tsx`) show choices grouped by branch.
-3. **Step 2 · Measurements.** Manual entry in mm internally, with cm/in display (`measurement-panel.tsx`, `modules/measurements/definitions.ts`). There are 8 required and 10 optional “advanced” fields. The customer can also *Measure with 3DLOOK* (SAIA widget, sign-in required, D-017/D-018).
-4. **Step 3 · Review.** `review-panel.tsx` runs the `review` command. The deterministic findings (`modules/review/review.ts`) always include the blocker `quote-unavailable`, so `checkoutEligible` is always `false`. `POST /api/checkout` always fails, with 409 `review_required` or 503 `checkout_unavailable`.
+1. `/` renders `Studio` (`src/components/studio.tsx`). `GET /api/studio` creates a draft lazily with **no garments**, and the client loads the customer catalog of the current release from `/api/catalog/v/{version}`. An empty cart shows **Choose a garment** (`start-screen.tsx`): the customer picks a product and starts designing (`add_garment`).
+2. **Step 1 · Design.** The left pane toggles between *Ask your tailor* (chat, `design-consultation.tsx`) and *Choose details* (`design-navigator.tsx`). Both send the same `design` command for the active garment. The right pane shows a 2D SVG technical drawing (`garment-sketch.tsx`) or 3D (`garment-view.tsx`), both drawn from render values (`visualization/binding.ts`). Selection tags (`selection-tags.tsx`) show choices grouped by customer tab. Rule-driven changes to other choices open an impact dialog; a catalog change that affects a garment shows a banner and a review dialog.
+3. **Step 2 · Measurements.** Manual entry in mm internally, with cm/in display (`measurement-panel.tsx`, `modules/measurements/definitions.ts`), over the union of the fields the cart's garments need. The customer can also *Measure with 3DLOOK* (SAIA widget, sign-in required, D-017/D-018).
+4. **Step 3 · Review.** `review-panel.tsx` runs the `review` command and shows the cart total. The deterministic findings (`modules/review/review.ts`) include the blocker `quote-unavailable` only while the live quote is unavailable; `checkoutEligible` is still always `false`. `POST /api/checkout` always fails, with 409 `review_required` or 503 `checkout_unavailable`.
 
-There is one active draft per owner (`drafts.owner` is unique) and one garment per draft. There are no templates, prices, orders, suppliers or staff roles.
+Every studio response carries the live cart quote from `modules/pricing/quote.ts` (PRICING.md), computed on the server from the current release and never persisted. The studio shows the garment price, the cart total and a Price details breakdown (`price-summary.tsx`), and “+$X” / “Customising adds $Y” on priced options. The imported reference catalog has no prices, so it reads “Price not yet available”.
+
+There is one active draft per owner (`drafts.owner` is unique). The draft engine holds up to 10 garments; the studio shows the active one (the cart UI is TASK-022). There are no templates, prices, orders, suppliers or staff roles yet.
 
 ## Identity and ownership (`src/lib/http.ts`)
 
@@ -38,49 +40,35 @@ There is one active draft per owner (`drafts.owner` is unique) and one garment p
 
 ## Draft aggregate and commands
 
-`Draft` (`src/modules/configuration/types.ts`) is stored as JSONB in `drafts.data`:
+`DraftV2` (`src/modules/configuration/types.ts`, ADMIN-BACKEND §7.1) is stored as JSONB in `drafts.data`. A v1 draft (no `schemaVersion`) is upgraded on every read path by `configuration/upgrade.ts` (§7.2) and persisted as v2 by the next command:
 
 ```ts
-Draft = { id, revision, design: Design, measurements: Measurements, messages: ChatMessage[], review: Review | null, createdAt, updatedAt }
-Design = { product: 'suit'|'shirt'|'blazer', fabricId, occasion, climate, fit, lapel, pockets, closure, collar, cuffs,
-           skinTone, customizations: Record<selectionKey, optionValue>, confirmed: string[] }
+DraftV2 = { schemaVersion: 2, id, revision, activeGarmentId, garments: Garment[], skinTone, measurements, messages, review, orders, createdAt, updatedAt }
+Garment = { id, productCode, templateCode, catalogVersion, materialCode, includedComponents, selections, preferences: {occasion, climate}, confirmed, quantity }
 ```
 
-Commands go through `POST /api/studio` with `{ actionId: uuid, expectedRevision: int, command }`. The command is one of:
+Commands go through `POST /api/studio` with `{ actionId: uuid, expectedRevision: int, command }` (`commandSchemaV2`): `add_garment`, `remove_garment`, `select_garment`, `design` (a `GarmentPatch` through `catalog/garment.ts#applyGarmentPatch`, with `confirmCategoryChange` and `confirmImpact`), `set_quantity`, `accept_design`, `rebase_catalog`, `appearance`, `measurements` and `review`. The pure engine (`configuration/engine.ts`) receives the current release, the releases garments are pinned to and the live availability from the repository. Error codes follow API-REFERENCE §1.1 (`unavailable_option`, `incompatible_fabric`, `material_unavailable`, `invalid_text`, `impact_confirmation_required`, `catalog_update_required`, `category_confirmation_required`, `design_incomplete`, `garment_not_found`, `garment_limit_reached`, `garment_removal_confirmation_required`, `cart_empty`, `unknown_measurement`, `missing_measurements`).
 
-| `command.type` | Effect (`engine.ts#applyCommand`) |
+`src/db/repository.ts#save` loads the engine context before the transaction (PGlite serialises queries behind an open one), then runs one transaction: it locks the row with `SELECT … FOR UPDATE`, replays `actions` by `actionId` and a sha256 `fingerprint` (409 `action_conflict` if the payload differs), checks `expectedRevision` (409 `revision_conflict`), writes the prior JSON to `revisions`, updates `drafts`, and inserts the receipt into `actions`.
+
+## Catalog today (database releases; code sources kept for the importer)
+
+The customer runtime reads the **published catalog release**: the working tables of `migrations/0003_catalog.sql`, loaded by the importer (`modules/catalog/import-legacy.ts`) and published as immutable `catalog_releases` (`db/release-repository.ts`; `npm run catalog:bootstrap`, or automatically outside production). The server indexes a release (`indexSnapshot`); the browser indexes its customer projection (`indexCatalog`); the same pure modules run on both: `catalog/structure.ts` (customer tabs, effective selections), `catalog/garment.ts` (patch, validation, rebase), `configuration/design-outline.ts` (navigator, tags and focus) and `visualization/binding.ts`. Live fabric availability is overlaid from `materials` (`db/availability.ts`, 60-second cache).
+
+| Code source (import only) | Content |
 | --- | --- |
-| `design` `{patch, confirmCategoryChange?}` | Changing the product after confirmed choices without confirmation returns 409 `category_confirmation_required`. Suit customisations are validated against the seed (422 `invalid_customization`), and legacy fields map both ways. Fabric/product compatibility is checked (422 `incompatible_fabric`). Clears `review`. |
-| `accept_design` | Requires an occasion and a climate (422 `design_incomplete`), then marks all design keys confirmed. |
-| `measurements` `{values, confirm, source?}` | Only fields allowed for the product (422 `unknown_measurement`). Confirming requires the non-advanced fields (422 `missing_measurements`). Increments `measurements.version`. |
-| `review` `{mode}` | Stores `reviewDraft()` output (never checkout-eligible). |
+| `modules/catalog/catalog.ts` | `PRODUCTS`, the 8 reference `FABRICS`, `OCCASIONS`, `CLIMATES`, `FITS` and `DETAIL_OPTIONS`, read by the importer and the v1 upgrade mapping |
+| `modules/catalog/suit-customization.seed.json` (generated by `scripts/build-suit-customization-seed.mjs`, TASK-012) | Suit only. `menus[style, accents] → categories[jacket, pants, vest] → groups (44) → sections (66) → options (434)`, imported as release groups, options and choices |
 
-`src/db/repository.ts#save` runs one transaction: it locks the row with `SELECT … FOR UPDATE`, replays `actions` by `actionId` and a sha256 `fingerprint` (409 `action_conflict` if the payload differs), checks `expectedRevision` (409 `revision_conflict`), writes the prior snapshot to `revisions`, updates `drafts`, and inserts the receipt into `actions`.
+## Visual binding (CATALOG-ADMIN §6)
 
-## Catalog today (code, not database)
-
-| Source | Content |
-| --- | --- |
-| `modules/catalog/catalog.ts` | `PRODUCTS` (suit, shirt, blazer); 8 reference `FABRICS` (`id, name, color hex, tone, description, pattern: plain\|twill\|check\|stripe, products[], climates[], weight label, composition label, sample: true`); `OCCASIONS`, `CLIMATES`, `FITS`; `DETAIL_OPTIONS` (lapel, pockets, closure, collar, cuffs) |
-| `modules/catalog/suit-customization.seed.json` (generated by `scripts/build-suit-customization-seed.mjs`, TASK-012) | Suit only. `menus[style, accents] → categories[jacket, pants, vest] → groups (44) → sections (66, each with a unique selectionKey) → options (434)`. Each option has `value`, `label`, `selected` (default), `referencePrice` (unapproved), `asset` (reference thumbnail), `attributes` (for example, lining tone and composition). 17 sections have no default. |
-| `modules/configuration/design-outline.ts` | Builds the branches `essentials` (product, occasion, climate, fabric, fit, plus the shirt’s collar/cuffs or the blazer’s lapel/pockets/closure), and for suits `jacket`, `pants`, `vest` and `accents`. A leaf id is `menu.category.group`. `relevantSections()` gates a group’s detail sections on its first section (`personalizado`, or an “off” value in `OFF_VALUES`). `visibleGroups()` hides vest groups until `style.vest.waistcoat.waistcoat = '1'`. |
-
-## Visualisation coupling (important for D-019)
-
-The renderers read **hard-coded selection keys and option values**:
-
-- `visualization/sketch-spec.ts` maps selection keys (for example `style.jacket.jacket_lapel_type_combinated.jacket-lapel-type`) and values (`standard`, `peak`, `simple_2`, `2b`, `personalizado` …) into drawing parameters.
-- `visualization/focus-regions.ts#LEAF_REGIONS` maps leaf ids to 2D regions (`RegionId`).
-- `visualization/garments/coverage.ts#SHOWN_IN_3D` lists the leaf ids that are drawn in 3D.
-- `visualization/tailored-human.tsx` reads `style.pants.pants_length.pants-length`.
-
-Any admin-created option that is not bound to these tokens cannot be drawn. D-019 introduces an explicit visual-slot registry and bindings ([CATALOG-ADMIN.md](../domain/CATALOG-ADMIN.md) §Visual binding).
+The renderers read render values, never catalog selection keys: `binding.ts#renderValues(index, garment, skinTone)` maps each visible option bound to a registry slot (`visualization/registry.ts`) to its choice's visual token and image, plus the included parts. `sketch-spec.ts` turns them into drawing parameters for 2D and 3D; `focus-regions.ts` reads each group's `focus_region`; `garments/coverage.ts` derives “shown in 3D” from the slots. A visible choice without a token is flagged “Not illustrated”. The WP-00b goldens (`tests/golden/*.json`) are unchanged on this path.
 
 ## Database tables today
 
-Migrations `0001_foundation.sql` and `0002_saia_measurement_scan.sql` (listed in `src/db/client.ts#MIGRATIONS`):
+Migrations `0001_foundation.sql`, `0002_saia_measurement_scan.sql` and `0003_catalog.sql` (listed in `src/db/client.ts#MIGRATIONS`):
 
-`user`, `session`, `account`, `verification`, `rate_limit` (Better Auth) · `drafts`, `actions`, `revisions`, `request_limits` · `saia_measurement_drafts`, `measurement_source_snapshots` · `scan_service_payments`, `scan_entitlements`, `garment_credits`, `stripe_webhook_events`, `scan_attempt_events` (inert paid-scan ledger, D-017).
+`user`, `session`, `account`, `verification`, `rate_limit` (Better Auth) · `drafts`, `actions`, `revisions`, `request_limits` · `saia_measurement_drafts`, `measurement_source_snapshots` · `scan_service_payments`, `scan_entitlements`, `garment_credits`, `stripe_webhook_events`, `scan_attempt_events` (inert paid-scan ledger, D-017) · catalog (0003): `audit_events`, `lookup_types`, `lookup_values`, `suppliers`, `supplier_contacts`, `media_assets`, `price_bands`, `materials`, `material_products`, `material_media`, `material_price_overrides`, `products`, `product_band_prices`, `components`, `product_components`, `option_groups`, `attributes`, `option_values`, `product_option_settings`, `compatibility_rules`, `templates`, `template_media`, `catalog_releases`, `commerce_settings` (one `default` row of Q-019 placeholders). All tables are mirrored in `src/db/schema.ts`; `tests/migrations.test.ts` checks the mirror.
 
 Migration mechanics that constrain new work:
 
@@ -95,12 +83,16 @@ All handlers are thin and delegate to `src/db` and `src/modules`. Bodies are JSO
 | Method and path | Auth | Request | Response and notes |
 | --- | --- | --- | --- |
 | `GET /api/health` | none | — | `{status:'ok', version}` |
-| `GET /api/ready` | none | — | `{status:'ready'}` or 503 `not_ready` (queries `drafts`) |
+| `GET /api/ready` | none | — | `{status:'ready'}`, or 503 `{status:'not_ready'}` (database) or `{status:'not_ready', reason:'catalog_missing'}` (no catalog release; outside production the check bootstraps v1 first) |
 | `GET /api/auth-config` | none | — | `{enabled, localEmail}` |
 | `GET\|POST /api/auth/[...all]` | Better Auth | Better Auth contract | Sign-up/in/out, verify, reset, session |
-| `GET /api/studio` | guest or user | — | `{draft, user, assistantMode:'ai'\|'guided'}`; sets the guest cookie |
-| `POST /api/studio` | guest or user + origin | `{actionId, expectedRevision, command}` | `{draft}`; limit 80/min per owner |
-| `POST /api/chat` | guest or user + origin | `{actionId, expectedRevision, message (1–1500)}` | `{draft}` with the assistant message and an optional `suggestion` (the customer applies it with `design`); limits 12/min per owner and 80/min globally |
+| `GET /api/studio` | guest or user | — | `{draft, catalogVersion, catalogUpdates, quote, availability, user, assistantMode:'ai'\|'guided'}`; sets the guest cookie |
+| `POST /api/studio` | guest or user + origin | `{actionId, expectedRevision, command}` | The same envelope without `user`; limit 80/min per owner |
+| `POST /api/chat` | guest or user + origin | `{actionId, expectedRevision, message (1–1500)}` | The same envelope; the assistant message may carry `suggestion: {garmentId, patch}`, dry-run on the current release (the customer applies it with `design`); limits 12/min per owner and 80/min globally |
+| `GET /api/catalog/current` | none | — | `{version}`, `no-store` |
+| `GET /api/catalog/v/[version]` | none | — | The customer projection of the release, cached `public, max-age=31536000, immutable`; 404 if unknown |
+| `GET /api/media/[id]` | none | — | 308 to the static path for imported media; other drivers from TASK-019 |
+| `POST /api/test/catalog` | browser tests only + origin | `{scenario:'priced'\|'reference'}` | 404 unless `VESSY_E2E_HOOKS=true` outside production; publishes SYNTHETIC prices on the current release, or restores release 1 (`db/e2e-catalog.ts`) |
 | `POST /api/checkout` | guest or user + origin | — | Always 409 `review_required` or 503 `checkout_unavailable` (`integrations/checkout.ts`) |
 | `POST /api/measurements/saia/session` | signed in + origin | `{targetUnit:'cm'\|'in', mode?:'public'\|'paid'}` | 201 `{draft}` (SAIA capture draft); `paid` returns 503 until vendor authorisation exists |
 | `PUT /api/measurements/saia/[captureToken]` | signed in + origin | `{person}` (widget result) | `{draft}` with mapped mm values and raw dimensions snapshot |

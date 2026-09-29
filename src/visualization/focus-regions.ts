@@ -1,3 +1,5 @@
+import type { RuntimeIndex } from '@/modules/catalog/snapshot';
+
 // Maps outline leaves to the area of the 2D technical drawing that shows them.
 // Coordinates are in the drawing's 400 × 800 viewBox.
 
@@ -179,7 +181,12 @@ export const REGIONS: Record<RegionId, Region> = {
   },
 };
 
-const LEAF_REGIONS: Record<string, RegionId> = {
+/**
+ * Focus regions of the pre-catalog outline leaves. They are import source data
+ * (CATALOG-ADMIN §10: `focus_region` of the imported groups); the runtime reads
+ * `option_groups.focus_region` from the release.
+ */
+export const LEAF_REGIONS: Record<string, RegionId> = {
   product: 'full',
   occasion: 'full',
   climate: 'full',
@@ -234,25 +241,55 @@ const LEAF_REGIONS: Record<string, RegionId> = {
   'accents.vest.waistcoat_button_holes_threads': 'vest-buttons',
 };
 
+/** Fixed Essentials leaves, which are not catalog groups. */
+const FIXED_REGIONS: Record<string, RegionId> = {
+  product: 'full',
+  occasion: 'full',
+  climate: 'full',
+  fabric: 'torso',
+};
+/** Where each visual part is drawn, for its include toggle (`include:<component>`). */
+const PART_REGIONS: Record<string, RegionId> = {
+  jacket: 'torso',
+  trousers: 'legs',
+  vest: 'vest',
+  shirt: 'torso',
+};
+const isRegion = (value: string): value is RegionId => Object.hasOwn(REGIONS, value);
+
+export type FocusContext = {
+  /** The garment's release. */
+  index: RuntimeIndex;
+  product?: 'suit' | 'shirt' | 'blazer';
+  /** Render tokens of the garment (binding.ts), for choices that move the focus. */
+  tokens?: Partial<Record<string, string>>;
+  /** The option (attribute code) that just changed. */
+  changedKey?: string;
+};
+
 /**
- * Region for an outline leaf. A few details move the focus, such as a changed
- * back-pocket choice or thread colours applied only to cuffs.
+ * Region for an outline leaf: the group's `focus_region` from the catalog
+ * (CATALOG-ADMIN §6). A few drawing details move the focus, such as a changed
+ * back-pocket choice or thread colours applied only to cuffs; these read
+ * registry slots, not catalog codes.
  */
-export function regionForLeaf(
-  leafId: string,
-  context: {
-    product?: 'suit' | 'shirt' | 'blazer';
-    values?: Record<string, string>;
-    changedKey?: string;
-  } = {},
-): RegionId {
-  const { product = 'suit', values = {}, changedKey } = context;
-  if (product === 'shirt' && leafId === 'fabricId') return 'full';
-  if (leafId === 'style.pants.pants_pockets' && changedKey?.endsWith('pants-back-pocket-combine'))
-    return 'back-pockets';
-  if (leafId === 'accents.jacket.button_holes_threads') {
-    const scope = values['accents.jacket.button_holes_threads.button-threads-holes'];
-    return scope === 'cuff' ? 'sleeve' : scope === 'lapel' ? 'collar' : 'buttons';
+export function regionForLeaf(leafId: string, context: FocusContext): RegionId {
+  const { product = 'suit', tokens = {}, changedKey, index } = context;
+  if (product === 'shirt' && leafId === 'fabric') return 'full';
+  if (FIXED_REGIONS[leafId]) return FIXED_REGIONS[leafId];
+  const include = /^include:(.+)$/.exec(leafId);
+  if (include) {
+    const part = index.components.get(include[1])?.visualPart;
+    return (part && PART_REGIONS[part]) ?? 'full';
   }
-  return LEAF_REGIONS[leafId] ?? 'full';
+  const group = index.groups.get(leafId)?.group;
+  if (!group) return 'full';
+  const changed = changedKey ? index.attributes.get(changedKey)?.attribute : undefined;
+  if (changed?.visualSlot === 'trousers.backPocket') return 'back-pockets';
+  if (group.attributes.some((attribute) => attribute.visualSlot === 'jacket.threads.scope')) {
+    const scope = tokens['jacket.threads.scope'];
+    if (scope === 'cuff') return 'sleeve';
+    if (scope === 'lapel') return 'collar';
+  }
+  return isRegion(group.focusRegion) ? group.focusRegion : 'full';
 }

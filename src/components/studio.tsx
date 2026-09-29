@@ -11,6 +11,7 @@ import {
   Info,
   LoaderCircle,
   ListChecks,
+  RefreshCw,
   Scissors,
   Sparkles,
   SlidersHorizontal,
@@ -19,17 +20,25 @@ import {
   X,
   ShieldCheck,
 } from 'lucide-react';
-import type { Design, DesignPatch, Draft } from '@/modules/configuration/types';
+import type {
+  ChatSuggestion,
+  DraftV2,
+  Garment,
+  GarmentPatch,
+  Impact,
+} from '@/modules/configuration/types';
+import type { RuntimeIndex } from '@/modules/catalog/snapshot';
 import {
   changedLeaves,
   designOutline,
   findLeaf,
   type BranchId,
 } from '@/modules/configuration/design-outline';
+import type { MeasurementSet } from '@/modules/measurements/definitions';
 import { REGIONS, regionForLeaf, type RegionId } from '@/visualization/focus-regions';
 import GarmentSketch, { type SketchHotspot } from '@/visualization/garment-sketch';
 import { shownIn3D } from '@/visualization/garments/coverage';
-import { PRODUCTS, fabricFor, CLIMATES, OCCASIONS, type Product } from '@/modules/catalog/catalog';
+import { renderValues } from '@/visualization/binding';
 import { useStudio } from './use-studio';
 import { displayValue } from '@/modules/measurements/definitions';
 import { Consultation } from './design-consultation';
@@ -37,15 +46,10 @@ import { DesignNavigator, type NavPath } from './design-navigator';
 import { SelectionTags } from './selection-tags';
 import { MeasurementPanel } from './measurement-panel';
 import { ReviewPanel } from './review-panel';
+import { StartScreen } from './start-screen';
+import { PriceSummary } from './price-summary';
 import { Button } from './ui/button';
 import { Dialog } from './ui/dialog';
-const BRANCH_REGIONS: Record<BranchId, RegionId> = {
-  essentials: 'full',
-  jacket: 'torso',
-  pants: 'legs',
-  vest: 'vest',
-  accents: 'full',
-};
 const GarmentView = dynamic(() => import('@/visualization/garment-view'), {
   ssr: false,
   loading: () => (
@@ -55,16 +59,49 @@ const GarmentView = dynamic(() => import('@/visualization/garment-view'), {
     </div>
   ),
 });
+const activeOf = (draft: DraftV2 | null) =>
+  draft?.garments.find((garment) => garment.id === draft.activeGarmentId) ?? null;
+
+function ImpactList({ impact }: { impact: Impact[] }) {
+  return (
+    <ul className="impact-list">
+      {impact.map((item, i) => (
+        <li key={`${item.attributeCode ?? item.kind}-${i}`}>
+          <Info size={15} aria-hidden />
+          <span>{item.message}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export default function Studio() {
   const studio = useStudio();
-  const { draft, busy, error, user } = studio;
+  const { state, draft, busy, error, user, catalogs } = studio;
+  const current = state ? catalogs[state.catalogVersion] : undefined;
+  const garment = activeOf(draft);
+  const pending = useMemo(
+    () => new Set((state?.catalogUpdates ?? []).map((update) => update.garmentId)),
+    [state],
+  );
+  /**
+   * A garment is shown against the current release (its next command moves it
+   * there silently), unless a catalog update that changes its choices awaits
+   * the customer's review; then its pinned release is shown (CATALOG-ADMIN §7.8).
+   */
+  const releaseFor = useCallback(
+    (item: Garment): RuntimeIndex | undefined =>
+      pending.has(item.id) ? (catalogs[item.catalogVersion] ?? current) : current,
+    [pending, catalogs, current],
+  );
+  const index = garment ? releaseFor(garment) : current;
   const [step, setStep] = useState(1),
     [mobilePane, setMobilePane] = useState('conversation'),
     [appearance, setAppearance] = useState(false),
     [photo, setPhoto] = useState<string>(),
     [highlight, setHighlight] = useState('chest'),
     [confirmDesign, setConfirmDesign] = useState(false),
-    [productChange, setProductChange] = useState<DesignPatch | null>(null),
+    [productChange, setProductChange] = useState<GarmentPatch | null>(null),
     [info, setInfo] = useState(false),
     [dirty, setDirty] = useState(false),
     [leaveStep, setLeaveStep] = useState<number | null>(null),
@@ -72,48 +109,75 @@ export default function Studio() {
     [inputMode, setInputMode] = useState<'chat' | 'fields'>('chat'),
     [nav, setNav] = useState<NavPath>({}),
     [previewMode, setPreviewMode] = useState<'2d' | '3d'>('2d'),
+    [updatesOpen, setUpdatesOpen] = useState(false),
     [focus, setFocus] = useState<{ region: RegionId; leafId?: string; nonce: number }>({
       region: 'full',
       nonce: 0,
     });
-  const outline = useMemo(() => (draft ? designOutline(draft.design) : []), [draft]);
+  const outline = useMemo(
+    () => (index && garment ? designOutline(index, garment) : []),
+    [index, garment],
+  );
+  const render = useMemo(
+    () => (index && garment && draft ? renderValues(index, garment, draft.skinTone) : null),
+    [index, garment, draft],
+  );
+  const measurementSets = useMemo(() => {
+    const sets = new Set<MeasurementSet>();
+    for (const item of draft?.garments ?? []) {
+      const product = (catalogs[item.catalogVersion] ?? current)?.products.get(item.productCode);
+      if (product) sets.add(product.measurementSet);
+    }
+    return [...sets];
+  }, [draft, catalogs, current]);
+  const updates = state?.catalogUpdates ?? [];
   const focusedLeaf = focus.leafId ? findLeaf(outline, focus.leafId) : undefined;
   const focusLeaf = useCallback(
-    (leafId: string, design: Design, changedKey?: string) =>
-      setFocus((current) => ({
+    (leafId: string, target: Garment, skinTone: DraftV2['skinTone'], changedKey?: string) => {
+      const release = releaseFor(target);
+      if (!release) return;
+      const values = renderValues(release, target, skinTone);
+      setFocus((previous) => ({
         leafId,
         region: regionForLeaf(leafId, {
-          product: design.product,
-          values: design.customizations,
+          index: release,
+          product: values.visualModel,
+          tokens: values.tokens,
           changedKey,
         }),
-        nonce: current.nonce + 1,
-      })),
-    [],
+        nonce: previous.nonce + 1,
+      }));
+    },
+    [releaseFor],
   );
   // Every committed change, whether from chat, a suggestion or a field, moves the 2D focus.
   const followChange = useCallback(
-    (before: Design, next: Draft | null) => {
-      if (!next) return next;
-      if (before.product !== next.design.product)
-        setFocus((current) => ({ leafId: 'product', region: 'full', nonce: current.nonce + 1 }));
+    (before: Garment, next: DraftV2 | null) => {
+      const after = activeOf(next);
+      if (!next || !after) return next;
+      const release = releaseFor(after);
+      if (before.id !== after.id || before.productCode !== after.productCode || !release)
+        setFocus((previous) => ({ leafId: 'product', region: 'full', nonce: previous.nonce + 1 }));
       else {
-        const [first] = changedLeaves(before, next.design);
-        if (first) focusLeaf(first.leafId, next.design, first.keys[0]);
+        const [first] = changedLeaves(release, before, after);
+        if (first) focusLeaf(first.leafId, after, next.skinTone, first.keys[0]);
       }
       return next;
     },
-    [focusLeaf],
+    [releaseFor, focusLeaf],
   );
   function navigateDetails(path: NavPath) {
     setNav(path);
-    if (!draft) return;
-    if (path.leaf) focusLeaf(path.leaf, draft.design);
+    if (!garment || !draft) return;
+    if (path.leaf) focusLeaf(path.leaf, garment, draft.skinTone);
     else
-      setFocus((current) => ({
-        region: path.branch ? BRANCH_REGIONS[path.branch] : 'full',
+      setFocus((previous) => ({
+        region:
+          path.branch && path.branch !== 'essentials' && path.branch !== 'accents' && index
+            ? regionForLeaf(`include:${path.branch}`, { index })
+            : 'full',
         leafId: undefined,
-        nonce: current.nonce + 1,
+        nonce: previous.nonce + 1,
       }));
   }
   function openLeaf(leafId: string, branch: BranchId) {
@@ -122,20 +186,21 @@ export default function Studio() {
     navigateDetails({ branch, leaf: leafId });
   }
   const hotspots = useMemo(() => {
-    if (!draft) return [];
+    if (!index || !render) return [];
     const seen = new Set<RegionId>(['full', 'torso', 'back']);
     const spots: SketchHotspot[] = [];
     for (const leaf of outline.flatMap((branch) => branch.leaves)) {
       const region = regionForLeaf(leaf.id, {
-        product: draft.design.product,
-        values: draft.design.customizations,
+        index,
+        product: render.visualModel,
+        tokens: render.tokens,
       });
       if (seen.has(region)) continue;
       seen.add(region);
       spots.push({ region, leafId: leaf.id, label: leaf.label });
     }
     return spots;
-  }, [draft, outline]);
+  }, [index, render, outline]);
   const photoRef = useRef<string | undefined>(undefined);
   const onDirty = useCallback((v: boolean) => setDirty(v), []);
   const [measurementPreview, setMeasurementPreview] = useState<{
@@ -147,7 +212,7 @@ export default function Studio() {
     [],
   );
   function navigate(n: number) {
-    if (n === step) return;
+    if (n === step || !garment) return;
     if (step === 2 && dirty) {
       setLeaveStep(n);
       return;
@@ -156,14 +221,29 @@ export default function Studio() {
     setMobilePane('conversation');
     window.scrollTo({ top: 0, behavior: 'instant' });
   }
-  function change(patch: DesignPatch) {
-    if (!draft) return;
-    if (patch.product && patch.product !== draft.design.product && draft.design.confirmed.length) {
+  function change(patch: GarmentPatch) {
+    if (!garment) return;
+    if (
+      patch.productCode &&
+      patch.productCode !== garment.productCode &&
+      garment.confirmed.length
+    ) {
       setProductChange(patch);
       return;
     }
-    const before = draft.design;
+    const before = garment;
     void studio.command({ type: 'design', patch }).then((next) => followChange(before, next));
+  }
+  async function applySuggestion(suggestion: ChatSuggestion) {
+    const { productCode, ...rest } = suggestion.patch;
+    // An empty cart starts the suggested garment first (ADMIN-BACKEND §11).
+    if (!garment) {
+      if (!productCode) return;
+      const added = await studio.command({ type: 'add_garment', productCode });
+      if (added && Object.keys(rest).length) await studio.command({ type: 'design', patch: rest });
+      return;
+    }
+    change(suggestion.patch);
   }
   async function confirm() {
     const result = await studio.command({ type: 'accept_design' });
@@ -171,6 +251,18 @@ export default function Studio() {
       setConfirmDesign(false);
       navigate(2);
     }
+  }
+  async function acceptUpdates() {
+    for (const update of updates) {
+      if (update.impact.some((item) => item.kind === 'product_unavailable')) continue;
+      const done = await studio.command({
+        type: 'rebase_catalog',
+        garmentId: update.garmentId,
+        confirmImpact: true,
+      });
+      if (!done) return;
+    }
+    setUpdatesOpen(false);
   }
   async function photoUpload(file: File | undefined) {
     setPhotoError('');
@@ -195,6 +287,26 @@ export default function Studio() {
     };
     img.src = url;
   }
+  const product = garment && index ? index.products.get(garment.productCode) : undefined;
+  const material = garment && index ? index.materials.get(garment.materialCode) : undefined;
+  const fitLeaf = outline
+    .flatMap((branch) => branch.leaves)
+    .find((leaf) => leaf.group?.attributes.some((entry) => entry.attribute.visualSlot === 'fit'));
+  const fitText = fitLeaf
+    ? /fit$/i.test(fitLeaf.value)
+      ? fitLeaf.value
+      : `${fitLeaf.value} fit`
+    : '';
+  const summaryLeaves = outline
+    .filter((branch) => branch.id !== 'accents')
+    .flatMap((branch) => branch.leaves)
+    .filter((leaf) => leaf.kind === 'catalog' && leaf.id !== fitLeaf?.id)
+    .slice(0, 3);
+  const notIllustrated =
+    focusedLeaf && render
+      ? focusedLeaf.keys.filter((key) => render.notIllustrated.includes(key))
+      : [];
+  const changesToReview = updates.reduce((sum, update) => sum + update.impact.length, 0);
   return (
     <div className="app-shell">
       <a className="skip-link" href="#studio-content">
@@ -208,8 +320,9 @@ export default function Studio() {
           {['Create your look', 'Measurements', 'Review'].map((label, i) => (
             <button
               key={label}
-              className={step === i + 1 ? 'active' : ''}
-              aria-current={step === i + 1 ? 'step' : undefined}
+              className={step === i + 1 && garment ? 'active' : ''}
+              aria-current={step === i + 1 && garment ? 'step' : undefined}
+              disabled={!garment}
               onClick={() => navigate(i + 1)}
             >
               <span>{step > i + 1 ? <Check size={13} /> : String(i + 1).padStart(2, '0')}</span>
@@ -232,7 +345,7 @@ export default function Studio() {
           </Link>
         </div>
       </header>
-      {!draft ? (
+      {!draft || !current ? (
         <main className="center-state">
           <div className="eyebrow">YOUR PERSONAL TAILOR</div>
           <h1>
@@ -252,6 +365,15 @@ export default function Studio() {
             <LoaderCircle className="spin" />
           )}
         </main>
+      ) : !garment || !index || !render ? (
+        <StartScreen
+          index={current}
+          busy={busy}
+          onStart={(productCode) => {
+            setStep(1);
+            void studio.command({ type: 'add_garment', productCode });
+          }}
+        />
       ) : (
         <>
           <div className="studio-subnav">
@@ -268,6 +390,16 @@ export default function Studio() {
               <ArrowRight size={12} />
             </button>
           </div>
+          {updates.length > 0 && (
+            <div className="catalog-update-banner" role="status">
+              <RefreshCw size={16} aria-hidden />
+              <span>
+                Our catalog changed. {changesToReview}{' '}
+                {changesToReview === 1 ? 'choice needs' : 'choices need'} your review.
+              </span>
+              <button onClick={() => setUpdatesOpen(true)}>Review changes</button>
+            </div>
+          )}
           <div className="mobile-pane-switch" role="group" aria-label="Studio panel">
             <button
               aria-pressed={mobilePane === 'conversation'}
@@ -310,10 +442,14 @@ export default function Studio() {
                     <Tabs.Content value="chat" forceMount className="input-mode-panel">
                       <Consultation
                         draft={draft}
+                        garment={garment}
+                        index={index}
+                        availability={state!.availability}
                         busy={busy}
                         mode={studio.mode}
                         chat={studio.chat}
                         change={change}
+                        applySuggestion={(suggestion) => void applySuggestion(suggestion)}
                         onChooseDetails={() => {
                           setInputMode('fields');
                           navigateDetails({});
@@ -322,8 +458,10 @@ export default function Studio() {
                     </Tabs.Content>
                     <Tabs.Content value="fields" forceMount className="input-mode-panel">
                       <DesignNavigator
-                        draft={draft}
+                        index={index}
+                        garment={garment}
                         outline={outline}
+                        availability={state!.availability}
                         busy={busy}
                         change={change}
                         path={nav}
@@ -335,6 +473,7 @@ export default function Studio() {
               ) : step === 2 ? (
                 <MeasurementPanel
                   draft={draft}
+                  measurementSets={measurementSets}
                   busy={busy}
                   user={user}
                   command={studio.command}
@@ -347,7 +486,16 @@ export default function Studio() {
                   onPreview={onMeasurePreview}
                 />
               ) : (
-                <ReviewPanel draft={draft} busy={busy} command={studio.command} edit={navigate} />
+                <ReviewPanel
+                  draft={draft}
+                  quote={state!.quote}
+                  garment={garment}
+                  index={index}
+                  measurementSets={measurementSets}
+                  busy={busy}
+                  command={studio.command}
+                  edit={navigate}
+                />
               )}
             </div>
             <div className="right-pane">
@@ -357,15 +505,11 @@ export default function Studio() {
                     <div className="eyebrow">
                       {step === 2 ? 'YOUR MEASUREMENT GUIDE' : 'THE SHAPE OF YOUR STYLE'}
                     </div>
-                    <h2>
-                      {step === 2
-                        ? 'Every detail, in proportion.'
-                        : PRODUCTS[draft.design.product].name}
-                    </h2>
+                    <h2>{step === 2 ? 'Every detail, in proportion.' : product?.name}</h2>
                     <p>
                       {step === 2
                         ? 'Select a field to highlight its measurement path.'
-                        : `${fabricFor(draft.design.fabricId)?.name} · ${draft.design.fit} fit`}
+                        : [material?.name, fitText].filter(Boolean).join(' · ')}
                     </p>
                   </div>
                   {step === 1 ? (
@@ -375,13 +519,13 @@ export default function Studio() {
                         <select
                           aria-label="Garment"
                           id="garment-select"
-                          value={draft.design.product}
+                          value={garment.productCode}
                           disabled={busy}
-                          onChange={(e) => change({ product: e.target.value as Product })}
+                          onChange={(e) => change({ productCode: e.target.value })}
                         >
-                          {Object.entries(PRODUCTS).map(([k, p]) => (
-                            <option key={k} value={k}>
-                              {p.label}
+                          {index.catalog.products.map((item) => (
+                            <option key={item.code} value={item.code}>
+                              {item.shortLabel}
                             </option>
                           ))}
                         </select>
@@ -410,7 +554,7 @@ export default function Studio() {
                 </div>
                 {step === 1 && previewMode === '2d' ? (
                   <GarmentSketch
-                    design={draft.design}
+                    render={render}
                     focus={{
                       region: focus.region,
                       nonce: focus.nonce,
@@ -427,7 +571,7 @@ export default function Studio() {
                   />
                 ) : (
                   <GarmentView
-                    design={draft.design}
+                    render={render}
                     measure={step === 2}
                     highlight={highlight}
                     measurementValue={
@@ -438,11 +582,18 @@ export default function Studio() {
                     photo={photo}
                   />
                 )}
+                {step === 1 && focusedLeaf && notIllustrated.length > 0 && (
+                  <div className="detail-in-2d not-illustrated-note" role="status">
+                    <span>
+                      <strong>Not illustrated</strong> · {focusedLeaf.label}: {focusedLeaf.value}
+                    </span>
+                  </div>
+                )}
                 {step === 1 &&
                   previewMode === '3d' &&
                   focusedLeaf &&
                   focus.region !== 'full' &&
-                  !shownIn3D(focusedLeaf.id) && (
+                  !shownIn3D(focusedLeaf.id, index) && (
                     <div className="detail-in-2d" role="status">
                       <span>
                         <strong>{focusedLeaf.label}</strong> is shown in the 2D drawing
@@ -460,6 +611,7 @@ export default function Studio() {
                       : 'illustrative fit and fabric colour'}
                 </div>
               </div>
+              {step === 1 && <PriceSummary quote={state!.quote} garmentId={garment.id} />}
               {step === 1 ? (
                 <SelectionTags outline={outline} activeLeaf={focus.leafId} onEdit={openLeaf} />
               ) : (
@@ -581,11 +733,11 @@ export default function Studio() {
               key={tone}
               disabled={busy}
               aria-label={`${tone} skin tone`}
-              aria-pressed={draft?.design.skinTone === tone}
+              aria-pressed={draft?.skinTone === tone}
               style={{ background: ['#e2cbb6', '#b99779', '#987456', '#604436'][i] }}
-              onClick={() => change({ skinTone: tone })}
+              onClick={() => void studio.command({ type: 'appearance', skinTone: tone })}
             >
-              {draft?.design.skinTone === tone && <Check size={18} />}
+              {draft?.skinTone === tone && <Check size={18} />}
             </button>
           ))}
         </div>
@@ -646,10 +798,9 @@ export default function Studio() {
           <Button
             disabled={busy}
             onClick={async () => {
-              if (productChange) {
-                const before = draft!.design;
+              if (productChange && garment) {
                 const result = followChange(
-                  before,
+                  garment,
                   await studio.command({
                     type: 'design',
                     patch: productChange,
@@ -666,65 +817,94 @@ export default function Studio() {
         </div>
       </Dialog>
       <Dialog
+        open={!!studio.pendingImpact}
+        onOpenChange={(open) => {
+          if (!open) studio.dismissImpact();
+        }}
+        title="This change affects other choices"
+        description="To keep your design consistent, these choices would change too. Nothing changes until you confirm."
+      >
+        {studio.pendingImpact && <ImpactList impact={studio.pendingImpact.impact} />}
+        <div className="dialog-actions">
+          <Button variant="secondary" onClick={() => studio.dismissImpact()}>
+            Keep my design
+          </Button>
+          <Button
+            disabled={busy}
+            onClick={async () => {
+              const before = garment;
+              const next = await studio.confirmImpact();
+              if (before) followChange(before, next);
+            }}
+          >
+            Apply the changes
+            <ArrowRight size={15} />
+          </Button>
+        </div>
+      </Dialog>
+      <Dialog
+        open={updatesOpen && updates.length > 0}
+        onOpenChange={setUpdatesOpen}
+        title="Our catalog changed"
+        description="Some of your choices are no longer offered. Review what changes before you continue designing."
+      >
+        {updates.map((update) => (
+          <ImpactList key={update.garmentId} impact={update.impact} />
+        ))}
+        <div className="dialog-actions">
+          <Button variant="secondary" onClick={() => setUpdatesOpen(false)}>
+            Not now
+          </Button>
+          <Button disabled={busy} onClick={() => void acceptUpdates()}>
+            Accept the changes
+            <ArrowRight size={15} />
+          </Button>
+        </div>
+      </Dialog>
+      <Dialog
         open={confirmDesign}
         onOpenChange={setConfirmDesign}
         title="Does this feel like you?"
         description="Confirm the complete design, including the suggested finishing details, before moving on."
       >
-        {draft && (
+        {garment && index && (
           <>
             <div className="confirm-summary">
-              <strong>{PRODUCTS[draft.design.product].name}</strong>
-              <span>
-                {fabricFor(draft.design.fabricId)?.name} · {draft.design.fit} fit
-              </span>
-              <span>
-                {draft.design.product === 'shirt'
-                  ? `${draft.design.collar} collar · ${draft.design.cuffs} cuffs`
-                  : `${draft.design.lapel} lapel · ${draft.design.pockets} pockets · ${draft.design.closure}`}
-              </span>
+              <strong>{product?.name}</strong>
+              <span>{[material?.name, fitText].filter(Boolean).join(' · ')}</span>
+              <span>{summaryLeaves.map((leaf) => leaf.value).join(' · ')}</span>
             </div>
             <div className="confirm-fields">
-              <label>
-                Occasion
-                <select
-                  aria-label="Confirm occasion"
-                  value={draft.design.occasion}
-                  disabled={busy}
-                  onChange={(e) => change({ occasion: e.target.value as DesignPatch['occasion'] })}
-                >
-                  <option value="" disabled>
-                    Choose an occasion
-                  </option>
-                  {OCCASIONS.map((o) => (
-                    <option key={o}>{o}</option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Weather
-                <select
-                  aria-label="Confirm weather"
-                  value={draft.design.climate}
-                  disabled={busy}
-                  onChange={(e) => change({ climate: e.target.value as DesignPatch['climate'] })}
-                >
-                  <option value="" disabled>
-                    Choose the weather
-                  </option>
-                  {CLIMATES.map((o) => (
-                    <option key={o}>{o}</option>
-                  ))}
-                </select>
-              </label>
+              {(['occasion', 'climate'] as const).map((type) => (
+                <label key={type}>
+                  {type === 'occasion' ? 'Occasion' : 'Weather'}
+                  <select
+                    aria-label={type === 'occasion' ? 'Confirm occasion' : 'Confirm weather'}
+                    value={garment.preferences[type] ?? ''}
+                    disabled={busy}
+                    onChange={(e) => change({ preferences: { [type]: e.target.value } })}
+                  >
+                    <option value="" disabled>
+                      {type === 'occasion' ? 'Choose an occasion' : 'Choose the weather'}
+                    </option>
+                    {(index.catalog.lookups[type] ?? []).map((item) => (
+                      <option key={item.code} value={item.code}>
+                        {item.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ))}
             </div>
-            <p className="fine-print">
-              These are reference choices. A live supplier catalog and quote will be required before
-              ordering.
-            </p>
+            {index.catalog.referenceOnly && (
+              <p className="fine-print">
+                These are reference choices. A live supplier catalog and quote will be required
+                before ordering.
+              </p>
+            )}
             <Button
               className="full-width"
-              disabled={busy || !draft.design.occasion || !draft.design.climate}
+              disabled={busy || !garment.preferences.occasion || !garment.preferences.climate}
               onClick={confirm}
             >
               Confirm design & take measurements

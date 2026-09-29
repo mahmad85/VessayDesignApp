@@ -1,27 +1,88 @@
 'use client';
-import { useCallback, useEffect, useState, useRef } from 'react';
-import type { Draft, Command } from '@/modules/configuration/types';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { customerCatalogSchema, indexCatalog, type RuntimeIndex } from '@/modules/catalog/snapshot';
+import type { AvailabilityMap } from '@/modules/catalog/garment';
+import type { CommandV2, DraftV2, Impact } from '@/modules/configuration/types';
+import type { CartQuote } from '@/modules/pricing/quote';
+
+// Client state for the studio: the draft envelope from /api/studio and the
+// customer catalog of every release it needs (the current one and any release
+// a garment is pinned to), fetched from the immutable /api/catalog/v/{version}.
+// Prices and validity are always decided by the server.
+
+export type StudioEnvelope = {
+  draft: DraftV2;
+  catalogVersion: number;
+  catalogUpdates: { garmentId: string; impact: Impact[] }[];
+  /** The server's live cart quote; the client never computes prices. */
+  quote: CartQuote;
+  availability: AvailabilityMap;
+};
+export type PendingImpact = { command: CommandV2; impact: Impact[] };
+
+const catalogCache = new Map<number, Promise<RuntimeIndex>>();
+function loadCatalog(version: number) {
+  let hit = catalogCache.get(version);
+  if (!hit) {
+    hit = fetch(`/api/catalog/v/${version}`)
+      .then(async (response) => {
+        if (!response.ok) throw new Error('The catalog could not be loaded.');
+        return indexCatalog(customerCatalogSchema.parse(await response.json()));
+      })
+      .catch((error) => {
+        catalogCache.delete(version);
+        throw error;
+      });
+    catalogCache.set(version, hit);
+  }
+  return hit;
+}
+const versionsOf = (envelope: StudioEnvelope) => [
+  envelope.catalogVersion,
+  ...envelope.draft.garments.map((garment) => garment.catalogVersion),
+];
+
 export function useStudio() {
-  const [draft, setDraft] = useState<Draft | null>(null),
+  const [state, setState] = useState<StudioEnvelope | null>(null),
+    [catalogs, setCatalogs] = useState<Record<number, RuntimeIndex>>({}),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(''),
     [user, setUser] = useState<{ name: string; email: string } | null>(null),
-    [mode, setMode] = useState<'guided' | 'ai'>('guided');
+    [mode, setMode] = useState<'guided' | 'ai'>('guided'),
+    [pendingImpact, setPendingImpact] = useState<PendingImpact | null>(null);
   const lock = useRef(false);
-  const load = useCallback(async () => {
-    try {
-      const r = await fetch('/api/studio', { cache: 'no-store' });
-      const d = await r.json();
-      if (!r.ok) throw new Error(d.error?.message || 'The studio is temporarily unavailable.');
-      setDraft(d.draft);
-      setUser(d.user);
-      setMode(d.assistantMode);
-      return d.draft as Draft;
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Unable to load your studio.');
-      return null;
-    }
+
+  /** Show an envelope once every catalog it needs is loaded. */
+  const accept = useCallback(async (envelope: StudioEnvelope) => {
+    const versions = [...new Set(versionsOf(envelope))];
+    const loaded = await Promise.all(versions.map(loadCatalog));
+    setCatalogs((current) => {
+      const next = { ...current };
+      versions.forEach((version, i) => (next[version] = loaded[i]));
+      return next;
+    });
+    setState(envelope);
+    return envelope;
   }, []);
+
+  const load = useCallback(
+    async (signal?: AbortSignal) => {
+      try {
+        const response = await fetch('/api/studio', { cache: 'no-store', signal });
+        const data = await response.json();
+        if (!response.ok)
+          throw new Error(data.error?.message || 'The studio is temporarily unavailable.');
+        setUser(data.user);
+        setMode(data.assistantMode);
+        return await accept(data);
+      } catch (e) {
+        if (!signal?.aborted)
+          setError(e instanceof Error ? e.message : 'Unable to load your studio.');
+        return null;
+      }
+    },
+    [accept],
+  );
   useEffect(() => {
     const controller = new AbortController();
     fetch('/api/studio', { cache: 'no-store', signal: controller.signal })
@@ -29,42 +90,47 @@ export function useStudio() {
         const data = await response.json();
         if (!response.ok)
           throw new Error(data.error?.message || 'The studio is temporarily unavailable.');
-        return data;
-      })
-      .then((data) => {
-        setDraft(data.draft);
         setUser(data.user);
         setMode(data.assistantMode);
+        return accept(data);
       })
-      .catch((error) => {
+      .catch((e) => {
         if (!controller.signal.aborted)
-          setError(error instanceof Error ? error.message : 'Unable to load your studio.');
+          setError(e instanceof Error ? e.message : 'Unable to load your studio.');
       });
     return () => controller.abort();
-  }, []);
+  }, [accept]);
+
   const request = useCallback(
-    async (endpoint: string, payload: unknown) => {
-      if (lock.current || !draft) return null;
+    async (endpoint: string, payload: Record<string, unknown>) => {
+      if (lock.current || !state) return null;
       lock.current = true;
       setBusy(true);
       setError('');
       try {
-        const r = await fetch(endpoint, {
+        const response = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             actionId: crypto.randomUUID(),
-            expectedRevision: draft.revision,
-            ...(payload as object),
+            expectedRevision: state.draft.revision,
+            ...payload,
           }),
         });
-        const d = await r.json();
-        if (!r.ok) {
-          if (r.status === 409) await load();
-          throw new Error(d.error?.message || d.message || 'That change could not be saved.');
+        const data = await response.json();
+        if (!response.ok) {
+          const code = data.error?.code;
+          if (code === 'impact_confirmation_required' && payload.command) {
+            setPendingImpact({
+              command: payload.command as CommandV2,
+              impact: data.error.details?.impact ?? [],
+            });
+            return null;
+          }
+          if (response.status === 409) await load();
+          throw new Error(data.error?.message || 'That change could not be saved.');
         }
-        if (d.draft) setDraft(d.draft);
-        return d.draft as Draft;
+        return (await accept(data)).draft;
       } catch (e) {
         setError(e instanceof Error ? e.message : 'That change could not be saved.');
         return null;
@@ -73,17 +139,32 @@ export function useStudio() {
         lock.current = false;
       }
     },
-    [draft, load],
+    [state, load, accept],
+  );
+  const command = useCallback(
+    (command: CommandV2) => request('/api/studio', { command }),
+    [request],
   );
   return {
-    draft,
+    state,
+    draft: state?.draft ?? null,
+    catalogs,
     user,
     busy,
     error,
     setError,
     mode,
     load,
-    command: (command: Command) => request('/api/studio', { command }),
+    command,
     chat: (message: string) => request('/api/chat', { message }),
+    pendingImpact,
+    dismissImpact: () => setPendingImpact(null),
+    /** Re-send the command that needed confirmation, accepting its impact. */
+    confirmImpact: async () => {
+      if (!pendingImpact) return null;
+      const next = { ...pendingImpact.command, confirmImpact: true } as CommandV2;
+      setPendingImpact(null);
+      return command(next);
+    },
   };
 }
