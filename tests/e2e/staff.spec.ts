@@ -13,16 +13,19 @@ test('SYNTHETIC owner: CLI grant, authenticator enrollment, admin keyboard/scree
   await page.getByLabel('Password', { exact: true }).fill(user.password);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page).toHaveURL(/\/admin\/security/);
-  // Hold the client scripts to exercise the server-rendered enrollment form before hydration.
+  // Finish the first navigation before testing a separate delayed-hydration reload.
+  await page.waitForLoadState('load');
+  // Intercept only JavaScript: font/style requests must not be paused by this regression.
+  const clientScripts = /\/_next\/static\/.*\.js(?:\?.*)?$/;
   let releaseScripts!: () => void;
   const scriptsReady = new Promise<void>((resolve) => {
     releaseScripts = resolve;
   });
   const holdScripts = async (route: Route) => {
-    if (route.request().resourceType() === 'script') await scriptsReady;
+    await scriptsReady;
     await route.continue();
   };
-  await page.route('**/_next/**', holdScripts);
+  await page.route(clientScripts, holdScripts);
   try {
     await page.reload({ waitUntil: 'commit' });
     await expect(page.getByLabel('Confirm your password')).toBeVisible();
@@ -32,6 +35,7 @@ test('SYNTHETIC owner: CLI grant, authenticator enrollment, admin keyboard/scree
     releaseScripts();
     await page.unrouteAll({ behavior: 'wait' });
   }
+  await page.waitForLoadState('load');
   await page.getByLabel('Confirm your password').fill(user.password);
   await page.keyboard.press('Tab');
   await expect(
