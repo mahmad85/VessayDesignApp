@@ -1,4 +1,5 @@
-import { betterAuth, type BetterAuthOptions } from 'better-auth';
+import { betterAuth } from 'better-auth';
+import { twoFactor } from 'better-auth/plugins';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { randomBytes } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -6,7 +7,7 @@ import path from 'node:path';
 import { getDatabase } from '@/db/client';
 import * as schema from '@/db/schema';
 import { sendAccountEmail } from '@/integrations/mail';
-const authGlobal = globalThis as unknown as { vessyAuth?: Promise<ReturnType<typeof betterAuth>> };
+const authGlobal = globalThis as unknown as { vessyAuth?: ReturnType<typeof createAuth> };
 export function authConfigured() {
   return (
     process.env.NODE_ENV !== 'production' ||
@@ -41,34 +42,48 @@ async function authSecret() {
     }
   }
 }
+async function createAuth() {
+  if (!authConfigured()) throw new Error('Authentication is not configured.');
+  const db = await getDatabase();
+  return betterAuth({
+    plugins: [twoFactor({ issuer: 'Vessy' })],
+    appName: 'Vessy',
+    baseURL: process.env.APP_URL || 'http://localhost:3000',
+    secret: await authSecret(),
+    database: drizzleAdapter(db.orm, { provider: 'pg', schema }),
+    databaseHooks: {
+      user: {
+        update: {
+          after: async (user, context) => {
+            // Enrolling MFA must not promote other password-only sessions to staff access.
+            // Better Auth creates a fresh session for the verified browser after this hook.
+            if ('twoFactorEnabled' in user && context?.path?.startsWith('/two-factor/'))
+              await db.query('DELETE FROM session WHERE user_id=$1', [user.id]);
+          },
+        },
+      },
+    },
+    emailAndPassword: {
+      enabled: true,
+      minPasswordLength: 12,
+      requireEmailVerification: true,
+      revokeSessionsOnPasswordReset: true,
+      sendResetPassword: async ({ user, url }) =>
+        sendAccountEmail(user.email, 'Reset your Vessy password', url),
+    },
+    emailVerification: {
+      sendOnSignUp: true,
+      sendVerificationEmail: async ({ user, url }) =>
+        sendAccountEmail(user.email, 'Verify your Vessy email', url),
+    },
+    rateLimit: { enabled: true, storage: 'database', window: 60, max: 30 },
+    session: { expiresIn: 60 * 60 * 24 * 7, updateAge: 60 * 60 * 24 },
+    advanced: { useSecureCookies: process.env.NODE_ENV === 'production' },
+  });
+}
 export function getAuth() {
   if (!authGlobal.vessyAuth)
-    authGlobal.vessyAuth = (async () => {
-      if (!authConfigured()) throw new Error('Authentication is not configured.');
-      const db = await getDatabase();
-      return betterAuth<BetterAuthOptions>({
-        appName: 'Vessy',
-        baseURL: process.env.APP_URL || 'http://localhost:3000',
-        secret: await authSecret(),
-        database: drizzleAdapter(db.orm, { provider: 'pg', schema }),
-        emailAndPassword: {
-          enabled: true,
-          minPasswordLength: 12,
-          requireEmailVerification: true,
-          revokeSessionsOnPasswordReset: true,
-          sendResetPassword: async ({ user, url }) =>
-            sendAccountEmail(user.email, 'Reset your Vessy password', url),
-        },
-        emailVerification: {
-          sendOnSignUp: true,
-          sendVerificationEmail: async ({ user, url }) =>
-            sendAccountEmail(user.email, 'Verify your Vessy email', url),
-        },
-        rateLimit: { enabled: true, storage: 'database', window: 60, max: 30 },
-        session: { expiresIn: 60 * 60 * 24 * 7, updateAge: 60 * 60 * 24 },
-        advanced: { useSecureCookies: process.env.NODE_ENV === 'production' },
-      });
-    })().catch((e) => {
+    authGlobal.vessyAuth = createAuth().catch((e) => {
       authGlobal.vessyAuth = undefined;
       throw e;
     });

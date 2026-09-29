@@ -9,18 +9,19 @@ Runnable and locally verified customer-journey foundation; **not published to Re
 | Capability | Current implementation | Outstanding work |
 | --- | --- | --- |
 | Three-step design/measure/review journey | Implemented | Representative user testing and final brand |
-| Garment categories | Men's suit, shirt and blazer from the published catalog release; a new cart starts on a Choose a garment screen | Tailor-approved construction schemas; the multi-garment cart UI (the draft engine holds up to 10 garments; TASK-022) |
-| Catalog | Database catalog release v1 imported from the eight reference fabrics and the 434 supplied suit Style/Accents options (TASK-012, TASK-015); the studio, renderers and assistant read the published release (TASK-016) | Approved supplier ownership, stock, prices, compatibility and asset rights; the admin editor and publish UI (TASK-019 to TASK-021) |
-| Configuration | Server-owned draft v2: garments pinned to a release, shared validated commands, rule impact confirmation, catalog-update rebase with consent, revisions, category-reset consent, action receipts; v1 drafts upgraded on read | Production catalog data and the cart UI |
+| Garment categories/cart | Suit, shirt and blazer from the release; up to 10 independent garments, quantities, removal confirmation and one measurement profile (TASK-022) | Tailor-approved production construction schemas |
+| Catalog | Database catalog release v1 imported from the eight reference fabrics and the 434 supplied suit Style/Accents options (TASK-012, TASK-015); the studio, renderers and assistant read the published release (TASK-016); admin editors and publish UI exist in the local working tree | Approved supplier ownership, stock, prices, compatibility and asset rights; independent M4 full acceptance |
+| Configuration | Server-owned multi-garment draft v2, shared commands, rule/rebase consent, revisions and action receipts; all edits clear the order check | Production catalog data |
 | Consultation | Guided mode on the release's labels and a real OpenAI adapter with a bounded catalog context; every suggestion is dry-run on the release and needs explicit acceptance | API key/model, live behavior evaluations, streaming UX, usage monitoring and consent copy |
 | 3D design | Bundled CC0 anatomical human GLB, local suit/shirt/blazer surfaces, and material/construction controls; no recurring model license fee (TASK-011) | Production garment assets, cloth/fit validation, verified model output from 3DLOOK |
 | Appearance image | Removable local image reference | Face mapping is not implemented or promised |
 | Measurements | Manual editing, cm/in switch, source marker, snapshots, confirmation, measurement paths | Live 3DLOOK capture, consent, authenticated result handling, metric mapping, quality and override provenance |
-| Automated review | Deterministic completeness and readiness checks; payment fails closed | Tailor-approved tolerances, live commercial context and validation against labeled cases; AI explanations can supplement those rules |
-| Human review | Clearly unavailable; no case is falsely submitted | Staff queue, roles, SLA, messaging, approval and overdue handling |
+| Automated order check | Current release, design, measurement, price and availability checks; explicit versioned sign-off. Optional advisory contract with safe failure (TASK-023) | WP-38 OpenAI adapter and live evaluation deferred under D-021 until the remaining functionality is complete; approved legal wording remains a release gate |
+| Tailor review | Optional after verified payment; authorized queue, claim, proposal/verification, customer accept/keep, immutable amendment and overdue outbox | Staffed SLA and production delivery; no fit guarantee |
 | Pricing | Deterministic server-side quotes from the published release (band plus fabric override, surcharges once when activated); garment price, cart total and a Price details breakdown; “Price not yet available”, never $0, for the unpriced reference catalog (TASK-017) | Real prices and currency (Q-011, Q-019), tax, the admin pricing UI (TASK-020), persisted quotes (TASK-023) |
-| Checkout | Server rejects every reference-catalog draft | Provider selection, immutable quote/order, stock recheck, explicit payment, webhook verification/reconciliation |
-| Identity | Better Auth, database sessions, verification, password reset code, sign-in/out, guest transfer | Live mail validation, account erasure lifecycle, staff roles/MFA and security review |
+| Orders/payment | Immutable signed-off order/quote/item history; customer list/details; Stripe adapter, durable attempts and signed reconciliation; synthetic browser journey (TASK-024) | External Stripe sandbox verification and live commercial authorization; production reference data remains blocked |
+| Fulfilment/support | M6 order desk, supplier assignment/deadlines, guarded release/status machine, production sheets, supplier items, customer tracking/ETA, support lookup and live dashboard (TASK-025) | Manual supplier dispatch/refunds; Q-027/Q-029/Q-030; hosted concurrency/load, production mail and external operational verification |
+| Identity | Better Auth, database sessions, verification, password reset code, sign-in/out, guest transfer; staff roles and authenticator MFA | Live mail validation, account erasure lifecycle and production security review |
 | Persistence | PostgreSQL production adapter; PGlite development/testing | Hosted Postgres validation, backup/restore and autoscale pool validation |
 | Operations | Lockfile, scripts, lint/types/tests/build, readiness endpoint, CI definition | Published staging, monitoring, retention, incident owner and load measurements |
 
@@ -37,7 +38,7 @@ One active draft is stored per owner. An existing account draft takes precedence
 
 ## Architecture debt deliberately kept visible
 
-No database-backed supplier catalog, transactional external-job outbox, Inngest worker, object-storage adapter, staff UI, payment integration, account deletion or vendor callback is claimed complete. Those are bounded next tasks on the same codebase. They were not replaced by dummy successful adapters.
+The order notification outbox, staff review UI and payment adapter are implemented locally. The M4 working-tree catalog changes still need their own outstanding acceptance. Hosted PostgreSQL, production object storage, Inngest/capture workflows, account deletion and live vendor callbacks remain bounded follow-up work.
 
 The conversation currently returns a completed structured reply; streaming is still pending. The current model remains a reference even if a photo is added. Review checks are deterministic, not an AI-certified fit assessment.
 
@@ -79,3 +80,13 @@ D-019 adds specifications for a database-driven catalog with an admin panel, loo
 ## 2D male figure and measurement dummy — 2026-09-27
 
 The 2D drawing uses a male figure: square jaw, short tapered haircut (faded at the nape from behind), a short strong neck, broad square shoulders, a V-shaped jacket, arms standing clear of the waist, larger hands and men's dress shoes. The drawing keeps a strip below it for the view controls so the feet are never covered. The measurement step shows the 3D body as a plain white shop dummy with no skin tone, hair or eyes; the design step is unchanged.
+
+## M5 ordering — 2026-09-29
+
+WP-37 and WP-39–43 are implemented locally. The cart → deterministic check → explicit sign-off → immutable order → signed synthetic payment → optional tailor proposal → customer amendment journey is covered by automated and browser tests. WP-38's non-AI scope and provider-independent advisory privacy/validation/timeout contract are locally verified; the actual OpenAI adapter is deferred under D-021 until the remaining functionality is complete. **The original full M5 scope remains open with AI deferred.** M6 followed as the next independent non-AI slice; see the current overlay below. M4 acceptance is still open. Nothing is externally verified, merged or released. The exact requirements, checks, screenshots, operational instructions and remaining gates are in [M5-EVIDENCE.md](../delivery/M5-EVIDENCE.md).
+
+## M6 fulfilment — 2026-09-29
+
+**WP-44–47 are implemented and locally verified; WP-47 is the last completed package.** Staff can assign manufacturers/deadlines, release eligible paid items, record production/holds/quality/shipment/delivery, print production sheets using current accepted measurements and find customers safely. Supplier views and the dashboard show current work; customers see explicit ETA/tracking without supplier identities or internal notes.
+
+`npm run check` passed with 316 tests in 37 files and the optimized build; full Playwright passed 16/16, followed by a focused M6 pass. Fifty responsive captures passed axe/overflow checks; keyboard activation, representative visual inspection, catalog projection size, scoped security review, formatting/diff checks and a zero-vulnerability audit are recorded in [M6-EVIDENCE.md](../delivery/M6-EVIDENCE.md). Hosted database concurrency, external Stripe/mail, real supplier dispatch and customer release remain unverified. M4 full acceptance remains open and AI remains deferred under D-021. Remaining numbered packages are gated WP-48 and optional WP-49; see [next tasks](NEXT-TASKS.md).

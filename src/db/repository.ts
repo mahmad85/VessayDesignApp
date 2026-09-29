@@ -21,6 +21,8 @@ import {
 } from '@/modules/configuration/types';
 import type { AvailabilityMap } from '@/modules/catalog/garment';
 import { quoteCart, type CartQuote } from '@/modules/pricing/quote';
+import { workingCatalog } from './catalog-working';
+import { toCustomerCatalog } from '@/modules/catalog/projection';
 
 // Owned drafts (one per owner). Every read path — the draft row, a replayed
 // action result and a stored revision — upgrades v1 JSON to v2 on read
@@ -37,7 +39,18 @@ const read = (data: unknown) => upgradeDraft(data as DraftV1 | DraftV2);
  * availability overlay. Releases are read before the draft transaction,
  * because PGlite serialises every query behind an open transaction.
  */
-export async function loadEngineContext(versions: readonly number[] = []): Promise<EngineContext> {
+export async function loadEngineContext(
+  versions: readonly number[] = [],
+  owner?: string,
+): Promise<EngineContext> {
+  if (owner?.startsWith('preview:user:')) {
+    const { index } = await workingCatalog();
+    return {
+      current: index,
+      releases: new Map([[0, index]]),
+      availability: await getAvailability(),
+    };
+  }
   const currentVersion = await ensureCatalog();
   const releases = new Map<number, RuntimeIndex>();
   for (const version of new Set([currentVersion, ...versions])) {
@@ -64,14 +77,20 @@ export type StudioState = {
   availability: AvailabilityMap;
 };
 
-export async function studioState(draft: DraftV2): Promise<StudioState> {
-  const context = await loadEngineContext(pinnedVersions(draft));
+export async function studioState(
+  draft: DraftV2,
+  owner?: string,
+): Promise<StudioState & { isPreview?: boolean; catalog?: ReturnType<typeof toCustomerCatalog> }> {
+  const context = await loadEngineContext(pinnedVersions(draft), owner);
   return {
     draft,
     catalogVersion: context.current.catalog.version,
     catalogUpdates: catalogUpdates(context, draft),
     quote: quoteCart(context.current, draft, context.availability),
     availability: context.availability ?? {},
+    ...(owner?.startsWith('preview:user:')
+      ? { isPreview: true, catalog: toCustomerCatalog((await workingCatalog()).snapshot) }
+      : {}),
   };
 }
 
@@ -131,6 +150,7 @@ export async function saveChat(
     (d) => ({
       ...d,
       revision: d.revision + 1,
+      review: null,
       updatedAt: new Date().toISOString(),
       messages: [
         ...d.messages,
@@ -181,7 +201,7 @@ async function save(
   let context: EngineContext | undefined;
   if (needsCatalog) {
     const [row] = await db.query('SELECT data FROM drafts WHERE owner=$1', [owner]);
-    context = await loadEngineContext(row ? pinnedVersions(read(row.data)) : []);
+    context = await loadEngineContext(row ? pinnedVersions(read(row.data)) : [], owner);
   }
   for (let attempt = 0; ; attempt++) {
     try {
@@ -239,7 +259,7 @@ async function save(
       });
     } catch (e) {
       if (!(e instanceof ReleasesChanged) || attempt > 0) throw e;
-      context = await loadEngineContext([...context!.releases.keys(), ...e.versions]);
+      context = await loadEngineContext([...context!.releases.keys(), ...e.versions], owner);
     }
   }
 }

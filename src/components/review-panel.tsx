@@ -1,262 +1,288 @@
 'use client';
-import { useState } from 'react';
-import {
-  ArrowRight,
-  Clock3,
-  Download,
-  FileCheck2,
-  Info,
-  PenLine,
-  ShieldCheck,
-  UserRound,
-} from 'lucide-react';
-import type { CommandV2, DraftV2, Garment } from '@/modules/configuration/types';
+import { useRef, useState } from 'react';
+import Link from 'next/link';
+import type { CommandV2, DraftV2 } from '@/modules/configuration/types';
 import type { RuntimeIndex } from '@/modules/catalog/snapshot';
 import type { CartQuote } from '@/modules/pricing/quote';
 import { formatPrice } from '@/lib/money';
-import { PRICE_UNAVAILABLE } from './price-summary';
-import {
-  designOutline,
-  lookupLabel,
-  type OutlineLeaf,
-} from '@/modules/configuration/design-outline';
 import {
   definitionsForProducts,
   displayValue,
   type MeasurementSet,
 } from '@/modules/measurements/definitions';
-
-const STYLING: Record<string, string> = {
-  suit: 'The shirt and shoes are styling references.',
-  shirt: 'Trousers and shoes are styling references.',
-  blazer: 'Shirt, trousers and shoes are styling references.',
-};
-const list = (items: string[]) =>
-  items.length < 2 ? items.join('') : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
-/** The option bound to the fit slot, and up to three other main style choices. */
-function summary(index: RuntimeIndex, garment: Garment) {
-  const leaves = designOutline(index, garment)
-    .filter((branch) => branch.id !== 'accents')
-    .flatMap((branch) => branch.leaves)
-    .filter((leaf): leaf is OutlineLeaf & { kind: 'catalog' } => leaf.kind === 'catalog');
-  const isFit = (leaf: OutlineLeaf) =>
-    leaf.group!.attributes.some((entry) => entry.attribute.visualSlot === 'fit');
-  return {
-    fit: leaves.find(isFit)?.value ?? '—',
-    finishing: leaves
-      .filter((leaf) => !isFit(leaf))
-      .slice(0, 3)
-      .map((leaf) => leaf.value),
-  };
-}
+import { designOutline } from '@/modules/configuration/design-outline';
+import { SIGNOFF_DESIGN, SIGNOFF_MEASUREMENTS, SIGNOFF_VERSION } from '@/modules/orders/submission';
 import { Button } from './ui/button';
 export function ReviewPanel({
   draft,
   quote,
-  garment,
   index,
   measurementSets,
   busy,
   command,
+  check,
   edit,
+  signedIn,
+  onRefresh,
 }: {
   draft: DraftV2;
   quote: CartQuote;
-  garment: Garment;
   index: RuntimeIndex;
   measurementSets: MeasurementSet[];
   busy: boolean;
   command: (c: CommandV2) => Promise<DraftV2 | null>;
-  edit: (step: number) => void;
+  check: () => Promise<DraftV2 | null>;
+  edit: (step: number, field?: string) => void;
+  signedIn: boolean;
+  onRefresh: () => Promise<unknown>;
 }) {
-  const [mode, setMode] = useState<'automated' | 'human'>('automated');
-  const product = index.products.get(garment.productCode);
-  const material = index.materials.get(garment.materialCode);
-  const { fit, finishing } = summary(index, garment);
-  const parts = garment.includedComponents.map(
-    (code) => index.components.get(code)?.name.toLowerCase() ?? code,
-  );
-  const review = draft.review;
-  function download() {
+  const [design, setDesign] = useState(false),
+    [measurements, setMeasurements] = useState(false),
+    [tailor, setTailor] = useState(false),
+    [submitting, setSubmitting] = useState(false),
+    [error, setError] = useState('');
+  const action = useRef<{ fingerprint: string; id: string } | null>(null),
+    lock = useRef(false);
+  const passed = draft.review?.status === 'passed' && draft.review.inputRevision === draft.revision;
+  const reason = !signedIn
+    ? 'Sign in to place your order.'
+    : !passed
+      ? 'Run Check my order and resolve any blocking findings.'
+      : !design || !measurements
+        ? 'Confirm both the design and measurements.'
+        : quote.status !== 'priced'
+          ? 'A price is needed for every garment.'
+          : '';
+  async function place() {
+    if (reason || lock.current) return;
+    lock.current = true;
+    setSubmitting(true);
+    setError('');
     const payload = {
-      kind: 'development-draft',
-      notAnOrder: true,
-      exportedAt: new Date().toISOString(),
-      ...draft,
-      messages: undefined,
+      expectedRevision: draft.revision,
+      checkId: draft.review!.id,
+      signoff: { design, measurements, statementVersion: SIGNOFF_VERSION },
+      tailorReview: tailor,
+      acceptTotal: { amountMinor: quote.totalMinor, currency: quote.currency },
     };
-    const url = URL.createObjectURL(
-      new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }),
-    );
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `vessy-draft-${draft.id.slice(0, 8)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const fingerprint = JSON.stringify(payload);
+    if (action.current?.fingerprint !== fingerprint)
+      action.current = { fingerprint, id: crypto.randomUUID() };
+    const resubmit = new URLSearchParams(window.location.search).get('resubmit');
+    try {
+      const response = await fetch(
+          resubmit ? '/api/orders/' + encodeURIComponent(resubmit) + '/resubmit' : '/api/orders',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...payload, actionId: action.current.id }),
+          },
+        ),
+        result = await response.json();
+      if (!response.ok) {
+        setDesign(false);
+        setMeasurements(false);
+        await onRefresh();
+        throw new Error(result.error?.message ?? 'Your order could not be placed.');
+      }
+      const number = result.order.number,
+        checkout = await fetch('/api/orders/' + number + '/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ actionId: crypto.randomUUID() }),
+        }),
+        paid = await checkout.json();
+      window.location.assign(
+        checkout.ok
+          ? paid.checkoutUrl
+          : '/orders/' +
+              number +
+              '?payment=' +
+              encodeURIComponent(paid.error?.code ?? 'unavailable'),
+      );
+    } catch (e) {
+      setError(
+        e instanceof Error
+          ? e.message
+          : 'Unable to place your order. Retry with the same saved action.',
+      );
+    } finally {
+      setSubmitting(false);
+      lock.current = false;
+    }
   }
   return (
     <section className="review-panel">
-      <div className="eyebrow">
-        <span className="small-star">✳</span> THE FINISHING TOUCH
-      </div>
-      <h1>
-        Thoughtfully chosen.
-        <br />
-        Entirely yours.
-      </h1>
-      <p className="intro-copy">One last look at the details that make it your own.</p>
-      <div className="review-section">
-        <div className="section-heading">
-          <h2>Your design</h2>
-          <button onClick={() => edit(1)}>
-            <PenLine size={13} /> Edit
-          </button>
-        </div>
-        <dl>
-          <div>
-            <dt>Garment</dt>
-            <dd>{product?.name ?? garment.productCode}</dd>
-          </div>
-          <div>
-            <dt>Fabric</dt>
-            <dd>
-              <span className="tiny-swatch" style={{ background: material?.primaryHex }} />
-              {material?.name ?? garment.materialCode}
-            </dd>
-          </div>
-          <div>
-            <dt>Occasion & weather</dt>
-            <dd>
-              {lookupLabel(index, 'occasion', garment.preferences.occasion)} ·{' '}
-              {lookupLabel(index, 'climate', garment.preferences.climate)}
-            </dd>
-          </div>
-          <div>
-            <dt>Fit</dt>
-            <dd>{fit}</dd>
-          </div>
-          <div>
-            <dt>Finishing</dt>
-            <dd>{finishing.join(' · ') || '—'}</dd>
-          </div>
-        </dl>
-        <p className="inclusion-note">
-          Includes {list(parts)}. {STYLING[product?.visualModel ?? 'suit']}
-        </p>
-      </div>
-      <div className="review-section">
-        <div className="section-heading">
-          <h2>
-            Your measurements <span>v{draft.measurements.version}</span>
-          </h2>
-          <button onClick={() => edit(2)}>
-            <PenLine size={13} /> Edit
-          </button>
-        </div>
-        <div className="measurement-summary">
-          {definitionsForProducts(measurementSets).map((m) => (
-            <div key={m.id}>
-              <span>{m.label}</span>
-              <strong>
-                {displayValue(draft.measurements.values[m.id], 'cm') || '—'}
-                <small> cm</small>
-              </strong>
+      <div className="eyebrow">THE FINISHING TOUCH</div>
+      <h1>Review &amp; pay</h1>
+      <p className="intro-copy">Review every garment and the measurements you want us to use.</p>
+      {draft.garments.map((g, i) => {
+        const p = index.products.get(g.productCode),
+          m = index.materials.get(g.materialCode),
+          price = quote.garments.find((v) => v.garmentId === g.id);
+        return (
+          <section className="review-section" key={g.id}>
+            <div className="section-heading">
+              <h2>
+                {i + 1}. {p?.name ?? g.productCode}
+              </h2>
+              <button
+                onClick={async () => {
+                  if (await command({ type: 'select_garment', garmentId: g.id })) edit(1);
+                }}
+              >
+                Edit garment {i + 1}
+              </button>
             </div>
-          ))}
+            <p>{m?.name ?? g.materialCode}</p>
+            <details>
+              <summary>Design specification</summary>
+              <dl>
+                {designOutline(index, g)
+                  .flatMap((b) => b.leaves)
+                  .map((l) => (
+                    <div key={l.id}>
+                      <dt>{l.label}</dt>
+                      <dd>{l.value}</dd>
+                    </div>
+                  ))}
+              </dl>
+            </details>
+            <label className="order-quantity">
+              Quantity{' '}
+              <input
+                aria-label={'Quantity for garment ' + (i + 1)}
+                type="number"
+                min={1}
+                max={5}
+                value={g.quantity}
+                disabled={busy || submitting}
+                onChange={(e) => {
+                  const quantity = Number(e.target.value);
+                  if (Number.isInteger(quantity) && quantity >= 1 && quantity <= 5)
+                    void command({ type: 'set_quantity', garmentId: g.id, quantity });
+                }}
+              />
+            </label>
+            <strong>
+              {price?.status === 'priced'
+                ? formatPrice(price.totalMinor, price.currency)
+                : 'Price not yet available'}
+            </strong>
+          </section>
+        );
+      })}
+      <section className="review-section">
+        <div className="section-heading">
+          <h2>Your measurements · v{draft.measurements.version}</h2>
+          <button onClick={() => edit(2)}>Edit measurements</button>
+        </div>
+        <p>One profile covers every garment in your cart.</p>
+        <div className="measurement-summary">
+          {definitionsForProducts(measurementSets)
+            .filter((m) => draft.measurements.values[m.id] || !('advanced' in m && m.advanced))
+            .map((m) => (
+              <div key={m.id}>
+                <span>{m.label}</span>
+                <strong>
+                  {displayValue(draft.measurements.values[m.id], 'cm') || '—'} <small>cm</small>
+                </strong>
+              </div>
+            ))}
         </div>
         <p className="source-tag">
-          {draft.measurements.source === '3dlook' ? '3DLOOK assisted' : 'Customer entered'} ·{' '}
-          {draft.measurements.confirmed ? 'confirmed by you' : 'not confirmed'} · unverified
+          {draft.measurements.source === 'customer' ? 'Customer entered' : '3DLOOK estimate'} ·{' '}
+          {draft.measurements.confirmed ? 'confirmed by you' : 'not confirmed'}
         </p>
-      </div>
-      <div className="review-section">
-        <h2>How would you like to review?</h2>
-        <div className="review-modes" role="radiogroup" aria-label="Review method">
-          <button
-            role="radio"
-            aria-checked={mode === 'automated'}
-            onClick={() => setMode('automated')}
-          >
-            <ShieldCheck size={20} />
-            <strong>Automated checks</strong>
-            <small>Check completeness now</small>
-            <span className="radio-circle" />
-          </button>
-          <button role="radio" aria-checked={mode === 'human'} onClick={() => setMode('human')}>
-            <UserRound size={20} />
-            <strong>Expert review</strong>
-            <small>Target: within 24 hours</small>
-            <span className="radio-circle" />
-          </button>
-        </div>
-        <p className="fine-print">
-          {mode === 'automated'
-            ? 'These checks validate saved choices and missing information. They do not certify physical fit.'
-            : 'The 24-hour service and reviewer queue are not live yet. When available, you will receive a payment request after approval; you will not be charged automatically.'}
-        </p>
-        <Button
-          className="full-width"
-          disabled={busy}
-          onClick={() => command({ type: 'review', mode })}
-        >
-          {mode === 'automated' ? <FileCheck2 size={17} /> : <Clock3 size={17} />}{' '}
-          {mode === 'automated' ? 'Check my draft' : 'Check expert review availability'}
-          <ArrowRight size={16} />
-        </Button>
-      </div>
-      {review && (
-        <div className="review-findings" role="status">
-          <div className="eyebrow">
-            {review.mode === 'human' ? 'NO REVIEW HAS BEEN SUBMITTED' : 'DRAFT CHECK COMPLETE'}
-          </div>
-          <h3>
-            {review.mode === 'human'
-              ? 'Expert review is not connected yet.'
-              : 'A few things before it’s an order.'}
-          </h3>
-          {review.findings.map((finding) => (
-            <div className="finding" key={finding.id}>
-              <Info size={16} />
-              <div>
-                <strong>{finding.title}</strong>
-                <p>{finding.description}</p>
-                {finding.target !== 'commercial' && (
-                  <button onClick={() => edit(finding.target === 'design' ? 1 : 2)}>
-                    Review {finding.target}
-                    <ArrowRight size={12} />
-                  </button>
-                )}
-              </div>
+      </section>
+      <section className="quote-section">
+        <dl>
+          {(['subtotalMinor', 'shippingMinor', 'totalMinor'] as const).map((key, i) => (
+            <div key={key}>
+              <dt>{['Subtotal', 'Delivery', 'Total'][i]}</dt>
+              <dd>
+                {quote[key] === null
+                  ? 'Price not yet available'
+                  : formatPrice(quote[key]!, quote.currency)}
+              </dd>
             </div>
           ))}
-        </div>
-      )}
-      <div className="quote-section">
-        <div>
-          <span>Order total</span>
-          <strong>
-            {quote.totalMinor === null
-              ? PRICE_UNAVAILABLE
-              : formatPrice(quote.totalMinor, quote.currency)}
-          </strong>
-        </div>
-        <p>
-          {quote.status === 'priced'
-            ? 'Prices are recalculated with every change. You will always review the total before paying.'
-            : 'Some choices have no price in the catalog yet. You will always review the total before paying.'}
-        </p>
-        <Button className="full-width" disabled>
-          Continue to payment
-          <ArrowRight size={16} />
+        </dl>
+      </section>
+      <section className="review-section">
+        <h2>Check your order</h2>
+        <p>Checks confirm completeness and compatibility. They do not certify physical fit.</p>
+        <Button disabled={busy || submitting} onClick={check}>
+          Check my order
         </Button>
-        <span className="fine-print">
-          Payment requires a verified catalog, measurement protocol and an eligible review.
-        </span>
-      </div>
-      <button className="download-draft" onClick={download}>
-        <Download size={15} />
-        Download your draft details
-      </button>
+        {draft.review && (
+          <div aria-live="polite">
+            <h3>{passed ? 'Your order is ready' : 'Resolve these findings'}</h3>
+            {draft.review.findings.map((f) => (
+              <article className="finding" key={f.id}>
+                <div>
+                  <strong>
+                    {f.severity === 'blocker' ? 'Action needed: ' : 'Advice: '}
+                    {f.title}
+                  </strong>
+                  <p>{f.description}</p>
+                  {f.severity === 'blocker' && f.target !== 'commercial' && (
+                    <button
+                      onClick={async () => {
+                        if (f.garmentId && f.garmentId !== draft.activeGarmentId)
+                          await command({ type: 'select_garment', garmentId: f.garmentId });
+                        edit(f.target === 'measurements' ? 2 : 1, f.field);
+                      }}
+                    >
+                      Review {f.target}
+                    </button>
+                  )}
+                </div>
+              </article>
+            ))}
+            {draft.review.aiAdvisory === 'unavailable' && (
+              <p>Advice unavailable right now{passed ? ' — your order check still passed' : ''}.</p>
+            )}
+          </div>
+        )}
+      </section>
+      <section className="review-section">
+        <h2>Your sign-off</h2>
+        <fieldset disabled={!passed || busy || submitting} className="order-signoff">
+          <label>
+            <input type="checkbox" checked={design} onChange={(e) => setDesign(e.target.checked)} />
+            {SIGNOFF_DESIGN}
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={measurements}
+              onChange={(e) => setMeasurements(e.target.checked)}
+            />
+            {SIGNOFF_MEASUREMENTS}
+          </label>
+          <label>
+            <input type="checkbox" checked={tailor} onChange={(e) => setTailor(e.target.checked)} />
+            Add a tailor review
+          </label>
+          <p>
+            After payment, a tailor checks your design and measurements before production. If they
+            suggest a change, you decide. The review target is 24 hours. Timing is provisional until
+            the service launches.
+          </p>
+        </fieldset>
+        {!signedIn && <Link href="/account">Sign in to place your order</Link>}
+        <Button className="full-width" disabled={!!reason || busy || submitting} onClick={place}>
+          {submitting
+            ? 'Saving your order…'
+            : 'Place order and pay' +
+              (quote.totalMinor === null
+                ? ''
+                : ' ' + formatPrice(quote.totalMinor, quote.currency))}
+        </Button>
+        <p>{reason}</p>
+        {error && <p role="alert">{error}</p>}
+      </section>
     </section>
   );
 }

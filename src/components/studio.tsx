@@ -46,6 +46,7 @@ import { DesignNavigator, type NavPath } from './design-navigator';
 import { SelectionTags } from './selection-tags';
 import { MeasurementPanel } from './measurement-panel';
 import { ReviewPanel } from './review-panel';
+import { CartSwitcher } from './cart-switcher';
 import { StartScreen } from './start-screen';
 import { PriceSummary } from './price-summary';
 import { Button } from './ui/button';
@@ -75,8 +76,18 @@ function ImpactList({ impact }: { impact: Impact[] }) {
   );
 }
 
-export default function Studio() {
-  const studio = useStudio();
+export default function Studio({
+  preview = false,
+  previewCanWrite = false,
+  initialProduct,
+  initialGroup,
+}: {
+  preview?: boolean;
+  previewCanWrite?: boolean;
+  initialProduct?: string;
+  initialGroup?: string;
+} = {}) {
+  const studio = useStudio(preview);
   const { state, draft, busy, error, user, catalogs } = studio;
   const current = state ? catalogs[state.catalogVersion] : undefined;
   const garment = activeOf(draft);
@@ -106,8 +117,8 @@ export default function Studio() {
     [dirty, setDirty] = useState(false),
     [leaveStep, setLeaveStep] = useState<number | null>(null),
     [photoError, setPhotoError] = useState(''),
-    [inputMode, setInputMode] = useState<'chat' | 'fields'>('chat'),
-    [nav, setNav] = useState<NavPath>({}),
+    [inputMode, setInputMode] = useState<'chat' | 'fields'>(preview ? 'fields' : 'chat'),
+    [nav, setNav] = useState<NavPath>(initialGroup ? { leaf: initialGroup } : {}),
     [previewMode, setPreviewMode] = useState<'2d' | '3d'>('2d'),
     [updatesOpen, setUpdatesOpen] = useState(false),
     [focus, setFocus] = useState<{ region: RegionId; leafId?: string; nonce: number }>({
@@ -203,6 +214,7 @@ export default function Studio() {
   }, [index, render, outline]);
   const photoRef = useRef<string | undefined>(undefined);
   const onDirty = useCallback((v: boolean) => setDirty(v), []);
+  const [measurementFocus, setMeasurementFocus] = useState<string>();
   const [measurementPreview, setMeasurementPreview] = useState<{
     values: Record<string, number>;
     unit: 'cm' | 'in';
@@ -322,7 +334,7 @@ export default function Studio() {
               key={label}
               className={step === i + 1 && garment ? 'active' : ''}
               aria-current={step === i + 1 && garment ? 'step' : undefined}
-              disabled={!garment}
+              disabled={!garment || (preview && i > 0)}
               onClick={() => navigate(i + 1)}
             >
               <span>{step > i + 1 ? <Check size={13} /> : String(i + 1).padStart(2, '0')}</span>
@@ -331,6 +343,7 @@ export default function Studio() {
           ))}
         </nav>
         <div className="header-actions">
+          {!preview && user && <Link href="/orders">My orders</Link>}
           <button className="prototype-badge" onClick={() => setInfo(true)}>
             Studio preview
             <Info size={12} />
@@ -345,6 +358,40 @@ export default function Studio() {
           </Link>
         </div>
       </header>
+      {preview && (
+        <section className="catalog-preview-banner" aria-label="Staff catalog preview">
+          <strong>Unpublished catalog preview</strong>
+          <span>This separate draft is for staff design preview.</span>
+          <Link href="/admin/catalog/products">Back to admin</Link>
+          {garment && previewCanWrite && (
+            <button
+              onClick={async () => {
+                const code = window.prompt(
+                  'Code for the new look (lowercase words separated by hyphens)',
+                );
+                if (!code) return;
+                const name = window.prompt('Name for the new look');
+                if (!name) return;
+                try {
+                  const response = await fetch('/api/admin/catalog/templates/from-preview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ garmentId: garment.id, code, name }),
+                  });
+                  const result = await response.json();
+                  if (!response.ok) throw new Error(result.error.message);
+                  studio.setError('');
+                  window.alert(`Saved “${name}” as a draft look.`);
+                } catch (e) {
+                  studio.setError((e as Error).message);
+                }
+              }}
+            >
+              Save as look
+            </button>
+          )}
+        </section>
+      )}
       {!draft || !current ? (
         <main className="center-state">
           <div className="eyebrow">YOUR PERSONAL TAILOR</div>
@@ -369,14 +416,31 @@ export default function Studio() {
         <StartScreen
           index={current}
           busy={busy}
-          onStart={(productCode) => {
+          initialProduct={initialProduct}
+          onStart={(productCode, templateCode) => {
             setStep(1);
-            void studio.command({ type: 'add_garment', productCode });
+            void studio.command({
+              type: 'add_garment',
+              productCode,
+              ...(templateCode ? { templateCode } : {}),
+            });
           }}
         />
       ) : (
         <>
-          <div className="studio-subnav">
+          <CartSwitcher
+            draft={draft}
+            index={current}
+            quote={state!.quote}
+            busy={busy || dirty}
+            command={studio.command}
+            onSwitch={() => {
+              setStep(1);
+              setNav({});
+              setFocus({ region: 'full', nonce: Date.now() });
+            }}
+          />
+          <div className="studio-subnav" role="region" aria-label="Studio progress">
             <div>
               <span className="live-indicator" />
               THE TAILORING STUDIO<span className="subnav-divider">/</span>
@@ -400,7 +464,7 @@ export default function Studio() {
               <button onClick={() => setUpdatesOpen(true)}>Review changes</button>
             </div>
           )}
-          <div className="mobile-pane-switch" role="group" aria-label="Studio panel">
+          <div className="mobile-pane-switch" role="region" aria-label="Studio panel">
             <button
               aria-pressed={mobilePane === 'conversation'}
               onClick={() => setMobilePane('conversation')}
@@ -416,7 +480,9 @@ export default function Studio() {
           </div>
           <main className={`studio-grid step-${step} mobile-${mobilePane}`} id="studio-content">
             <div className="left-pane">
-              {step === 1 ? (
+              {preview ? (
+                <Link href="/admin/catalog/publish">Review catalog & publish →</Link>
+              ) : step === 1 ? (
                 <div className="design-workspace">
                   <div className="workspace-head">
                     <div className="eyebrow">
@@ -472,6 +538,7 @@ export default function Studio() {
                 </div>
               ) : step === 2 ? (
                 <MeasurementPanel
+                  focusField={measurementFocus}
                   draft={draft}
                   measurementSets={measurementSets}
                   busy={busy}
@@ -487,14 +554,20 @@ export default function Studio() {
                 />
               ) : (
                 <ReviewPanel
+                  key={`${draft.revision}:${draft.review?.id ?? ''}`}
                   draft={draft}
                   quote={state!.quote}
-                  garment={garment}
                   index={index}
                   measurementSets={measurementSets}
                   busy={busy}
                   command={studio.command}
-                  edit={navigate}
+                  edit={(nextStep, field) => {
+                    setMeasurementFocus(field);
+                    navigate(nextStep);
+                  }}
+                  check={studio.check}
+                  signedIn={!!user}
+                  onRefresh={studio.load}
                 />
               )}
             </div>
@@ -531,7 +604,11 @@ export default function Studio() {
                         </select>
                         <ChevronDown size={13} />
                       </label>
-                      <button className="appearance-button" onClick={() => setAppearance(true)}>
+                      <button
+                        className="appearance-button"
+                        aria-label="Appearance"
+                        onClick={() => setAppearance(true)}
+                      >
                         <SlidersHorizontal size={15} />
                         <span>Appearance</span>
                       </button>
@@ -663,7 +740,7 @@ export default function Studio() {
                 <span className="footer-next-note">Confirm your measurements to continue.</span>
               ) : (
                 <span className="footer-next-note">
-                  <ShieldCheck size={15} /> Payment is not enabled in this preview.
+                  <ShieldCheck size={15} /> Your order is saved before payment.
                 </span>
               )}
             </div>
@@ -711,8 +788,8 @@ export default function Studio() {
           <li>
             <Info size={17} />
             <span>
-              3DLOOK, expert review and payments need their live integrations. No order will be
-              placed from this preview.
+              Live purchasing, body scanning and a staffed tailor service are not available in this
+              preview. Configured checkout uses test payments.
             </span>
           </li>
         </ul>

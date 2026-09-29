@@ -3,9 +3,8 @@ import { getStripe, stripeConfigured } from '@/lib/stripe';
 import { getDatabase } from '@/db/client';
 import { processScanServiceEventWithStore } from '@/lib/scan-service-policy';
 export const runtime = 'nodejs';
-// No garment order or gift-card webhook handling exists yet in this app
-// (checkout is unconnected — src/integrations/checkout.ts); this endpoint
-// only ever has scan-service events to process, and today it never receives
+// Garment orders use /api/payments/stripe/webhook and a separate secret.
+// This endpoint only handles scan-service events, and today it never receives
 // a real one either, because scan-service checkout never creates a Stripe
 // PaymentIntent (see scan-service/checkout/route.ts).
 export async function POST(request: NextRequest) {

@@ -164,7 +164,7 @@ describe('v1 → v2 draft upgrade (ADMIN-BACKEND §7.2)', () => {
     expect(v2.messages.map((message) => message.basisRevision)).toEqual([undefined, 1, 2, 3]);
   });
 
-  it('adds schemaVersion 2 and an empty order list; keeps the revision, measurements and review', () => {
+  it('adds schemaVersion 2 and an empty order list; keeps revision and measurements, and clears the superseded review', () => {
     const v1 = V1.measured;
     const v2 = up('measured');
     expect(v2).toMatchObject({
@@ -175,7 +175,7 @@ describe('v1 → v2 draft upgrade (ADMIN-BACKEND §7.2)', () => {
       updatedAt: v1.updatedAt,
       orders: [],
       measurements: v1.measurements,
-      review: v1.review,
+      review: null,
     });
     expect(v2).not.toHaveProperty('design');
   });

@@ -129,3 +129,11 @@ Decision:
 Supersedes: the “optional human review before payment” part of D-011 and P-003; REVIEW-PAYMENTS.md REV-004 (tailor-approved rules as a condition of automatic eligibility), REV-005 and REV-006 (pre-payment human review), and REV-008 as a release blocker for automatic checkout; D-019’s gating on Q-017 and `REVIEW_AUTO_APPROVAL_ENABLED`. It resolves Q-017. Q-018 now concerns staffing of the post-payment tailor review. Affected files: REVIEW-PAYMENTS.md, MEASUREMENTS-ORDERS.md (ORD-003), PRD.md, SCREENS.md (UX-011, S-08, S-11, S-13), INTERACTIONS.md, SECURITY-RELEASE.md, ORDERS-FULFILLMENT.md, ADMIN-BACKEND.md, API-REFERENCE.md, ADMIN-SCREENS.md, ACCEPTANCE.md (AC-25 to AC-27, AC-32, AC-39 to AC-41, AC-46), TASK-023 to TASK-025.
 
 Not implied: fit accuracy or tailor verification of customer measurements; remake, alteration or refund terms (Q-013, Q-029); the legal wording of the sign-off statements (Q-032); sending body measurements to the AI provider (Q-032); a fee for tailor review (Q-033).
+
+## D-021 — Defer AI features until the remaining functionality is complete (accepted 2026-09-29)
+
+Source/approver: user instruction following the WP-38 scope review: “Lets park this for now, we will return to AI features after completing the remaining functionality”.
+
+Decision: defer remaining AI implementation, configuration and live evaluation, including WP-38's OpenAI order-advice adapter and TASK-004's live AI stylist. No credential provisioning is needed for the current work. Preserve existing implementation and deterministic order checks, customer sign-off, payments and optional tailor review. Prioritize the remaining non-AI functionality; the next delivery packages are M6, beginning with WP-44. Outstanding M4 acceptance remains tracked separately.
+
+This changes delivery sequencing, not the retained AI requirements or D-020's customer ownership and payment policy. WP-38's AI remainder stays explicitly deferred and must not be reported as completed. It does not block independent non-AI packages. No external verification, production release, live payment or vendor approval is implied. Affected scope: REV-002–004 advisory implementation, TASK-004, TASK-023 / WP-38 and the delivery/status/traceability records.

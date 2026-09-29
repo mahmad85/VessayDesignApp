@@ -1,6 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { GET as getStudio, POST as postStudio } from '../src/app/api/studio/route';
 import { POST as postTestCatalog } from '../src/app/api/test/catalog/route';
+import { POST as postCheck } from '../src/app/api/studio/check/route';
 import { e2eHooksEnabled, withSyntheticPrices } from '../src/db/e2e-catalog';
 import { importLegacyCatalog } from '../src/modules/catalog/import-legacy';
 import { validateRelease } from '../src/modules/catalog/validate-release';
@@ -33,6 +34,15 @@ async function command(cookie: string, expectedRevision: number, c: CommandV2) {
 }
 const hook = (scenario: string) =>
   postTestCatalog(apiRequest('/api/test/catalog', { json: { scenario } }));
+async function check(cookie: string, expectedRevision: number) {
+  const response = await postCheck(
+    apiRequest('/api/studio/check', {
+      cookies: cookie,
+      json: { actionId: crypto.randomUUID(), expectedRevision },
+    }),
+  );
+  return { status: response.status, body: await response.json() };
+}
 
 describe('SYNTHETIC price overlay for browser tests', () => {
   it('prices the reference catalog like the PRICING.md fixture and still validates', () => {
@@ -68,9 +78,9 @@ describe('the live quote in studio responses', { timeout: PGLITE_TIMEOUT }, () =
       totalMinor: null,
       garments: [{ status: 'unavailable', reasons: ['base_price_missing'] }],
     });
-    const reviewed = await command(cookie, 1, { type: 'review', mode: 'automated' });
+    const reviewed = await check(cookie, 1);
     expect(reviewed.body.draft.review.findings.map((f: { id: string }) => f.id)).toContain(
-      'quote-unavailable',
+      'quote_unavailable',
     );
   });
 
@@ -115,13 +125,13 @@ describe('the live quote in studio responses', { timeout: PGLITE_TIMEOUT }, () =
         ]),
       ),
     ).toEqual({ base: 79900, jacket: 1000, vest: 10000, accents: 2500 });
-    const reviewed = await command(cookie, 2, { type: 'review', mode: 'automated' });
+    const reviewed = await check(cookie, 2);
     expect(reviewed.body.draft.review.findings.map((f: { id: string }) => f.id)).not.toContain(
-      'quote-unavailable',
+      'quote_unavailable',
     );
-    expect(reviewed.body.draft.review.checkoutEligible).toBe(false);
+    expect(reviewed.body.draft.review.status).toBe('correction_required');
     // An unpriced fabric makes the quote unavailable again, never zero.
-    const forest = await command(cookie, 3, { type: 'design', patch: { materialCode: 'forest' } });
+    const forest = await command(cookie, 2, { type: 'design', patch: { materialCode: 'forest' } });
     expect(forest.body.quote).toMatchObject({
       status: 'unavailable',
       totalMinor: null,

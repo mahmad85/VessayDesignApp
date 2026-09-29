@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { importLegacyCatalog } from '../src/modules/catalog/import-legacy';
 import { compileWorkingCopy, inactiveLookups } from '../src/modules/catalog/compile';
-import { parseSnapshot } from '../src/modules/catalog/snapshot';
+import { parseSnapshot, indexSnapshot } from '../src/modules/catalog/snapshot';
+import { defaultsFor } from '../src/modules/catalog/structure';
 import { snapshotChecksum } from '../src/modules/catalog/snapshot-checksum';
 import {
   loadSnapshotIntoWorkingCopy,
@@ -146,8 +147,20 @@ describe('working copy ⇄ snapshot', { timeout: PGLITE_TIMEOUT }, () => {
     );
     expect(summary.archived).toBeGreaterThan(400);
     const compiled = await compile();
-    expect(compiled).toEqual(synthetic);
-    expect(snapshotChecksum(compiled)).toBe(snapshotChecksum(synthetic));
+    // WP-33/34: compilation resolves look defaults and prices without editing the stored look.
+    const expected = structuredClone(synthetic);
+    const index = indexSnapshot(synthetic);
+    expected.templates[0].selections = {
+      ...defaultsFor(index, index.products.get('suit')!),
+      ...synthetic.templates[0].selections,
+    };
+    expected.templates[0].asShownPriceMinor = 139900;
+    expect(compiled).toEqual(expected);
+    expect(snapshotChecksum(compiled)).toBe(snapshotChecksum(expected));
+    const [storedLook] = await db.query('SELECT selections FROM templates WHERE code=$1', [
+      synthetic.templates[0].code,
+    ]);
+    expect(storedLook.selections).toEqual(synthetic.templates[0].selections);
     // Imported rows missing from this snapshot are archived, not deleted.
     const [fit] = await db.query(
       "SELECT status FROM option_groups WHERE code='style.jacket.jacket_fit'",

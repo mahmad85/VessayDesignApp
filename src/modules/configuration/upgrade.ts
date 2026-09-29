@@ -151,7 +151,8 @@ function upgradeMessage(message: DraftV1['messages'][number], draft: DraftV1): C
 
 /** A v2 draft from a v1 or v2 draft; v2 drafts are returned unchanged. */
 export function upgradeDraft(input: DraftV1 | DraftV2): DraftV2 {
-  if (isDraftV2(input)) return input;
+  if (isDraftV2(input))
+    return input.review && !('policyVersion' in input.review) ? { ...input, review: null } : input;
   const garment = garmentFromDesign(input.id, input.design);
   return {
     schemaVersion: 2,
@@ -164,7 +165,7 @@ export function upgradeDraft(input: DraftV1 | DraftV2): DraftV2 {
     skinTone: input.design.skinTone,
     measurements: input.measurements,
     messages: input.messages.map((message) => upgradeMessage(message, input)),
-    review: input.review,
+    review: null,
     orders: [],
   };
 }

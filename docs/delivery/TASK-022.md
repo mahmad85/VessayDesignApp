@@ -1,6 +1,6 @@
 # TASK-022: Multi-garment cart
 
-Status: ready (specified 2026-09-28; depends on TASK-017 and TASK-021)
+Status: verified locally (2026-09-29; not merged or released; M4 acceptance remains separate)
 
 Implementation packages: WP-37 in [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md). Build and merge them in that order.
 
@@ -18,7 +18,7 @@ Implementation packages: WP-37 in [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.m
 - Migration/compatibility implications: none.
 - Test fixtures (synthetic or authorised): synthetic drafts.
 - Verification plan: engine tests (switching isolation, union of required measurements, removal confirmation); e2e flow at 1440 and 390; keyboard pass of the switcher.
-- Actual verification evidence: not started.
+- Actual verification evidence: [M5-EVIDENCE.md](M5-EVIDENCE.md), WP-37. The synthetic purchase browser journey passed with switching isolation, removal, shared measurement union, quantity pricing and keyboard operation. Final regression and visual results are recorded there.
 - Deviations and decision references: D-019.
 - Remaining limitations: —
-- Changed files/commit: —
+- Changed files/commit: `cart-switcher.tsx`, `start-screen.tsx`, `studio.tsx`, `measurement-panel.tsx`, `review-panel.tsx`, shared CSS and `tests/e2e/orders.spec.ts`; local working tree, not merged or released.

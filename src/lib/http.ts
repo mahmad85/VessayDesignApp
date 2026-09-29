@@ -47,9 +47,13 @@ export function checkOrigin(request: NextRequest) {
   if (!origin || origin !== new URL(expected).origin)
     throw new DomainError('invalid_origin', 'This request did not come from the studio.', 403);
 }
-export async function body(request: NextRequest) {
+export async function body(
+  request: NextRequest,
+  { maxBytes = 20_000 }: { maxBytes?: number } = {},
+) {
   const declared = Number(request.headers.get('content-length') || 0);
-  if (declared > 20000) throw new DomainError('body_too_large', 'The request is too large.', 413);
+  if (declared > maxBytes)
+    throw new DomainError('body_too_large', 'The request is too large.', 413);
   const reader = request.body?.getReader();
   if (!reader) throw new DomainError('invalid_json', 'A request body is required.', 400);
   let bytes = 0;
@@ -58,7 +62,7 @@ export async function body(request: NextRequest) {
     const { done, value } = await reader.read();
     if (done) break;
     bytes += value.byteLength;
-    if (bytes > 20000) {
+    if (bytes > maxBytes) {
       await reader.cancel();
       throw new DomainError('body_too_large', 'The request is too large.', 413);
     }
@@ -70,7 +74,7 @@ export async function body(request: NextRequest) {
     throw new DomainError('invalid_json', 'The request body must be valid JSON.', 400);
   }
 }
-export function failure(error: unknown) {
+export function failure(error: unknown, { admin = false }: { admin?: boolean } = {}) {
   if (error instanceof DomainError)
     return json(
       {
@@ -85,7 +89,20 @@ export function failure(error: unknown) {
     );
   if (error instanceof ZodError)
     return json(
-      { error: { code: 'invalid_input', message: 'Please check your selections and try again.' } },
+      {
+        error: admin
+          ? {
+              code: 'validation_failed',
+              message: 'Please check the highlighted fields.',
+              details: {
+                fields: error.issues.map((issue) => ({
+                  path: issue.path.join('.'),
+                  message: issue.message,
+                })),
+              },
+            }
+          : { code: 'invalid_input', message: 'Please check your selections and try again.' },
+      },
       undefined,
       422,
     );

@@ -24,9 +24,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run dev',
+    command: 'node --import tsx tests/e2e/start.ts',
     url: 'http://localhost:3000/api/health',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 120000,
     env: {
       APP_URL: 'http://localhost:3000',
@@ -38,9 +38,15 @@ export default defineConfig({
       MAIL_FROM: '',
       BETTER_AUTH_SECRET: 'synthetic-test-secret-never-use-for-production',
       NEXT_TELEMETRY_DISABLED: '1',
-      VESSY_DEV_DATABASE_PATH: process.env.VESSY_QA_DATABASE_PATH || '.data/qa-postgres',
+      VESSY_DEV_DATABASE_PATH:
+        process.env.VESSY_QA_DATABASE_PATH || `.data/qa-postgres-${Date.now()}`,
       // Enables the SYNTHETIC catalog hook (/api/test/catalog) for this development server only.
       VESSY_E2E_HOOKS: 'true',
+      STAFF_MFA_REQUIRED: 'true',
+      PAYMENT_PROVIDER: 'fake',
+      STRIPE_SECRET_KEY: '',
+      STRIPE_ORDER_WEBHOOK_SECRET: 'whsec_SYNTHETIC_orders_only',
+      PAYMENTS_LIVE_ENABLED: 'false',
     },
   },
 });

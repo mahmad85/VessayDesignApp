@@ -1,5 +1,6 @@
 import {
   pgTable,
+  date,
   text,
   timestamp,
   boolean,
@@ -20,10 +21,38 @@ export const user = pgTable('user', {
   name: text().notNull(),
   email: text().notNull().unique(),
   emailVerified: boolean('email_verified').notNull().default(false),
+  twoFactorEnabled: boolean('two_factor_enabled').default(false),
   image: text(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
+export const staffRoles = pgTable(
+  'staff_roles',
+  {
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    role: text().notNull(),
+    grantedBy: text('granted_by').notNull(),
+    grantedAt: timestamp('granted_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.role] })],
+);
+export const twoFactor = pgTable(
+  'two_factor',
+  {
+    id: text().primaryKey(),
+    secret: text().notNull(),
+    backupCodes: text('backup_codes').notNull(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    verified: boolean().default(true),
+    failedVerificationCount: integer('failed_verification_count').default(0),
+    lockedUntil: timestamp('locked_until'),
+  },
+  (t) => [index('two_factor_secret_idx').on(t.secret), index('two_factor_user_idx').on(t.userId)],
+);
 export const session = pgTable('session', {
   id: text().primaryKey(),
   expiresAt: timestamp('expires_at').notNull(),
@@ -716,3 +745,193 @@ export const commerceSettings = pgTable('commerce_settings', {
   updatedBy: text('updated_by'),
   updatedAt: updatedAt(),
 });
+
+export const quotes = pgTable('quotes', {
+  id: text('id').primaryKey(),
+  owner: text('owner').notNull(),
+  draftId: text('draft_id').notNull(),
+  draftRevision: integer('draft_revision').notNull(),
+  catalogVersion: integer('catalog_version')
+    .notNull()
+    .references(() => catalogReleases.version),
+  currency: text('currency').notNull(),
+  lines: jsonb('lines').notNull(),
+  subtotalMinor: integer('subtotal_minor').notNull(),
+  shippingMinor: integer('shipping_minor').notNull(),
+  totalMinor: integer('total_minor').notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+export const orders = pgTable('orders', {
+  id: text('id').primaryKey(),
+  number: text('number').notNull().unique(),
+  owner: text('owner').notNull(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id),
+  draftId: text('draft_id').notNull(),
+  draftRevision: integer('draft_revision').notNull(),
+  currentSnapshotVersion: integer('current_snapshot_version').notNull().default(1),
+  quoteId: text('quote_id')
+    .notNull()
+    .references(() => quotes.id),
+  catalogVersion: integer('catalog_version').notNull(),
+  currency: text('currency').notNull(),
+  subtotalMinor: integer('subtotal_minor').notNull(),
+  shippingMinor: integer('shipping_minor').notNull(),
+  totalMinor: integer('total_minor').notNull(),
+  signedOffAt: timestamp('signed_off_at', { withTimezone: true }).notNull(),
+  signoffStatementVersion: text('signoff_statement_version').notNull(),
+  tailorReviewRequested: boolean('tailor_review_requested').notNull().default(false),
+  tailorReviewStatus: text('tailor_review_status').notNull().default('not_requested'),
+  paymentStatus: text('payment_status').notNull().default('checkout_ready'),
+  fulfillmentStatus: text('fulfillment_status').notNull().default('not_released'),
+  needsAttention: boolean('needs_attention').notNull().default(false),
+  shippingAddress: jsonb('shipping_address'),
+  customerEtaDate: date('customer_eta_date'),
+  submitActionId: text('submit_action_id').notNull().unique(),
+  submitFingerprint: text('submit_fingerprint').notNull(),
+  submittedAt: timestamp('submitted_at', { withTimezone: true }).notNull().defaultNow(),
+  rowVersion: integer('row_version').notNull().default(1),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+export const orderSnapshots = pgTable(
+  'order_snapshots',
+  {
+    orderId: text('order_id')
+      .notNull()
+      .references(() => orders.id),
+    version: integer('version').notNull(),
+    kind: text('kind').notNull(),
+    snapshot: jsonb('snapshot').notNull(),
+    checksum: text('checksum').notNull(),
+    quoteId: text('quote_id')
+      .notNull()
+      .references(() => quotes.id),
+    actionId: text('action_id').notNull().unique(),
+    createdBy: text('created_by').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.orderId, t.version] })],
+);
+export const orderItems = pgTable(
+  'order_items',
+  {
+    id: text('id').primaryKey(),
+    orderId: text('order_id')
+      .notNull()
+      .references(() => orders.id),
+    snapshotVersion: integer('snapshot_version').notNull(),
+    lineNo: integer('line_no').notNull(),
+    productCode: text('product_code').notNull(),
+    templateCode: text('template_code'),
+    quantity: integer('quantity').notNull(),
+    unitPriceMinor: integer('unit_price_minor').notNull(),
+    lineTotalMinor: integer('line_total_minor').notNull(),
+    spec: jsonb('spec').notNull(),
+    supplierId: text('supplier_id').references(() => suppliers.id),
+    supplierReference: text('supplier_reference'),
+    supplierDueDate: date('supplier_due_date'),
+    fulfillmentStatus: text('fulfillment_status').notNull().default('not_released'),
+    holdResumeStatus: text('hold_resume_status'),
+    tracking: jsonb('tracking'),
+    rowVersion: integer('row_version').notNull().default(1),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique().on(t.orderId, t.snapshotVersion, t.lineNo)],
+);
+export const reviewCases = pgTable(
+  'review_cases',
+  {
+    id: text('id').primaryKey(),
+    orderId: text('order_id')
+      .notNull()
+      .references(() => orders.id),
+    snapshotVersion: integer('snapshot_version').notNull(),
+    status: text('status').notNull(),
+    dueAt: timestamp('due_at', { withTimezone: true }),
+    assignedTo: text('assigned_to'),
+    decision: text('decision'),
+    proposedMeasurements: jsonb('proposed_measurements'),
+    customerMessage: text('customer_message'),
+    decisionNotes: text('decision_notes'),
+    decidedBy: text('decided_by'),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    customerResponse: text('customer_response'),
+    customerRespondedAt: timestamp('customer_responded_at', { withTimezone: true }),
+    amendmentSnapshotVersion: integer('amendment_snapshot_version'),
+    measurementsVerifiedBy: text('measurements_verified_by'),
+    measurementsVerifiedAt: timestamp('measurements_verified_at', { withTimezone: true }),
+    overdueNotifiedAt: timestamp('overdue_notified_at', { withTimezone: true }),
+    rowVersion: integer('row_version').notNull().default(1),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('review_cases_one_open')
+      .on(t.orderId)
+      .where(sql`${t.status} NOT IN ('completed','cancelled')`),
+  ],
+);
+export const orderEvents = pgTable('order_events', {
+  id: text('id').primaryKey(),
+  orderId: text('order_id')
+    .notNull()
+    .references(() => orders.id),
+  orderItemId: text('order_item_id').references(() => orderItems.id),
+  type: text('type').notNull(),
+  fromValue: text('from_value'),
+  toValue: text('to_value'),
+  reason: text('reason'),
+  data: jsonb('data').notNull().default({}),
+  actor: text('actor').notNull(),
+  visibleToCustomer: boolean('visible_to_customer').notNull().default(false),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+export const notifications = pgTable('notifications', {
+  id: text('id').primaryKey(),
+  orderId: text('order_id').references(() => orders.id),
+  recipientUserId: text('recipient_user_id')
+    .notNull()
+    .references(() => user.id),
+  purpose: text('purpose').notNull(),
+  dedupeKey: text('dedupe_key').notNull().unique(),
+  payload: jsonb('payload').notNull(),
+  status: text('status').notNull().default('pending'),
+  attempts: integer('attempts').notNull().default(0),
+  lastErrorCode: text('last_error_code'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  sentAt: timestamp('sent_at', { withTimezone: true }),
+});
+export const payments = pgTable(
+  'payments',
+  {
+    id: text('id').primaryKey(),
+    orderId: text('order_id')
+      .notNull()
+      .references(() => orders.id),
+    provider: text('provider').notNull().default('stripe'),
+    providerSessionId: text('provider_session_id').unique(),
+    providerPaymentIntentId: text('provider_payment_intent_id').unique(),
+    snapshotVersion: integer('snapshot_version').notNull(),
+    quoteId: text('quote_id')
+      .notNull()
+      .references(() => quotes.id),
+    amountMinor: integer('amount_minor').notNull(),
+    shippingMinor: integer('shipping_minor').notNull(),
+    currency: text('currency').notNull(),
+    status: text('status').notNull(),
+    livemode: boolean('livemode').notNull(),
+    checkoutActionId: text('checkout_action_id').notNull().unique(),
+    rowVersion: integer('row_version').notNull().default(1),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('payments_one_pending')
+      .on(t.orderId)
+      .where(sql`${t.status} = 'payment_pending'`),
+  ],
+);

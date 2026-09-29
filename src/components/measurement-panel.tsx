@@ -24,6 +24,7 @@ export function MeasurementPanel({
   onContinue,
   onDirty,
   onPreview,
+  focusField,
 }: {
   draft: DraftV2;
   /** The measurement sets of every garment in the cart (CRT-004: one profile). */
@@ -35,6 +36,7 @@ export function MeasurementPanel({
   onContinue: () => void;
   onDirty: (dirty: boolean) => void;
   onPreview: (values: Record<string, number>, unit: 'cm' | 'in') => void;
+  focusField?: string;
 }) {
   const [unit, setUnit] = useState<'cm' | 'in'>('cm'),
     [values, setValues] = useState<Record<string, number>>(draft.measurements.values),
@@ -160,6 +162,7 @@ export function MeasurementPanel({
         <div>
           <input
             aria-label={m.label}
+            autoFocus={m.id === focusField}
             aria-invalid={!!fieldErrors[m.id]}
             aria-describedby={fieldErrors[m.id] ? `error-${m.id}` : 'measurement-guidance'}
             type="text"

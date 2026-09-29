@@ -163,6 +163,24 @@ export type DraftV1 = Draft;
 export type SkinTone = Design['skinTone'];
 export type ChatSuggestion = { garmentId: string | null; patch: GarmentPatch };
 export type ChatMessageV2 = Omit<ChatMessage, 'suggestion'> & { suggestion?: ChatSuggestion };
+export type OrderCheck = {
+  id: string;
+  inputRevision: number;
+  policyVersion: 'check-policy-v1';
+  status: 'correction_required' | 'passed';
+  findings: {
+    id: string;
+    severity: 'blocker' | 'advice';
+    source: 'rules' | 'ai';
+    target: 'design' | 'measurements' | 'commercial';
+    garmentId?: string;
+    field?: string;
+    title: string;
+    description: string;
+  }[];
+  aiAdvisory: 'completed' | 'unavailable' | 'not_configured';
+  createdAt: string;
+};
 export type DraftV2 = {
   schemaVersion: 2;
   id: string;
@@ -177,8 +195,7 @@ export type DraftV2 = {
   /** One measurement profile per draft (CRT-004). */
   measurements: Measurements;
   messages: ChatMessageV2[];
-  /** The `review` command result, as today, until TASK-023 replaces it with the order check. */
-  review: Review | null;
+  review: OrderCheck | null;
   orders: { orderId: string; number: string; submittedAt: string }[];
 };
 
@@ -224,8 +241,6 @@ export const commandSchemaV2 = z.discriminatedUnion('type', [
     confirm: z.boolean(),
     source: z.enum(['customer', '3dlook']).optional(),
   }),
-  // Kept as today until TASK-023 replaces it with POST /api/studio/check.
-  z.object({ type: z.literal('review'), mode: z.enum(['automated', 'human']) }),
 ]);
 export type CommandV2 = z.infer<typeof commandSchemaV2>;
 export const commandEnvelopeV2 = z.object({

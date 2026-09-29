@@ -1,6 +1,11 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { customerCatalogSchema, indexCatalog, type RuntimeIndex } from '@/modules/catalog/snapshot';
+import {
+  customerCatalogSchema,
+  indexCatalog,
+  type RuntimeIndex,
+  type CustomerCatalog,
+} from '@/modules/catalog/snapshot';
 import type { AvailabilityMap } from '@/modules/catalog/garment';
 import type { CommandV2, DraftV2, Impact } from '@/modules/configuration/types';
 import type { CartQuote } from '@/modules/pricing/quote';
@@ -11,6 +16,8 @@ import type { CartQuote } from '@/modules/pricing/quote';
 // Prices and validity are always decided by the server.
 
 export type StudioEnvelope = {
+  isPreview?: boolean;
+  catalog?: CustomerCatalog;
   draft: DraftV2;
   catalogVersion: number;
   catalogUpdates: { garmentId: string; impact: Impact[] }[];
@@ -42,7 +49,8 @@ const versionsOf = (envelope: StudioEnvelope) => [
   ...envelope.draft.garments.map((garment) => garment.catalogVersion),
 ];
 
-export function useStudio() {
+export function useStudio(preview = false) {
+  const endpoint = preview ? '/api/studio?catalog=working' : '/api/studio';
   const [state, setState] = useState<StudioEnvelope | null>(null),
     [catalogs, setCatalogs] = useState<Record<number, RuntimeIndex>>({}),
     [busy, setBusy] = useState(false),
@@ -54,6 +62,11 @@ export function useStudio() {
 
   /** Show an envelope once every catalog it needs is loaded. */
   const accept = useCallback(async (envelope: StudioEnvelope) => {
+    if (envelope.isPreview && envelope.catalog) {
+      setCatalogs({ 0: indexCatalog(customerCatalogSchema.parse(envelope.catalog)) });
+      setState(envelope);
+      return envelope;
+    }
     const versions = [...new Set(versionsOf(envelope))];
     const loaded = await Promise.all(versions.map(loadCatalog));
     setCatalogs((current) => {
@@ -68,7 +81,7 @@ export function useStudio() {
   const load = useCallback(
     async (signal?: AbortSignal) => {
       try {
-        const response = await fetch('/api/studio', { cache: 'no-store', signal });
+        const response = await fetch(endpoint, { cache: 'no-store', signal });
         const data = await response.json();
         if (!response.ok)
           throw new Error(data.error?.message || 'The studio is temporarily unavailable.');
@@ -81,11 +94,11 @@ export function useStudio() {
         return null;
       }
     },
-    [accept],
+    [accept, endpoint],
   );
   useEffect(() => {
     const controller = new AbortController();
-    fetch('/api/studio', { cache: 'no-store', signal: controller.signal })
+    fetch(endpoint, { cache: 'no-store', signal: controller.signal })
       .then(async (response) => {
         const data = await response.json();
         if (!response.ok)
@@ -99,7 +112,7 @@ export function useStudio() {
           setError(e instanceof Error ? e.message : 'Unable to load your studio.');
       });
     return () => controller.abort();
-  }, [accept]);
+  }, [accept, endpoint]);
 
   const request = useCallback(
     async (endpoint: string, payload: Record<string, unknown>) => {
@@ -142,8 +155,8 @@ export function useStudio() {
     [state, load, accept],
   );
   const command = useCallback(
-    (command: CommandV2) => request('/api/studio', { command }),
-    [request],
+    (command: CommandV2) => request(endpoint, { command }),
+    [request, endpoint],
   );
   return {
     state,
@@ -156,7 +169,9 @@ export function useStudio() {
     mode,
     load,
     command,
-    chat: (message: string) => request('/api/chat', { message }),
+    check: () => request('/api/studio/check', {}),
+    chat: (message: string) =>
+      request(preview ? '/api/chat?catalog=working' : '/api/chat', { message }),
     pendingImpact,
     dismissImpact: () => setPendingImpact(null),
     /** Re-send the command that needed confirmation, accepting its impact. */

@@ -1,6 +1,6 @@
 # TASK-019: Admin catalog structure, rules, lists and media
 
-Status: ready (specified 2026-09-28; depends on TASK-015, TASK-016 and TASK-018)
+Status: in progress (WP-22 implemented 2026-09-29; WP-23–28 not started)
 
 Implementation packages: WP-22 – WP-28 in [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md). Build and merge them in that order.
 
@@ -18,7 +18,7 @@ Implementation packages: WP-22 – WP-28 in [IMPLEMENTATION-PLAN.md](IMPLEMENTAT
 - Migration/compatibility implications: none (uses 0003).
 - Test fixtures (synthetic or authorised): synthetic images generated in tests (a tiny PNG, JPEG and WebP, a spoofed extension, an oversized file, an SVG).
 - Verification plan: repository tests for every mutation (row version, audit row, code immutability after publish, delete versus archive); media validation tests; e2e: add a group with two choices and a condition, preview badges, keyboard-only reorder; screenshots at 1440 and 768.
-- Actual verification evidence: not started.
+- Actual verification evidence: WP-22 local automated checks are recorded in [WP-22](WP-22.md). Media and lookup handlers are implemented; the structure repository and admin editor screens remain WP-23–28. This does not complete TASK-019 or M4.
 - Deviations and decision references: D-019.
 - Remaining limitations: production storage (TASK-026).
-- Changed files/commit: —
+- Changed files/commit: `codex/m3-m4-admin-catalog`; storage adapters, media/lookup repositories and routes, shared admin mutation helpers, `tests/media-lookup.test.ts` and synthetic raster fixtures. No new runtime dependency.

@@ -1,11 +1,10 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { createAuthClient } from 'better-auth/react';
+import { authClient as client } from '@/lib/auth-client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, LockKeyhole } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-const client = createAuthClient();
 export default function Account() {
   const router = useRouter();
   const [mode, setMode] = useState<'signin' | 'signup' | 'reset'>('signin'),
@@ -16,6 +15,13 @@ export default function Account() {
     [busy, setBusy] = useState(false),
     [config, setConfig] = useState<{ enabled: boolean; localEmail: boolean } | null>(null);
   const { data: session, isPending } = client.useSession();
+  const [challenge, setChallenge] = useState(false);
+  const [backup, setBackup] = useState(false);
+  const [code, setCode] = useState('');
+  const destination = () => {
+    const next = new URLSearchParams(window.location.search).get('next');
+    return next === '/admin' || next === '/orders' ? next : '/';
+  };
   useEffect(() => {
     fetch('/api/auth-config')
       .then((r) => r.json())
@@ -27,19 +33,37 @@ export default function Account() {
     setBusy(true);
     setMessage('');
     try {
+      if (challenge) {
+        const result = backup
+          ? await client.twoFactor.verifyBackupCode({ code })
+          : await client.twoFactor.verifyTotp({ code });
+        if (result.error)
+          setMessage(result.error.message || 'That code was not accepted. Try again.');
+        else {
+          router.replace(destination());
+          router.refresh();
+        }
+        return;
+      }
       const result =
         mode === 'signup'
           ? await client.signUp.email({ name, email, password, callbackURL: '/account' })
           : mode === 'reset'
             ? await client.requestPasswordReset({ email, redirectTo: '/account/reset' })
-            : await client.signIn.email({ email, password, callbackURL: '/' });
+            : await client.signIn.email({ email, password, callbackURL: destination() });
       if (result.error)
         setMessage(result.error.message || 'Please check your details and try again.');
       else if (mode === 'signup')
         setMessage('Check your email to verify your account before signing in.');
       else if (mode === 'reset')
         setMessage('If an account exists, password reset instructions will be sent.');
-      else router.replace('/');
+      else if (result.data && 'twoFactorRedirect' in result.data && result.data.twoFactorRedirect) {
+        setChallenge(true);
+        setPassword('');
+      } else {
+        router.replace(destination());
+        router.refresh();
+      }
     } catch {
       setMessage('We could not complete that request. Please try again.');
     } finally {
@@ -59,20 +83,68 @@ export default function Account() {
         <LockKeyhole size={25} />
         <div className="eyebrow">YOUR PERSONAL TAILORING STUDIO</div>
         <h1>
-          {session
-            ? 'Make yourself at home.'
-            : mode === 'signup'
-              ? 'Your style, saved.'
-              : mode === 'reset'
-                ? 'A fresh start.'
-                : 'Welcome back.'}
+          {challenge
+            ? 'Your login code.'
+            : session
+              ? 'Make yourself at home.'
+              : mode === 'signup'
+                ? 'Your style, saved.'
+                : mode === 'reset'
+                  ? 'A fresh start.'
+                  : 'Welcome back.'}
         </h1>
-        {session ? (
+        {challenge ? (
+          <form onSubmit={submit}>
+            <p>
+              {backup
+                ? 'Enter one of your saved backup codes. Each code works once.'
+                : 'Enter the six-digit code from your authenticator app.'}
+            </p>
+            <label>
+              {backup ? 'Backup code' : 'Authenticator code'}
+              <input
+                autoFocus
+                required
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                autoComplete="one-time-code"
+                inputMode={backup ? 'text' : 'numeric'}
+                pattern={backup ? undefined : '[0-9]{6}'}
+              />
+            </label>
+            <Button type="submit" disabled={busy}>
+              {busy ? 'Checking…' : 'Verify and sign in'}
+            </Button>
+            <button
+              type="button"
+              className="text-button"
+              onClick={() => {
+                setBackup(!backup);
+                setCode('');
+                setMessage('');
+              }}
+            >
+              {backup ? 'Use authenticator app' : 'Use a backup code'}
+            </button>
+            <button
+              type="button"
+              className="text-button"
+              onClick={() => {
+                setChallenge(false);
+                setCode('');
+              }}
+            >
+              Back to sign in
+            </button>
+          </form>
+        ) : session ? (
           <>
             <p>Signed in as {session.user.email}.</p>
             <Button asChild>
-              <Link href="/">
-                Continue your design
+              <Link
+                href={typeof window !== 'undefined' && destination() === '/admin' ? '/admin' : '/'}
+              >
+                Continue
                 <ArrowRight size={16} />
               </Link>
             </Button>
