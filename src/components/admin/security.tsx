@@ -1,10 +1,15 @@
 'use client';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { ShieldCheck } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import { qrMatrix } from '@/lib/qr';
+// Keep the server-rendered form inert until React can handle its submission.
+const subscribeToHydration = () => () => {};
+const clientReady = () => true;
+const serverReady = () => false;
 export function SecuritySetup({ enabled }: { enabled: boolean }) {
+  const hydrated = useSyncExternalStore(subscribeToHydration, clientReady, serverReady);
   const [password, setPassword] = useState(''),
     [code, setCode] = useState(''),
     [uri, setUri] = useState(''),
@@ -70,19 +75,20 @@ export function SecuritySetup({ enabled }: { enabled: boolean }) {
           </p>
         )}
         {!verified && !uri && (
-          <form onSubmit={setup}>
+          <form onSubmit={setup} aria-busy={!hydrated || busy}>
             <label>
               Confirm your password
               <input
                 type="password"
+                disabled={!hydrated}
                 required
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </label>
-            <button className="admin-primary" disabled={busy}>
-              {busy ? 'Preparing…' : 'Set up authenticator'}
+            <button className="admin-primary" disabled={!hydrated || busy}>
+              {!hydrated ? 'Loading secure setup…' : busy ? 'Preparing…' : 'Set up authenticator'}
             </button>
           </form>
         )}

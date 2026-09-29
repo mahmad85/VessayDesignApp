@@ -1,9 +1,10 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Route } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { readFile, mkdir } from 'node:fs/promises';
 import { totp } from '../helpers/totp';
 test('SYNTHETIC owner: CLI grant, authenticator enrollment, admin keyboard/screens, TOTP sign-in', async ({
   page,
+  baseURL,
 }) => {
   const user = JSON.parse(await readFile('.data/qa-staff.json', 'utf8'));
   await page.goto('/admin');
@@ -12,6 +13,25 @@ test('SYNTHETIC owner: CLI grant, authenticator enrollment, admin keyboard/scree
   await page.getByLabel('Password', { exact: true }).fill(user.password);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page).toHaveURL(/\/admin\/security/);
+  // Hold the client scripts to exercise the server-rendered enrollment form before hydration.
+  let releaseScripts!: () => void;
+  const scriptsReady = new Promise<void>((resolve) => {
+    releaseScripts = resolve;
+  });
+  const holdScripts = async (route: Route) => {
+    if (route.request().resourceType() === 'script') await scriptsReady;
+    await route.continue();
+  };
+  await page.route('**/_next/**', holdScripts);
+  try {
+    await page.reload({ waitUntil: 'commit' });
+    await expect(page.getByLabel('Confirm your password')).toBeVisible();
+    await expect(page.getByLabel('Confirm your password')).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Loading secure setup…' })).toBeDisabled();
+  } finally {
+    releaseScripts();
+    await page.unrouteAll({ behavior: 'wait' });
+  }
   await page.getByLabel('Confirm your password').fill(user.password);
   await page.keyboard.press('Tab');
   await expect(
@@ -73,7 +93,7 @@ test('SYNTHETIC owner: CLI grant, authenticator enrollment, admin keyboard/scree
   await page.screenshot({ path: 'test-results/staff/audit-768.png', fullPage: true });
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
   await page.request.post('/api/auth/sign-out', {
-    headers: { Origin: 'http://localhost:3000' },
+    headers: { Origin: baseURL! },
     data: {},
   });
   await page.goto('/account?next=/admin');
@@ -86,10 +106,10 @@ test('SYNTHETIC owner: CLI grant, authenticator enrollment, admin keyboard/scree
   await page.getByRole('button', { name: 'Verify and sign in' }).click();
   await expect(page).toHaveURL(/\/admin$/);
 });
-test('SYNTHETIC ordinary customer cannot see the admin shell', async ({ page }) => {
+test('SYNTHETIC ordinary customer cannot see the admin shell', async ({ page, baseURL }) => {
   const email = `synthetic-nonstaff-${crypto.randomUUID()}@vessy.invalid`;
   await page.request.post('/api/auth/sign-up/email', {
-    headers: { Origin: 'http://localhost:3000' },
+    headers: { Origin: baseURL! },
     data: { name: 'SYNTHETIC Customer', email, password: 'Synthetic-only-password-123' },
   });
   const { readdir } = await import('node:fs/promises');
@@ -100,7 +120,7 @@ test('SYNTHETIC ordinary customer cannot see the admin shell', async ({ page }) 
   );
   await page.request.get(mail.find((m) => m.to === email).url);
   await page.request.post('/api/auth/sign-in/email', {
-    headers: { Origin: 'http://localhost:3000' },
+    headers: { Origin: baseURL! },
     data: { email, password: 'Synthetic-only-password-123' },
   });
   const denied = await page.goto('/admin');
