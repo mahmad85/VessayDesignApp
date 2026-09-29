@@ -20,6 +20,7 @@ import {
   type Impact,
 } from '@/modules/configuration/types';
 import type { AvailabilityMap } from '@/modules/catalog/garment';
+import { quoteCart, type CartQuote } from '@/modules/pricing/quote';
 
 // Owned drafts (one per owner). Every read path — the draft row, a replayed
 // action result and a stored revision — upgrades v1 JSON to v2 on read
@@ -58,8 +59,8 @@ export type StudioState = {
   draft: DraftV2;
   catalogVersion: number;
   catalogUpdates: { garmentId: string; impact: Impact[] }[];
-  /** The cart quote arrives with pricing (TASK-017); null until then. */
-  quote: null;
+  /** The live cart quote on the current release (PRC-004); never persisted here. */
+  quote: CartQuote;
   availability: AvailabilityMap;
 };
 
@@ -69,7 +70,7 @@ export async function studioState(draft: DraftV2): Promise<StudioState> {
     draft,
     catalogVersion: context.current.catalog.version,
     catalogUpdates: catalogUpdates(context, draft),
-    quote: null,
+    quote: quoteCart(context.current, draft, context.availability),
     availability: context.availability ?? {},
   };
 }

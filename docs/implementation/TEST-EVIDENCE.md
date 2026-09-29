@@ -224,3 +224,24 @@ Automated coverage added or ported (tests, not claims):
 | `tests/assistant.test.ts` (11) | Stubbed model: unknown codes and incompatible or out-of-stock fabrics dropped with the message kept; valid multi-intent output kept whole; changes validated against a suggested product; empty-cart suggestions need a product; the developer context excludes descriptions and stories (instruction text planted there), supplier fields, stock, measurements and other garments; guided keyword cases |
 
 Not verified: a live model (readiness item R3; the OpenAI adapter only ran against a stub); the impact and catalog-update dialogs in a browser (the imported release has no rules, so they are covered by unit and route tests only); the WP-12 – WP-14 commits individually against the browser suite (the server switched to draft v2 before the UI was ported in WP-15; each commit passed `npm run check`); hosted PostgreSQL; real-device performance.
+
+## TASK-017 (M2, WP-17 – WP-18) — Pricing engine and customer price display, 29 September 2026
+
+Environment as TASK-016. All prices are SYNTHETIC: the PRICING.md worked-example fixture, and the same amounts applied to the reference catalog by the browser-test hook `POST /api/test/catalog` (404 unless `VESSY_E2E_HOOKS=true`, set only for the Playwright server; never in production). The reference catalog itself stays unpriced.
+
+| Executed check | Result |
+| --- | --- |
+| `npm run check` | Passed: typecheck, lint, **262 Vitest tests in 23 files**, production build |
+| `npm run format:check` | Passed |
+| `npm run test:e2e` | **12 of 12 passed** (4.1 min), including the new `tests/e2e/pricing.spec.ts` |
+| axe (WCAG 2.2 A/AA tags) | No violations with the Price details disclosure open |
+
+| Test file | What it proves |
+| --- | --- |
+| `tests/pricing.test.ts` (21) | PRICING.md E1 – E7 exactly, the E3 lines and category breakdown; override precedence; hidden-inert selections; one group fee; text activation; quantity; every unavailable reason; the unpriced reference catalog; the cart total and delivery; never zero; price wording; the double-charge warning |
+| `tests/price-display.test.ts` (4) | The quote in studio responses; the review finding derived from the actual quote; repricing of an open draft on its next read after a new release (PRC-007); E3 = 93400 on the reference catalog with SYNTHETIC prices; an unpriced fabric makes the quote unavailable; the hook's production guard |
+| `tests/e2e/pricing.spec.ts` (1) | “Price not yet available” and no “$0” on the reference catalog; $799 after publishing; “+$100”, “Customising adds $16”, “+$9”, “+$10”; $934 with the E3 breakdown in the keyboard-operated disclosure at 1440 and 390 without horizontal scroll; axe; unavailable again for an unpriced fabric. Screenshots `artifacts/09-price-details-1440.png`, `10-price-details-390.png`, `11-price-unavailable-1440.png` |
+
+Found and fixed while testing: the selection-tag group row could widen the page at 390 px in the mobile Preview pane (visible once a vest is added); it now scrolls sideways within the pane.
+
+Not verified: real prices, currency or tax (Q-011, Q-019); persisted quotes and `acceptTotal` (TASK-023); the admin pricing matrix and simulator (TASK-020); hosted PostgreSQL.

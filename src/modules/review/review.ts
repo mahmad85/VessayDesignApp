@@ -1,4 +1,5 @@
 import type { DraftV2, Finding, Review } from '../configuration/types';
+import type { CartQuote } from '../pricing/quote';
 import { requiredDefinitionsForProducts, type MeasurementSet } from '../measurements/definitions';
 
 // Deterministic draft check (v2: every garment in the cart). Superseded by the
@@ -13,6 +14,7 @@ export function reviewDraft(
   draft: DraftV2,
   mode: 'automated' | 'human',
   measurementSets: readonly MeasurementSet[],
+  quote: CartQuote,
 ): Review {
   const findings: Finding[] = [];
   if (!draft.garments.length)
@@ -67,13 +69,19 @@ export function reviewDraft(
       'Supplier rules, measurement tolerances and the live catalog must be approved before an order can be accepted.',
     target: 'commercial',
   });
-  findings.push({
-    id: 'quote-unavailable',
-    severity: 'blocker',
-    title: 'A live quote is required',
-    description: 'This development catalog has no commercial prices. Payment is unavailable.',
-    target: 'commercial',
-  });
+  // Derived from the actual quote (TASK-017): unknown is never treated as zero.
+  if (quote.status !== 'priced')
+    findings.push({
+      id: 'quote-unavailable',
+      severity: 'blocker',
+      title: 'A price is not yet available',
+      description: quote.garments.some(
+        (item) => item.status === 'unavailable' && item.reasons.includes('material_unavailable'),
+      )
+        ? 'A chosen fabric is currently unavailable. Choose another fabric to see your price.'
+        : 'Some of your choices have no price in the catalog yet. Payment is unavailable.',
+      target: 'commercial',
+    });
   return {
     id: crypto.randomUUID(),
     inputRevision: draft.revision,

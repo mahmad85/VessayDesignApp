@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { customerCatalogSchema, indexCatalog, type RuntimeIndex } from '@/modules/catalog/snapshot';
 import type { AvailabilityMap } from '@/modules/catalog/garment';
 import type { CommandV2, DraftV2, Impact } from '@/modules/configuration/types';
+import type { CartQuote } from '@/modules/pricing/quote';
 
 // Client state for the studio: the draft envelope from /api/studio and the
 // customer catalog of every release it needs (the current one and any release
@@ -13,7 +14,8 @@ export type StudioEnvelope = {
   draft: DraftV2;
   catalogVersion: number;
   catalogUpdates: { garmentId: string; impact: Impact[] }[];
-  quote: unknown;
+  /** The server's live cart quote; the client never computes prices. */
+  quote: CartQuote;
   availability: AvailabilityMap;
 };
 export type PendingImpact = { command: CommandV2; impact: Impact[] };

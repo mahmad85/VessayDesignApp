@@ -14,6 +14,7 @@ import {
   type MeasurementSet,
 } from '../measurements/definitions';
 import { reviewDraft } from '../review/review';
+import { quoteCart } from '../pricing/quote';
 import {
   DomainError,
   MAX_GARMENTS,
@@ -296,7 +297,12 @@ export function applyCommand(draft: DraftV2, command: CommandV2, context: Engine
       break;
     }
     case 'review':
-      next.review = reviewDraft(next, command.mode, measurementSets(context, next));
+      next.review = reviewDraft(
+        next,
+        command.mode,
+        measurementSets(context, next),
+        quoteCart(context.current, next, context.availability),
+      );
       break;
   }
   return next;

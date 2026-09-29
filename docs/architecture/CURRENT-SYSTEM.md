@@ -1,6 +1,6 @@
 # Current system (as built, 2026-09-28)
 
-Status: descriptive baseline at commit `4d20445`, updated for TASK-015 (M1) and TASK-016 (M2, 2026-09-28). It describes what the code does today, not the target. It is the starting point for D-019 and TASK-015 to TASK-026. When code and this file disagree, the code is authoritative; fix this file in the same change.
+Status: descriptive baseline at commit `4d20445`, updated for TASK-015 (M1), TASK-016 and TASK-017 (M2, 2026-09-28/29). It describes what the code does today, not the target. It is the starting point for D-019 and TASK-015 to TASK-026. When code and this file disagree, the code is authoritative; fix this file in the same change.
 
 ## Stack
 
@@ -23,7 +23,9 @@ Status: descriptive baseline at commit `4d20445`, updated for TASK-015 (M1) and 
 1. `/` renders `Studio` (`src/components/studio.tsx`). `GET /api/studio` creates a draft lazily with **no garments**, and the client loads the customer catalog of the current release from `/api/catalog/v/{version}`. An empty cart shows **Choose a garment** (`start-screen.tsx`): the customer picks a product and starts designing (`add_garment`).
 2. **Step 1 · Design.** The left pane toggles between *Ask your tailor* (chat, `design-consultation.tsx`) and *Choose details* (`design-navigator.tsx`). Both send the same `design` command for the active garment. The right pane shows a 2D SVG technical drawing (`garment-sketch.tsx`) or 3D (`garment-view.tsx`), both drawn from render values (`visualization/binding.ts`). Selection tags (`selection-tags.tsx`) show choices grouped by customer tab. Rule-driven changes to other choices open an impact dialog; a catalog change that affects a garment shows a banner and a review dialog.
 3. **Step 2 · Measurements.** Manual entry in mm internally, with cm/in display (`measurement-panel.tsx`, `modules/measurements/definitions.ts`), over the union of the fields the cart's garments need. The customer can also *Measure with 3DLOOK* (SAIA widget, sign-in required, D-017/D-018).
-4. **Step 3 · Review.** `review-panel.tsx` runs the `review` command. The deterministic findings (`modules/review/review.ts`) always include the blocker `quote-unavailable` until TASK-017, so `checkoutEligible` is always `false`. `POST /api/checkout` always fails, with 409 `review_required` or 503 `checkout_unavailable`.
+4. **Step 3 · Review.** `review-panel.tsx` runs the `review` command and shows the cart total. The deterministic findings (`modules/review/review.ts`) include the blocker `quote-unavailable` only while the live quote is unavailable; `checkoutEligible` is still always `false`. `POST /api/checkout` always fails, with 409 `review_required` or 503 `checkout_unavailable`.
+
+Every studio response carries the live cart quote from `modules/pricing/quote.ts` (PRICING.md), computed on the server from the current release and never persisted. The studio shows the garment price, the cart total and a Price details breakdown (`price-summary.tsx`), and “+$X” / “Customising adds $Y” on priced options. The imported reference catalog has no prices, so it reads “Price not yet available”.
 
 There is one active draft per owner (`drafts.owner` is unique). The draft engine holds up to 10 garments; the studio shows the active one (the cart UI is TASK-022). There are no templates, prices, orders, suppliers or staff roles yet.
 
@@ -90,6 +92,7 @@ All handlers are thin and delegate to `src/db` and `src/modules`. Bodies are JSO
 | `GET /api/catalog/current` | none | — | `{version}`, `no-store` |
 | `GET /api/catalog/v/[version]` | none | — | The customer projection of the release, cached `public, max-age=31536000, immutable`; 404 if unknown |
 | `GET /api/media/[id]` | none | — | 308 to the static path for imported media; other drivers from TASK-019 |
+| `POST /api/test/catalog` | browser tests only + origin | `{scenario:'priced'\|'reference'}` | 404 unless `VESSY_E2E_HOOKS=true` outside production; publishes SYNTHETIC prices on the current release, or restores release 1 (`db/e2e-catalog.ts`) |
 | `POST /api/checkout` | guest or user + origin | — | Always 409 `review_required` or 503 `checkout_unavailable` (`integrations/checkout.ts`) |
 | `POST /api/measurements/saia/session` | signed in + origin | `{targetUnit:'cm'\|'in', mode?:'public'\|'paid'}` | 201 `{draft}` (SAIA capture draft); `paid` returns 503 until vendor authorisation exists |
 | `PUT /api/measurements/saia/[captureToken]` | signed in + origin | `{person}` (widget result) | `{draft}` with mapped mm values and raw dimensions snapshot |

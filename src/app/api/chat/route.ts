@@ -10,6 +10,7 @@ import {
   loadEngineContext,
 } from '@/db/repository';
 import { pinnedVersions } from '@/modules/configuration/engine';
+import { quoteCart } from '@/modules/pricing/quote';
 import { assistantReply } from '@/integrations/assistant';
 import { DomainError } from '@/modules/configuration/types';
 export const runtime = 'nodejs';
@@ -35,7 +36,15 @@ export async function POST(request: NextRequest) {
         409,
       );
     const context = await loadEngineContext(pinnedVersions(current));
-    const answer = await assistantReply(current, input.message, context);
+    const quote = quoteCart(context.current, current, context.availability);
+    const answer = await assistantReply(current, input.message, {
+      ...context,
+      quote: {
+        status: quote.status,
+        totalMinor: quote.totalMinor ?? undefined,
+        currency: quote.currency,
+      },
+    });
     const draft = await saveChat(who.owner, input, {
       id: crypto.randomUUID(),
       role: 'assistant',

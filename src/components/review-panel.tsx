@@ -12,6 +12,9 @@ import {
 } from 'lucide-react';
 import type { CommandV2, DraftV2, Garment } from '@/modules/configuration/types';
 import type { RuntimeIndex } from '@/modules/catalog/snapshot';
+import type { CartQuote } from '@/modules/pricing/quote';
+import { formatPrice } from '@/lib/money';
+import { PRICE_UNAVAILABLE } from './price-summary';
 import {
   designOutline,
   lookupLabel,
@@ -49,6 +52,7 @@ function summary(index: RuntimeIndex, garment: Garment) {
 import { Button } from './ui/button';
 export function ReviewPanel({
   draft,
+  quote,
   garment,
   index,
   measurementSets,
@@ -57,6 +61,7 @@ export function ReviewPanel({
   edit,
 }: {
   draft: DraftV2;
+  quote: CartQuote;
   garment: Garment;
   index: RuntimeIndex;
   measurementSets: MeasurementSet[];
@@ -229,10 +234,16 @@ export function ReviewPanel({
       <div className="quote-section">
         <div>
           <span>Order total</span>
-          <strong>Quote unavailable</strong>
+          <strong>
+            {quote.totalMinor === null
+              ? PRICE_UNAVAILABLE
+              : formatPrice(quote.totalMinor, quote.currency)}
+          </strong>
         </div>
         <p>
-          This reference catalog has no live prices. You will always review the total before paying.
+          {quote.status === 'priced'
+            ? 'Prices are recalculated with every change. You will always review the total before paying.'
+            : 'Some choices have no price in the catalog yet. You will always review the total before paying.'}
         </p>
         <Button className="full-width" disabled>
           Continue to payment

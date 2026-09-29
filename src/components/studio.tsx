@@ -47,6 +47,7 @@ import { SelectionTags } from './selection-tags';
 import { MeasurementPanel } from './measurement-panel';
 import { ReviewPanel } from './review-panel';
 import { StartScreen } from './start-screen';
+import { PriceSummary } from './price-summary';
 import { Button } from './ui/button';
 import { Dialog } from './ui/dialog';
 const GarmentView = dynamic(() => import('@/visualization/garment-view'), {
@@ -79,9 +80,21 @@ export default function Studio() {
   const { state, draft, busy, error, user, catalogs } = studio;
   const current = state ? catalogs[state.catalogVersion] : undefined;
   const garment = activeOf(draft);
-  const index: RuntimeIndex | undefined = garment
-    ? (catalogs[garment.catalogVersion] ?? current)
-    : current;
+  const pending = useMemo(
+    () => new Set((state?.catalogUpdates ?? []).map((update) => update.garmentId)),
+    [state],
+  );
+  /**
+   * A garment is shown against the current release (its next command moves it
+   * there silently), unless a catalog update that changes its choices awaits
+   * the customer's review; then its pinned release is shown (CATALOG-ADMIN §7.8).
+   */
+  const releaseFor = useCallback(
+    (item: Garment): RuntimeIndex | undefined =>
+      pending.has(item.id) ? (catalogs[item.catalogVersion] ?? current) : current,
+    [pending, catalogs, current],
+  );
+  const index = garment ? releaseFor(garment) : current;
   const [step, setStep] = useState(1),
     [mobilePane, setMobilePane] = useState('conversation'),
     [appearance, setAppearance] = useState(false),
@@ -121,7 +134,7 @@ export default function Studio() {
   const focusedLeaf = focus.leafId ? findLeaf(outline, focus.leafId) : undefined;
   const focusLeaf = useCallback(
     (leafId: string, target: Garment, skinTone: DraftV2['skinTone'], changedKey?: string) => {
-      const release = catalogs[target.catalogVersion] ?? current;
+      const release = releaseFor(target);
       if (!release) return;
       const values = renderValues(release, target, skinTone);
       setFocus((previous) => ({
@@ -135,14 +148,14 @@ export default function Studio() {
         nonce: previous.nonce + 1,
       }));
     },
-    [catalogs, current],
+    [releaseFor],
   );
   // Every committed change, whether from chat, a suggestion or a field, moves the 2D focus.
   const followChange = useCallback(
     (before: Garment, next: DraftV2 | null) => {
       const after = activeOf(next);
       if (!next || !after) return next;
-      const release = catalogs[after.catalogVersion] ?? current;
+      const release = releaseFor(after);
       if (before.id !== after.id || before.productCode !== after.productCode || !release)
         setFocus((previous) => ({ leafId: 'product', region: 'full', nonce: previous.nonce + 1 }));
       else {
@@ -151,7 +164,7 @@ export default function Studio() {
       }
       return next;
     },
-    [catalogs, current, focusLeaf],
+    [releaseFor, focusLeaf],
   );
   function navigateDetails(path: NavPath) {
     setNav(path);
@@ -475,6 +488,7 @@ export default function Studio() {
               ) : (
                 <ReviewPanel
                   draft={draft}
+                  quote={state!.quote}
                   garment={garment}
                   index={index}
                   measurementSets={measurementSets}
@@ -597,6 +611,7 @@ export default function Studio() {
                       : 'illustrative fit and fabric colour'}
                 </div>
               </div>
+              {step === 1 && <PriceSummary quote={state!.quote} garmentId={garment.id} />}
               {step === 1 ? (
                 <SelectionTags outline={outline} activeLeaf={focus.leafId} onEdit={openLeaf} />
               ) : (

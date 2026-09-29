@@ -3963,3 +3963,111 @@ body {
 .not-illustrated-note {
   bottom: 104px;
 }
+/* Prices (TASK-017; ADMIN-SCREENS §4 S-02, S-03, §5). */
+.price-summary {
+  padding: 12px 24px;
+  border-top: 1px solid var(--line);
+  background: var(--white);
+}
+.price-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px 28px;
+}
+.price-label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.price-value {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 500;
+}
+.price-value small {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--muted);
+}
+.price-value.unavailable {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+}
+.price-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding: 7px 10px;
+  border: 1px solid #d9dccd !important;
+  border-radius: 4px;
+  background: var(--paper);
+  font-size: 12px;
+}
+.price-toggle[aria-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+.price-details {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+.price-details dl {
+  margin: 0;
+}
+.price-category,
+.price-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+.price-category {
+  font-weight: 600;
+}
+.price-line {
+  padding-left: 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.price-details dd {
+  margin: 0;
+  white-space: nowrap;
+}
+.price-note {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.price-effect {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #5e6f4f;
+}
+.price-hint {
+  font-size: 12px;
+  font-weight: 600;
+  color: #5e6f4f;
+}
+p.price-hint {
+  margin: 0 0 4px;
+}
+@media (max-width: 760px) {
+  .price-summary {
+    padding: 12px 16px;
+  }
+  .price-toggle {
+    margin-left: 0;
+  }
+}
+/* Keep the tag group row inside narrow panes; it scrolls sideways instead of widening the page. */
+.selection-tags,
+.tags-header,
+.tags-groups {
+  min-width: 0;
+  max-width: 100%;
+}

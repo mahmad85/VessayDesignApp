@@ -116,7 +116,8 @@ describe('studio envelope and catalog updates', { timeout: PGLITE_TIMEOUT }, () 
     expect(body).toMatchObject({
       catalogVersion: 1,
       catalogUpdates: [],
-      quote: null,
+      // Empty cart: no price, and never a zero total.
+      quote: { status: 'unavailable', currency: 'USD', garments: [], totalMinor: null },
       user: null,
       assistantMode: 'guided',
       draft: { schemaVersion: 2, garments: [] },

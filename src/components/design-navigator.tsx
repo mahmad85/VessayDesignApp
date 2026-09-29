@@ -5,6 +5,14 @@ import type { Garment, GarmentPatch } from '@/modules/configuration/types';
 import type { RuntimeIndex } from '@/modules/catalog/snapshot';
 import { isSelectable, type AvailabilityMap } from '@/modules/catalog/garment';
 import type { StructureAttribute } from '@/modules/catalog/structure';
+import { formatPrice } from '@/lib/money';
+import { priceEffect } from '@/modules/pricing/explain';
+import {
+  attributeSurcharge,
+  componentSurcharge,
+  groupSurcharge,
+  valueSurcharge,
+} from '@/modules/pricing/quote';
 import {
   fabricChoices,
   findLeaf,
@@ -220,7 +228,7 @@ export function DesignNavigator(props: Props) {
 
 function choiceList(
   label: string,
-  options: { value: string; label: string }[],
+  options: { value: string; label: string; hint?: string }[],
   current: string | null,
   busy: boolean,
   pick: (value: string) => void,
@@ -235,6 +243,7 @@ function choiceList(
           onClick={() => pick(option.value)}
         >
           {option.label}
+          {option.hint && <small className="price-effect">{option.hint}</small>}
           {current === option.value && <Check size={13} />}
         </button>
       ))}
@@ -288,6 +297,11 @@ function LeafEditor({
   leaf,
 }: Props & { leaf: OutlineLeaf }) {
   const media = (id: string | null) => (id ? index.media.get(id)?.url : undefined);
+  const product = index.products.get(garment.productCode)!;
+  const currency = index.catalog.currency;
+  // Price effects are catalog data for display; quotes are computed on the server.
+  const effect = (amountMinor: number) =>
+    amountMinor > 0 ? priceEffect(amountMinor, currency) : undefined;
   switch (leaf.kind) {
     case 'product':
       return (
@@ -378,28 +392,43 @@ function LeafEditor({
     }
     case 'component': {
       const include = leaf.include!;
+      const link = product.components.find((item) => item.componentCode === include.componentCode);
       return choiceList(
         include.label,
         [
           { value: 'no', label: 'Not added' },
-          { value: 'yes', label: 'Added' },
+          {
+            value: 'yes',
+            label: 'Added',
+            hint: link ? effect(componentSurcharge(link)) : undefined,
+          },
         ],
         include.included ? 'yes' : 'no',
         busy,
         (value) => change({ components: { [include.componentCode]: value === 'yes' } }),
       );
     }
-    case 'catalog':
+    case 'catalog': {
+      const groupMinor = groupSurcharge(product, leaf.group!.group);
       return (
         <div className="customization-sections">
+          {groupMinor > 0 && (
+            <p className="price-hint">Customising adds {formatPrice(groupMinor, currency)}</p>
+          )}
           {leaf.group!.attributes.map((entry) => {
             const { attribute } = entry;
             const labelId = `${attribute.code}-label`;
+            const attributeMinor = attributeSurcharge(product, attribute);
             return (
               <section key={attribute.code} aria-labelledby={labelId}>
                 <div className="customization-section-heading">
                   <strong id={labelId}>{attribute.name}</strong>
                   {attribute.helpText && <span>{attribute.helpText}</span>}
+                  {attributeMinor > 0 && (
+                    <span className="price-hint">
+                      Changing this adds {formatPrice(attributeMinor, currency)}
+                    </span>
+                  )}
                 </div>
                 {attribute.inputType === 'text' ? (
                   <TextOption
@@ -434,6 +463,11 @@ function LeafEditor({
                             )}
                           </span>
                           <span>{value.label}</span>
+                          {effect(valueSurcharge(product, attribute, value.code)) && (
+                            <small className="price-effect">
+                              {effect(valueSurcharge(product, attribute, value.code))}
+                            </small>
+                          )}
                           {attribute.visualSlot && value.visualToken === null && (
                             <small className="not-illustrated">Not illustrated</small>
                           )}
@@ -447,5 +481,6 @@ function LeafEditor({
           })}
         </div>
       );
+    }
   }
 }
