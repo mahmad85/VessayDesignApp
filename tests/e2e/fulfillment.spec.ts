@@ -5,24 +5,26 @@ import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { gzipSync } from 'node:zlib';
 import { totp } from '../helpers/totp';
 import type { AdminOrder } from '../../src/db/fulfillment-repository';
-const headers = { Origin: 'http://localhost:3000' };
+const originHeaders = () => ({ Origin: new URL(test.info().project.use.baseURL!).origin });
 async function ok(r: APIResponse) {
   expect(r.ok(), await r.text()).toBe(true);
   return r.json();
 }
 async function login(page: Page, file: string, mfa = false) {
   const account = JSON.parse(await readFile('.data/qa-' + file + '.json', 'utf8'));
-  await ok(await page.request.post('/api/auth/sign-in/email', { headers, data: account }));
+  await ok(
+    await page.request.post('/api/auth/sign-in/email', { headers: originHeaders(), data: account }),
+  );
   if (mfa) {
     const setup = await ok(
       await page.request.post('/api/auth/two-factor/enable', {
-        headers,
+        headers: originHeaders(),
         data: { password: account.password },
       }),
     );
     await ok(
       await page.request.post('/api/auth/two-factor/verify-totp', {
-        headers,
+        headers: originHeaders(),
         data: { code: totp(new URL(setup.totpURI).searchParams.get('secret')!) },
       }),
     );
@@ -30,6 +32,8 @@ async function login(page: Page, file: string, mfa = false) {
   return account;
 }
 async function capture(page: Page, name: string, widths = [1440, 768, 390]) {
+  // Client navigation can expose the new document before its metadata has settled.
+  await expect(page).toHaveTitle(/\S/);
   for (const width of widths) {
     await page.setViewportSize({ width, height: 950 });
     await page.evaluate(() => window.scrollTo(0, 0));
@@ -48,14 +52,14 @@ async function command(page: Page, command: unknown) {
   const s = await ok(await page.request.get('/api/studio'));
   return ok(
     await page.request.post('/api/studio', {
-      headers,
+      headers: originHeaders(),
       data: { actionId: crypto.randomUUID(), expectedRevision: s.draft.revision, command },
     }),
   );
 }
 async function pay(page: Page, number: string) {
   const event = await ok(
-      await page.request.post('/api/test/orders', { headers, data: { number } }),
+      await page.request.post('/api/test/orders', { headers: originHeaders(), data: { number } }),
     ),
     raw = JSON.stringify(event);
   await ok(
@@ -72,7 +76,12 @@ async function pay(page: Page, number: string) {
   );
 }
 test.afterEach(async ({ request }) => {
-  await ok(await request.post('/api/test/catalog', { headers, data: { scenario: 'reference' } }));
+  await ok(
+    await request.post('/api/test/catalog', {
+      headers: originHeaders(),
+      data: { scenario: 'reference' },
+    }),
+  );
 });
 test('SYNTHETIC M6: publish → look → sign-off → signed payment → accepted tailor amendment → release → ship → support and customer tracking', async ({
   page,
@@ -93,7 +102,10 @@ test('SYNTHETIC M6: publish → look → sign-off → signed payment → accepte
   const customer = await login(page, 'fulfillment-customer');
   await login(support, 'fulfillment-support', true);
   await ok(
-    await staff.request.post('/api/test/catalog', { headers, data: { scenario: 'priced' } }),
+    await staff.request.post('/api/test/catalog', {
+      headers: originHeaders(),
+      data: { scenario: 'priced' },
+    }),
   );
   const products = await ok(await staff.request.get('/api/admin/catalog/products')),
     product = products.items.find((p: { code: string }) => p.code === 'suit');
@@ -101,7 +113,7 @@ test('SYNTHETIC M6: publish → look → sign-off → signed payment → accepte
     material = materials.items.find((m: { code: string }) => m.code === 'navy-twill');
   const media = await ok(
     await staff.request.post('/api/admin/media', {
-      headers,
+      headers: originHeaders(),
       multipart: {
         file: {
           name: 'synthetic-64.png',
@@ -115,7 +127,7 @@ test('SYNTHETIC M6: publish → look → sign-off → signed payment → accepte
   );
   const look = await ok(
     await staff.request.post('/api/admin/catalog/templates', {
-      headers,
+      headers: originHeaders(),
       data: {
         code: 'synthetic-fulfillment-look',
         name: 'SYNTHETIC Fulfilment Look',
@@ -128,7 +140,7 @@ test('SYNTHETIC M6: publish → look → sign-off → signed payment → accepte
   );
   await ok(
     await staff.request.put('/api/admin/catalog/templates/' + look.id + '/media', {
-      headers,
+      headers: originHeaders(),
       data: { items: [{ mediaId: media.id, role: 'hero', sort: 0 }] },
     }),
   );
@@ -201,7 +213,7 @@ test('SYNTHETIC M6: publish → look → sign-off → signed payment → accepte
     ok(await staff.request.get('/api/admin/orders/' + id));
   const supplier = await ok(
     await staff.request.post('/api/admin/suppliers', {
-      headers,
+      headers: originHeaders(),
       data: {
         code: 'synthetic-fulfillment-maker',
         name: 'SYNTHETIC Fulfilment Manufacturer',
@@ -229,7 +241,7 @@ test('SYNTHETIC M6: publish → look → sign-off → signed payment → accepte
   await expect.poll(async () => (await read()).items[0].supplier?.id).toBe(supplier.id);
   await expect(staff.getByRole('button', { name: 'Release all items' })).toBeDisabled();
   const blocked = await staff.request.post('/api/admin/orders/' + id + '/release', {
-    headers,
+    headers: originHeaders(),
     data: { rowVersion: (await read()).rowVersion },
   });
   expect(blocked.status()).toBe(409);
@@ -320,8 +332,13 @@ test('SYNTHETIC M6: publish → look → sign-off → signed payment → accepte
   await expect(support.getByRole('link', { name: 'SYNTHETIC fulfillment-customer' })).toBeVisible();
   await capture(support, 'support-search');
   await support.getByRole('link', { name: 'SYNTHETIC fulfillment-customer' }).click();
+  await expect(
+    support.getByRole('heading', { name: 'SYNTHETIC fulfillment-customer', exact: true }),
+  ).toBeVisible();
+  await expect(support.getByRole('link', { name: number, exact: true })).toBeVisible();
   await capture(support, 'support-customer');
   await support.getByRole('link', { name: number, exact: true }).click();
+  await expect(support.getByRole('heading', { name: number, exact: true })).toBeVisible();
   await expect(support.getByRole('button', { name: 'Measurements', exact: true })).toHaveCount(0);
   const safe = await ok(await support.request.get('/api/admin/orders/' + id));
   expect(safe.snapshot.measurements).toBeNull();
@@ -350,14 +367,14 @@ test('SYNTHETIC M6: publish → look → sign-off → signed payment → accepte
   let state = await ok(await page.request.get('/api/studio'));
   await ok(
     await page.request.post('/api/studio/check', {
-      headers,
+      headers: originHeaders(),
       data: { actionId: crypto.randomUUID(), expectedRevision: state.draft.revision },
     }),
   );
   state = await ok(await page.request.get('/api/studio'));
   const placed = await ok(
     await page.request.post('/api/orders', {
-      headers,
+      headers: originHeaders(),
       data: {
         actionId: crypto.randomUUID(),
         expectedRevision: state.draft.revision,
@@ -370,7 +387,7 @@ test('SYNTHETIC M6: publish → look → sign-off → signed payment → accepte
   );
   await ok(
     await page.request.post('/api/orders/' + placed.order.number + '/checkout', {
-      headers,
+      headers: originHeaders(),
       data: { actionId: crypto.randomUUID() },
     }),
   );

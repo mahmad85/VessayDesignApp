@@ -185,3 +185,5 @@ ORD-005/011: production sheet matches current accepted measurements and preserve
 ### PR #2 enrollment CI follow-up — 2026-09-29
 
 AUTH-004 and ADM-002 (AC-31, AC-42): the staff enrollment form remains inert until its client submission handler is ready. The delayed-script regression and existing keyboard/TOTP/denial journeys passed locally; OPS-001 repository typecheck, lint, all 316 tests, build and formatting also passed locally. Latest-head CI results are recorded on PR #2. [PR-2-CI.md](../delivery/PR-2-CI.md) records the original failed trace, before/after regression and masked responsive screenshots. Recovery policy, external validation and production release remain open; this scoped fix does not mark those requirements fully accepted.
+
+OPS-001 verification follow-up for AC-41/42: the M6 browser journey now waits for loaded support customer/order content and a non-empty document title before accessibility and privacy checks. The complete journey passed locally (1/1 with 50 captures); no fulfilment rule or acceptance assertion was removed. Evidence and both triggering CI runs are in [PR-2-CI.md](../delivery/PR-2-CI.md).

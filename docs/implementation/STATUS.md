@@ -94,3 +94,5 @@ WP-37 and WP-39–43 are implemented locally. The cart → deterministic check �
 ## PR #2 CI follow-up — 2026-09-29
 
 Staff enrollment now keeps its server-rendered controls disabled until hydration, preventing a native form reload before the authenticator API request. The deterministic delayed-script regression and existing staff keyboard, TOTP and denial journeys pass locally (2/2). Repository typecheck, lint, 316 tests, production build and formatting also passed; latest-head CI is recorded on PR #2; see [PR-2-CI.md](../delivery/PR-2-CI.md). This is a focused AUTH-004 / ADM-002 fix, with no change to existing milestone or production-release gates.
+
+The subsequent CI runs passed the staff regression and exposed premature M6 accessibility scanning during support navigation. The test now asserts loaded customer/order content and a non-empty title before scanning. Full focused M6 verification passed locally (1/1, 50 captures), with all accessibility and privacy assertions retained; see the same CI evidence record.

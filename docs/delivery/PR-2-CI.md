@@ -1,13 +1,13 @@
-# PR-2 CI: staff enrollment before hydration
+# PR-2 CI: staff enrollment and fulfilment browser readiness
 
 Status: implemented and locally verified on 2026-09-29; GitHub CI results are recorded on PR #2. Not released.
 
-- Approved baseline: D-019, TASK-018 / WP-19–21, retained v0.2 foundation and admin overlay.
+- Approved baseline: D-019, TASK-018 / WP-19–21 and TASK-025 / WP-44–47, retained v0.2 foundation and admin overlay.
 - Implementation authorization/source: user requested monitoring and automatic fixes for PR #2 on 2026-09-29.
 - Requirement IDs and canonical files: AUTH-004 in BACKEND-AUTH-DECISION.md; ADM-002 in ADMIN-SCREENS.md and ADMIN-BACKEND.md §3.2; OPS-001 in SECURITY-RELEASE.md.
-- Acceptance scenario IDs: AC-31 and AC-42. Existing authorization assertions (AC-18) are retained.
+- Acceptance scenario IDs: AC-31, AC-41 and AC-42. Existing authorization assertions (AC-18) are retained.
 - User-visible outcome: staff enrollment shows “Loading secure setup…” with disabled controls until the client can handle submission, then supports the existing password → authenticator → backup codes → admin flow.
-- In-scope surfaces/modules: SecuritySetup and the staff Playwright journey. The test derives its Origin header from its configured base URL so isolated local runs can use another port.
+- In-scope surfaces/modules: SecuritySetup and the staff/fulfilment Playwright journeys. The test derives its Origin header from its configured base URL so isolated local runs can use another port.
 - Dependencies and blocking questions: Q-025 staff recovery/session policy and Q-022 production email remain release gates.
 - Explicit non-goals: changing MFA enforcement, library versions, CI retries/timeouts, live integrations, deferred AI, merging or deploying.
 - Data/API/asset contracts: Better Auth two-factor enable/verify APIs and server-side staff guards are unchanged.
@@ -18,8 +18,8 @@ Status: implemented and locally verified on 2026-09-29; GitHub CI results are re
 - Verification plan: deterministic delayed-script regression, existing keyboard/MFA/denial journey, responsive visual/accessibility checks, repository checks, and latest-head GitHub Actions.
 - Actual verification evidence: the focused staff suite, full repository checks and formatting passed; see below. Latest-head GitHub CI remains a separate check on PR #2.
 - Deviations and decision references: none. Existing product/external-release gates remain open.
-- Remaining limitations: this fixes one demonstrated enrollment race; it does not establish production authentication readiness or full M4 acceptance.
-- Changed files/commit: src/components/admin/security.tsx, tests/e2e/staff.spec.ts, these evidence/status/traceability records and masked enrollment screenshots; included in the CI-fix commit on PR #2.
+- Remaining limitations: this fixes a demonstrated enrollment race and synchronizes fulfilment browser checks with loaded pages; it does not establish production authentication readiness or full M4 acceptance.
+- Changed files/commit: src/components/admin/security.tsx, tests/e2e/staff.spec.ts, tests/e2e/fulfillment.spec.ts, these evidence/status/traceability records and masked enrollment screenshots; included in the CI-fix commit on PR #2.
 
 ## Diagnosis and regression evidence
 
@@ -37,3 +37,11 @@ The browser journey produced ten enrollment/admin screenshots and passed axe and
 - npm run format:check and git diff --check passed. The fresh Windows checkout initially used CRLF; its committed LF endings were restored locally before formatting verification. No repository-wide content or formatting change is included.
 - npm ci installed the existing lockfile and reported **0 vulnerabilities**. No dependency was added or upgraded.
 - The original localhost service on port 3000 still returned a healthy response after isolated testing.
+
+## Follow-up: wait for the support page before accessibility scanning
+
+The [pull-request run 36573243982](https://github.com/mahmad85/VessayDesignApp/actions/runs/36573243982) and [push run 36573236557](https://github.com/mahmad85/VessayDesignApp/actions/runs/36573236557) both passed the staff regression and all repository checks. Both exposed an independent M6 timing failure: the support-customer accessibility scan began immediately after clicking a customer link, before the destination's title and customer content settled. The trace later contains the expected title and loaded synthetic customer.
+
+The M6 test now asserts the customer heading and order link after navigation, asserts the order heading before checking that measurement controls are absent, and requires a non-empty document title before each accessibility capture. Every existing axe, overflow, privacy and business-flow assertion remains. No retry, fixed sleep, timeout extension or disabled accessibility rule was added. The request Origin now follows the configured test base URL, as in the staff test, for isolated local runs.
+
+After this test-only change, typecheck and targeted ESLint passed, and the full focused M6 browser journey passed **1/1** in **2.4 minutes**, using the same isolated-port configuration. All **50 screenshots**, axe/overflow checks, keyboard actions, customer privacy checks and reviewed/direct-release paths passed. Support customer captures were visually inspected at [1440](../../artifacts/ci-pr2/support-customer-1440.png), [768](../../artifacts/ci-pr2/support-customer-768.png) and [390](../../artifacts/ci-pr2/support-customer-390.png). Product code and fulfilment requirements are unchanged; this is OPS-001 verification maintenance for AC-41/42.
