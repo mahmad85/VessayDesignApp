@@ -858,10 +858,10 @@ function JacketFront({ spec, id, stroke }: { spec: SketchSpec; id: string; strok
     const m = (list: P[]) => (side < 0 ? list : mirror(list));
     return m([
       [110, 160],
-      [87, 306],
+      [81, 306],
       [76, 452],
       [114, 457],
-      [108, 318],
+      [117, 318],
       [200 - w.chest + 2, 262],
     ]);
   };
@@ -1089,10 +1089,10 @@ function JacketBack({ spec, id, stroke }: { spec: SketchSpec; id: string; stroke
   const sleeve = (side: -1 | 1): P[] => {
     const list: P[] = [
       [110, 160],
-      [87, 306],
+      [81, 306],
       [76, 452],
       [114, 457],
-      [108, 318],
+      [117, 318],
       [200 - w.chest + 2, 262],
     ];
     return side < 0 ? list : mirror(list);
