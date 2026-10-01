@@ -3593,6 +3593,15 @@ body {
   stroke: #00000040;
   stroke-width: 1;
 }
+/* Soft drape and pull lines drawn over shaded cloth. */
+.sk-drape {
+  fill: none;
+  stroke: #00000038;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  filter: blur(0.5px);
+  pointer-events: none;
+}
 .sk-cuff {
   stroke: #00000060;
   stroke-width: 0.9;
