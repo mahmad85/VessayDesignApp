@@ -20,7 +20,8 @@ export default function Account() {
   const [code, setCode] = useState('');
   const destination = () => {
     const next = new URLSearchParams(window.location.search).get('next');
-    return next === '/admin' || next === '/orders' ? next : '/';
+    // Customers return to the studio they signed in from (it moved off / to /studio).
+    return next === '/admin' || next === '/orders' ? next : '/studio';
   };
   useEffect(() => {
     fetch('/api/auth-config')
@@ -142,7 +143,9 @@ export default function Account() {
             <p>Signed in as {session.user.email}.</p>
             <Button asChild>
               <Link
-                href={typeof window !== 'undefined' && destination() === '/admin' ? '/admin' : '/'}
+                href={
+                  typeof window !== 'undefined' && destination() === '/admin' ? '/admin' : '/studio'
+                }
               >
                 Continue
                 <ArrowRight size={16} />
@@ -152,7 +155,7 @@ export default function Account() {
               className="text-button"
               onClick={async () => {
                 await client.signOut();
-                router.replace('/');
+                router.replace('/studio');
               }}
             >
               Sign out
