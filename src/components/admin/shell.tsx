@@ -84,7 +84,11 @@ export function AdminShell({
             <strong>{staff.user.name}</strong>
             <p>{staff.roles.map((role) => role.replaceAll('_', ' ')).join(' · ')}</p>
           </div>
-          <Link href={staff.permissions.includes('catalog.read') ? '/studio?catalog=working' : '/studio'}>
+          <Link
+            href={
+              staff.permissions.includes('catalog.read') ? '/studio?catalog=working' : '/studio'
+            }
+          >
             {staff.permissions.includes('catalog.read') ? 'Preview as customer' : 'Customer studio'}{' '}
             <ArrowUpRight size={16} />
           </Link>
