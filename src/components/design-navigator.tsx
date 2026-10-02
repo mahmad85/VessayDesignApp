@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
 import { Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Garment, GarmentPatch } from '@/modules/configuration/types';
 import type { RuntimeIndex } from '@/modules/catalog/snapshot';
@@ -384,7 +385,8 @@ function LeafEditor({
           {current && (
             <p className="fine-print nav-fabric-note">
               {current.referenceOnly ? 'Reference fabrics' : current.name}
-              {composition ? ` · ${composition}` : ''}
+              {composition ? ` · ${composition}` : ''}{' '}
+              <Link href={`/fabrics/${current.code}`}>Fabric details</Link>
             </p>
           )}
         </div>

@@ -12,6 +12,7 @@ import {
   LoaderCircle,
   ListChecks,
   RefreshCw,
+  RotateCcw,
   Scissors,
   Sparkles,
   SlidersHorizontal,
@@ -40,7 +41,7 @@ import GarmentSketch, { type SketchHotspot } from '@/visualization/garment-sketc
 import { shownIn3D } from '@/visualization/garments/coverage';
 import { renderValues } from '@/visualization/binding';
 import { useStudio } from './use-studio';
-import { displayValue } from '@/modules/measurements/definitions';
+import { MEASUREMENTS, displayValue } from '@/modules/measurements/definitions';
 import { Consultation } from './design-consultation';
 import { DesignNavigator, type NavPath } from './design-navigator';
 import { SelectionTags } from './selection-tags';
@@ -48,6 +49,7 @@ import { MeasurementPanel } from './measurement-panel';
 import { ReviewPanel } from './review-panel';
 import { CartSwitcher } from './cart-switcher';
 import { StartScreen } from './start-screen';
+import { FabricOffer } from './fabric-offer';
 import { PriceSummary } from './price-summary';
 import { Button } from './ui/button';
 import { Dialog } from './ui/dialog';
@@ -81,11 +83,14 @@ export default function Studio({
   previewCanWrite = false,
   initialProduct,
   initialGroup,
+  initialFabric,
 }: {
   preview?: boolean;
   previewCanWrite?: boolean;
   initialProduct?: string;
   initialGroup?: string;
+  /** A fabric chosen on /fabrics; offered once, then dropped from the URL. */
+  initialFabric?: string;
 } = {}) {
   const studio = useStudio(preview);
   const { state, draft, busy, error, user, catalogs } = studio;
@@ -114,6 +119,7 @@ export default function Studio({
     [confirmDesign, setConfirmDesign] = useState(false),
     [productChange, setProductChange] = useState<GarmentPatch | null>(null),
     [info, setInfo] = useState(false),
+    [startOver, setStartOver] = useState(false),
     [dirty, setDirty] = useState(false),
     [leaveStep, setLeaveStep] = useState<number | null>(null),
     [photoError, setPhotoError] = useState(''),
@@ -121,6 +127,7 @@ export default function Studio({
     [nav, setNav] = useState<NavPath>(initialGroup ? { leaf: initialGroup } : {}),
     [previewMode, setPreviewMode] = useState<'2d' | '3d'>('2d'),
     [updatesOpen, setUpdatesOpen] = useState(false),
+    [fabricOffer, setFabricOffer] = useState(initialFabric),
     [focus, setFocus] = useState<{ region: RegionId; leafId?: string; nonce: number }>({
       region: 'full',
       nonce: 0,
@@ -343,11 +350,14 @@ export default function Studio({
           ))}
         </nav>
         <div className="header-actions">
+          {!preview && <Link href="/fabrics">Fabrics</Link>}
+          {!preview && draft && (garment || draft.messages.length > 1) && (
+            <button className="start-over-button" onClick={() => setStartOver(true)}>
+              <RotateCcw size={13} />
+              Start over
+            </button>
+          )}
           {!preview && user && <Link href="/orders">My orders</Link>}
-          <button className="prototype-badge" onClick={() => setInfo(true)}>
-            Studio preview
-            <Info size={12} />
-          </button>
           <Link
             href="/account"
             className="account-button"
@@ -392,6 +402,23 @@ export default function Studio({
           )}
         </section>
       )}
+      {draft && current && garment && fabricOffer && (
+        <FabricOffer
+          index={current}
+          garment={garment}
+          fabricCode={fabricOffer}
+          busy={busy}
+          onUse={() => change({ materialCode: fabricOffer })}
+          onAdd={(productCode) => {
+            setStep(1);
+            void studio.command({ type: 'add_garment', productCode, materialCode: fabricOffer });
+          }}
+          onDone={() => {
+            setFabricOffer(undefined);
+            window.history.replaceState(null, '', '/studio');
+          }}
+        />
+      )}
       {!draft || !current ? (
         <main className="center-state">
           <div className="eyebrow">YOUR PERSONAL TAILOR</div>
@@ -417,12 +444,22 @@ export default function Studio({
           index={current}
           busy={busy}
           initialProduct={initialProduct}
-          onStart={(productCode, templateCode) => {
+          initialFabric={fabricOffer}
+          onClearFabric={() => {
+            setFabricOffer(undefined);
+            window.history.replaceState(null, '', '/studio');
+          }}
+          onStart={(productCode, templateCode, materialCode) => {
             setStep(1);
+            if (materialCode) {
+              setFabricOffer(undefined);
+              window.history.replaceState(null, '', '/studio');
+            }
             void studio.command({
               type: 'add_garment',
               productCode,
               ...(templateCode ? { templateCode } : {}),
+              ...(materialCode ? { materialCode } : {}),
             });
           }}
         />
@@ -625,9 +662,7 @@ export default function Studio({
                         ))}
                       </div>
                     </div>
-                  ) : (
-                    <span className="reference-label">REFERENCE MANNEQUIN</span>
-                  )}
+                  ) : null}
                 </div>
                 {step === 1 && previewMode === '2d' ? (
                   <GarmentSketch
@@ -658,6 +693,12 @@ export default function Studio({
                     }
                     photo={photo}
                   />
+                )}
+                {step === 2 && MEASUREMENTS.find((m) => m.id === highlight)?.tip && (
+                  <aside className="measure-tip" aria-live="polite">
+                    <strong>Pro tip</strong>
+                    <p>{MEASUREMENTS.find((m) => m.id === highlight)?.tip}</p>
+                  </aside>
                 )}
                 {step === 1 && focusedLeaf && notIllustrated.length > 0 && (
                   <div className="detail-in-2d not-illustrated-note" role="status">
@@ -760,6 +801,33 @@ export default function Studio({
           </button>
         </div>
       )}
+      <Dialog
+        open={startOver}
+        onOpenChange={setStartOver}
+        title="Start over?"
+        description="This clears your garments, measurements and conversation, and takes you back to the first step. Orders you have already placed are not affected."
+      >
+        <div className="dialog-actions">
+          <Button variant="secondary" onClick={() => setStartOver(false)}>
+            Keep my work
+          </Button>
+          <Button
+            disabled={busy}
+            onClick={async () => {
+              if (await studio.command({ type: 'start_over', confirm: true })) {
+                setStartOver(false);
+                setStep(1);
+                setNav({});
+                setFocus({ region: 'full', nonce: Date.now() });
+                setFabricOffer(undefined);
+                window.history.replaceState(null, '', '/studio');
+              }
+            }}
+          >
+            Start over
+          </Button>
+        </div>
+      </Dialog>
       <Dialog
         open={info}
         onOpenChange={setInfo}

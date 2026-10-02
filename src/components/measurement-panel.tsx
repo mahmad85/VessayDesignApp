@@ -265,10 +265,12 @@ export function MeasurementPanel({
       </button>
       <div className="measurement-hint">
         <Info size={16} />
-        <p id="measurement-guidance">
-          {defs.find((m) => m.id === active)?.hint ||
-            'Select a field to see where and how to measure.'}
-        </p>
+        <div id="measurement-guidance">
+          <p>
+            {defs.find((m) => m.id === active)?.hint ||
+              'Select a field to see where and how to measure.'}
+          </p>
+        </div>
       </div>
       {hasErrors && (
         <p role="alert" className="field-error">

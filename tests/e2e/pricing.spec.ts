@@ -50,7 +50,7 @@ test('prices show from the current release and are never zero when unknown', asy
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await mkdir(artifactDirectory, { recursive: true });
-  await page.goto('/');
+  await page.goto('/studio');
   await startGarment(page, 'Two-piece suit');
   // The imported reference catalog has no prices (PRC-005).
   await expect(price(page).getByText('Price not yet available').first()).toBeVisible();

@@ -16,7 +16,7 @@ export default async function OrdersLayout({ children }: { children: React.React
           vessy<span>®</span>
         </Link>
         <nav aria-label="Orders navigation">
-          <Link href="/">Back to studio</Link>
+          <Link href="/studio">Back to studio</Link>
           <Link href="/account">Your account</Link>
         </nav>
       </header>

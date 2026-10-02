@@ -203,7 +203,7 @@ export function ProductEditor({ canWrite }: { canWrite: boolean }) {
           {canWrite && (
             <button onClick={() => setCreating({ kind: 'products' })}>New product</button>
           )}
-          <Link href={`/?catalog=working&product=${tree.data?.product.code ?? ''}`}>
+          <Link href={`/studio?catalog=working&product=${tree.data?.product.code ?? ''}`}>
             Preview as customer ↗
           </Link>
         </div>

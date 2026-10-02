@@ -164,7 +164,7 @@ test('SYNTHETIC M6: publish → look → sign-off → signed payment → accepte
   };
   expect(size.jsonBytes).toBeLessThan(size.releaseLimitBytes);
   await writeFile('test-results/fulfillment/catalog-size.json', JSON.stringify(size, null, 2));
-  await page.goto('/');
+  await page.goto('/studio');
   await page.getByRole('button', { name: /Two-piece suit/ }).click();
   await page
     .getByRole('article')

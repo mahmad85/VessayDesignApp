@@ -28,7 +28,7 @@ test('full human reference supports garment changes, camera keys, and responsive
   test.setTimeout(120000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  await page.goto('/');
+  await page.goto('/studio');
   await startGarment(page, 'Two-piece suit');
   const model = page.waitForResponse((r) => r.url().endsWith('/models/human-reference-v1.glb'));
   await page.getByRole('button', { name: '3D model', exact: true }).click();
@@ -151,7 +151,7 @@ test('failed human asset leaves an honest fallback and usable design controls', 
   page,
 }) => {
   await page.route('**/models/human-reference-v1.glb', (route) => route.abort());
-  await page.goto('/');
+  await page.goto('/studio');
   await startGarment(page, 'Two-piece suit');
   await page.getByRole('button', { name: '3D model', exact: true }).click();
   await expect(page.getByText('3D preview unavailable', { exact: true })).toBeVisible();

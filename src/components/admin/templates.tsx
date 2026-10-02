@@ -168,7 +168,7 @@ export function LookEditor({ id, canWrite }: { id: string; canWrite: boolean }) 
       </PageTitle>
       <div className="admin-toolbar">
         <Link
-          href={`/?catalog=working&product=${products.data.items.find((p) => p.id === record.productId)?.code ?? ''}`}
+          href={`/studio?catalog=working&product=${products.data.items.find((p) => p.id === record.productId)?.code ?? ''}`}
         >
           Preview as customer ↗
         </Link>

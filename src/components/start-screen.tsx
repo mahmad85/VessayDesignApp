@@ -1,6 +1,8 @@
 'use client';
 import { useState } from 'react';
-import { ArrowRight, Check } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowRight, Check, X } from 'lucide-react';
+import { materialAllowed } from '@/modules/catalog/garment';
 import type { RuntimeIndex } from '@/modules/catalog/snapshot';
 import { Button } from './ui/button';
 import { formatPrice } from '@/lib/money';
@@ -14,19 +16,30 @@ export function StartScreen({
   busy,
   onStart,
   initialProduct,
+  initialFabric,
+  onClearFabric,
   embedded = false,
 }: {
   index: RuntimeIndex;
   busy: boolean;
-  onStart: (productCode: string, templateCode?: string) => void;
+  onStart: (productCode: string, templateCode?: string, materialCode?: string) => void;
   initialProduct?: string;
+  /** A fabric chosen on /fabrics: only garments it fits are offered. */
+  initialFabric?: string;
+  onClearFabric?: () => void;
   embedded?: boolean;
 }) {
-  const products = index.catalog.products;
+  const found = initialFabric ? index.materials.get(initialFabric) : undefined;
+  const fits = index.catalog.products.filter(
+    (p) => found && materialAllowed(index, p.code, found.code),
+  );
+  // A fabric no garment offers any more is ignored, with a notice.
+  const fabric = fits.length ? found : undefined;
+  const products = fabric ? fits : index.catalog.products;
   const [choice, setChoice] = useState(
     products.some((p) => p.code === initialProduct) ? initialProduct! : (products[0]?.code ?? ''),
   );
-  const looks = index.catalog.templates
+  const looks = (fabric ? [] : index.catalog.templates)
     .filter((t) => t.productCode === choice)
     .sort(
       (a, b) =>
@@ -42,6 +55,28 @@ export function StartScreen({
       <p className="intro-copy">
         Start with a garment. You can change anything it offers as you go.
       </p>
+      {initialFabric && (
+        <div className="start-fabric" role="status">
+          {fabric ? (
+            <>
+              <span
+                className={`fabric-swatch pattern-${fabric.renderPattern}`}
+                style={{ backgroundColor: fabric.primaryHex }}
+                aria-hidden
+              />
+              <span>
+                Starting in <strong>{fabric.name}</strong>
+                <Link href={`/fabrics/${fabric.code}`}>Fabric details</Link>
+              </span>
+            </>
+          ) : (
+            <span>That fabric is no longer available. Choose a garment to start.</span>
+          )}
+          <button type="button" aria-label="Start without this fabric" onClick={onClearFabric}>
+            <X size={16} />
+          </button>
+        </div>
+      )}
       <div className="start-products" role="group" aria-label="Garment">
         {products.map((product) => {
           const hero = product.heroMediaId ? index.media.get(product.heroMediaId) : undefined;
@@ -110,7 +145,7 @@ export function StartScreen({
           })}
         </section>
       )}
-      <Button disabled={busy || !choice} onClick={() => onStart(choice)}>
+      <Button disabled={busy || !choice} onClick={() => onStart(choice, undefined, fabric?.code)}>
         {index.catalog.templates.length ? 'Start from scratch' : 'Start designing'}
         <ArrowRight size={16} />
       </Button>
