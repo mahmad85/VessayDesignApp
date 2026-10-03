@@ -84,7 +84,9 @@ export async function pricingMatrix() {
   const bands = await db.query(
     'SELECT b.*,count(m.id)::int AS material_count FROM price_bands b LEFT JOIN materials m ON m.price_band_code=b.code GROUP BY b.code ORDER BY b.sort,b.code',
   );
-  const products = await db.query('SELECT id,code,name FROM products ORDER BY sort,code');
+  const products = await db.query(
+    'SELECT id,code,name,base_price_minor FROM products ORDER BY sort,code',
+  );
   const prices = await db.query('SELECT * FROM product_band_prices');
   return {
     currency: commerce.currency,
@@ -93,10 +95,15 @@ export async function pricingMatrix() {
       productId: p.id,
       productCode: p.code,
       productName: p.name,
+      basePriceMinor: p.base_price_minor,
+      // The price per tier as a release will compute it (PRC-002, D-022).
       prices: Object.fromEntries(
         bands.map((b) => [
           b.code,
-          prices.find((v) => v.product_id === p.id && v.band_code === b.code)?.price_minor ?? null,
+          p.base_price_minor !== null
+            ? Number(p.base_price_minor) + Number(b.uplift_minor)
+            : (prices.find((v) => v.product_id === p.id && v.band_code === b.code)?.price_minor ??
+              null),
         ]),
       ),
     })),
@@ -110,6 +117,7 @@ const bandsInput = z.strictObject({
         name: z.string().trim().min(1).max(200),
         description: z.string().max(2000).optional(),
         sort: z.number().int().optional(),
+        upliftMinor: moneyInput.optional(),
       }),
     )
     .max(100),

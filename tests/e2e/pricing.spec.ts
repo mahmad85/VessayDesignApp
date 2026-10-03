@@ -6,7 +6,7 @@ import { join } from 'node:path';
 // TASK-017 (WP-18): prices in the studio. The imported reference catalog has
 // no prices, so the studio says “Price not yet available”. A SYNTHETIC priced
 // release (the PRICING.md E-fixture on the reference catalog) is then published
-// through the test-only hook, and the E3 configuration must show $934 with the
+// through the test-only hook, and the E3 configuration must show $918 with the
 // E3 breakdown. The reference catalog is restored afterwards.
 
 const artifactDirectory = process.env.VESSY_E2E_ARTIFACT_DIR || 'artifacts';
@@ -73,7 +73,8 @@ test('prices show from the current release and are never zero when unknown', asy
   await added.click();
   await expect(price(page)).toContainText('$899');
   await openDetail(page, /Accents/, /^Lining/);
-  await expect(page.getByText('Customising adds $16')).toBeVisible();
+  // D-022: subcategories carry no customisation fee, so no fee hint is shown.
+  await expect(page.getByText(/Customising adds/)).toHaveCount(0);
   await page.getByRole('button', { name: 'Custom color', exact: true }).click();
   const berck = page.getByRole('button', { name: /^Berck/ });
   await expect(berck).toContainText('+$9');
@@ -84,7 +85,7 @@ test('prices show from the current release and are never zero when unknown', asy
   await buttonholes.click();
   await openDetail(page, /^7 Jacket/, /^Lapels/);
   await page.getByRole('button', { name: 'Peak', exact: true }).click();
-  await expect(price(page)).toContainText('$934');
+  await expect(price(page)).toContainText('$918');
 
   // The Price details disclosure lists the E3 breakdown by category (keyboard).
   const toggle = price(page).getByRole('button', { name: 'Price details' });
@@ -96,7 +97,7 @@ test('prices show from the current release and are never zero when unknown', asy
     ['Base', '$799'],
     ['Jacket', '$10'],
     ['Vest', '$100'],
-    ['Accents', '$25'],
+    ['Accents', '$9'],
   ])
     await expect(details.locator('.price-category', { hasText: label })).toContainText(amount);
   await page.screenshot({ path: join(artifactDirectory, '09-price-details-1440.png') });
@@ -109,7 +110,7 @@ test('prices show from the current release and are never zero when unknown', asy
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole('button', { name: 'Preview', exact: true }).click();
-  await expect(price(page)).toContainText('$934');
+  await expect(price(page)).toContainText('$918');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await price(page).scrollIntoViewIfNeeded();
   await page.screenshot({ path: join(artifactDirectory, '10-price-details-390.png') });

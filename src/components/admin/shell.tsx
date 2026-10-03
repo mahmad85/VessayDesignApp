@@ -3,43 +3,83 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ArrowUpRight, ShieldCheck, LayoutDashboard, Settings2 } from 'lucide-react';
 import type { StaffContext } from '@/modules/staff/authorize';
+type StaffPermission = StaffContext['permissions'][number];
 import { PublishBar } from './publishing';
-const navigation = [
-  { href: '/admin', label: 'Overview', icon: LayoutDashboard, permission: null },
-  ...['products', 'fabrics', 'lists', 'pricing', 'templates', 'rules', 'media', 'publish'].map(
-    (screen, i) => ({
-      href: `/admin/catalog/${screen}`,
-      label: [
-        'Products & options',
-        'Fabrics',
-        'Lists',
-        'Pricing',
-        'Looks',
-        'Rules',
-        'Media',
-        'Publish & history',
-      ][i],
-      icon: Settings2,
-      permission: 'catalog.read' as const,
-    }),
-  ),
-  { href: '/admin/suppliers', label: 'Suppliers', icon: Settings2, permission: 'suppliers.read' },
-  { href: '/admin/orders', label: 'Order desk', icon: Settings2, permission: 'orders.read' },
+const navigation: {
+  heading: string | null;
+  items: {
+    href: string;
+    label: string;
+    icon: typeof Settings2;
+    permission: StaffPermission | null;
+  }[];
+}[] = [
   {
-    href: '/admin/customers',
-    label: 'Customer lookup',
-    icon: Settings2,
-    permission: 'customers.read',
+    heading: null,
+    items: [{ href: '/admin', label: 'Overview', icon: LayoutDashboard, permission: null }],
   },
   {
-    href: '/admin/reviews',
-    label: 'Tailor reviews',
-    icon: ShieldCheck,
-    permission: 'reviews.read',
+    heading: 'Catalog',
+    items: [
+      {
+        href: '/admin/catalog/products',
+        label: 'Products',
+        icon: Settings2,
+        permission: 'catalog.read',
+      },
+      {
+        href: '/admin/catalog/fabrics',
+        label: 'Fabrics',
+        icon: Settings2,
+        permission: 'catalog.read',
+      },
+      {
+        href: '/admin/catalog/publish',
+        label: 'Publish & history',
+        icon: Settings2,
+        permission: 'catalog.read',
+      },
+    ],
   },
-  { href: '/admin/settings', label: 'Staff & audit', icon: Settings2, permission: 'staff.manage' },
-  { href: '/admin/security', label: 'Account security', icon: ShieldCheck, permission: null },
-] as const;
+  {
+    heading: 'Operations',
+    items: [
+      { href: '/admin/orders', label: 'Order desk', icon: Settings2, permission: 'orders.read' },
+      {
+        href: '/admin/suppliers',
+        label: 'Suppliers',
+        icon: Settings2,
+        permission: 'suppliers.read',
+      },
+      {
+        href: '/admin/customers',
+        label: 'Customer lookup',
+        icon: Settings2,
+        permission: 'customers.read',
+      },
+      {
+        href: '/admin/reviews',
+        label: 'Tailor reviews',
+        icon: ShieldCheck,
+        permission: 'reviews.read',
+      },
+    ],
+  },
+  {
+    // D-022: rules, ready-made styles, lists, media and the band price matrix
+    // are out of the v1 menu; their pages still work for developers.
+    heading: 'Settings',
+    items: [
+      {
+        href: '/admin/settings',
+        label: 'Staff & audit',
+        icon: Settings2,
+        permission: 'staff.manage',
+      },
+      { href: '/admin/security', label: 'Account security', icon: ShieldCheck, permission: null },
+    ],
+  },
+];
 export function AdminShell({
   staff,
   children,
@@ -59,18 +99,32 @@ export function AdminShell({
         </Link>
         <p className="admin-eyebrow">THE WORKROOM</p>
         <nav aria-label="Administration">
-          {navigation
-            .filter((item) => !item.permission || staff.permissions.includes(item.permission))
-            .map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={pathname === item.href ? 'page' : undefined}
-              >
-                <item.icon size={18} />
-                {item.label}
-              </Link>
-            ))}
+          {navigation.map((group) => {
+            const items = group.items.filter(
+              (item) => !item.permission || staff.permissions.includes(item.permission),
+            );
+            if (!items.length) return null;
+            return (
+              <div className="admin-nav-group" key={group.heading ?? 'home'}>
+                {group.heading && <p className="admin-nav-heading">{group.heading}</p>}
+                {items.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    aria-current={
+                      pathname === item.href ||
+                      (item.href !== '/admin' && pathname.startsWith(`${item.href}/`))
+                        ? 'page'
+                        : undefined
+                    }
+                  >
+                    <item.icon size={18} />
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            );
+          })}
         </nav>
         <div className="admin-sidebar-foot">
           <span className="admin-dot" />{' '}

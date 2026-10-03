@@ -6,14 +6,8 @@ import type { Garment, GarmentPatch } from '@/modules/configuration/types';
 import type { RuntimeIndex } from '@/modules/catalog/snapshot';
 import { isSelectable, type AvailabilityMap } from '@/modules/catalog/garment';
 import type { StructureAttribute } from '@/modules/catalog/structure';
-import { formatPrice } from '@/lib/money';
 import { priceEffect } from '@/modules/pricing/explain';
-import {
-  attributeSurcharge,
-  componentSurcharge,
-  groupSurcharge,
-  valueSurcharge,
-} from '@/modules/pricing/quote';
+import { componentSurcharge, valueSurcharge } from '@/modules/pricing/quote';
 import {
   fabricChoices,
   findLeaf,
@@ -411,26 +405,16 @@ function LeafEditor({
       );
     }
     case 'catalog': {
-      const groupMinor = groupSurcharge(product, leaf.group!.group);
       return (
         <div className="customization-sections">
-          {groupMinor > 0 && (
-            <p className="price-hint">Customising adds {formatPrice(groupMinor, currency)}</p>
-          )}
           {leaf.group!.attributes.map((entry) => {
             const { attribute } = entry;
             const labelId = `${attribute.code}-label`;
-            const attributeMinor = attributeSurcharge(product, attribute);
             return (
               <section key={attribute.code} aria-labelledby={labelId}>
                 <div className="customization-section-heading">
                   <strong id={labelId}>{attribute.name}</strong>
                   {attribute.helpText && <span>{attribute.helpText}</span>}
-                  {attributeMinor > 0 && (
-                    <span className="price-hint">
-                      Changing this adds {formatPrice(attributeMinor, currency)}
-                    </span>
-                  )}
                 </div>
                 {attribute.inputType === 'text' ? (
                   <TextOption

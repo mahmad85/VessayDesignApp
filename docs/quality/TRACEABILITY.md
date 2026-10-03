@@ -189,3 +189,14 @@ AUTH-004 and ADM-002 (AC-31, AC-42): the staff enrollment form remains inert unt
 OPS-001 verification follow-up for AC-41/42: the M6 browser journey now waits for loaded support customer/order content and a non-empty document title before accessibility and privacy checks. The complete journey passed locally (1/1 with 50 captures); no fulfilment rule or acceptance assertion was removed. Evidence and both triggering CI runs are in [PR-2-CI.md](../delivery/PR-2-CI.md).
 
 OPS-001 test-harness follow-up: the staff delayed-hydration regression now intercepts only JavaScript and waits for navigation completion, after a CI screenshot font wait stalled under broad request interception. AUTH-004/ADM-002 assertions, font readiness and timeout remain unchanged; focused staff verification passed 2/2. See the CI evidence record for the passing full push run and the diagnosed parallel PR run.
+
+## Simplified catalog admin and pricing — D-022 (2026-10-02)
+
+| Requirement | Canonical owner | Acceptance scenarios | Status | Evidence |
+| --- | --- | --- | --- | --- |
+| PRC-002 (base price plus tier uplift) | [PRICING.md](../domain/PRICING.md) | AC-36 | Implemented, locally tested | Compile derives each tier price; stored band prices ignored once a base price is set; restore keeps base and uplift: `simple-catalog.test.ts`. Matrix display: `pricing-admin-repository.ts` |
+| PRC-003 (no group or option fees) | [PRICING.md](../domain/PRICING.md) | AC-36 | Implemented, locally tested | E1 – E7 revised (E3 91800): `pricing.test.ts`, `price-display.test.ts`; older-release fees ignored; per-product overrides rejected: `catalog-admin.test.ts`. Browser spec `tests/e2e/pricing.spec.ts` updated to $918, not run in this change |
+| FR-013, ADM-004 (business product screens) | [DECISIONS.md D-022](../product/DECISIONS.md) | AC-34 | Implemented, locally verified | Copy product, add subcategory, delete unpublished product: `simple-catalog.test.ts`. Local headless check at 1440 and 390 px with keyboard open/close of a product and a subcategory editor, on a SYNTHETIC copy that was deleted afterwards (screenshots in `test-results/product-builder`, not committed) |
+| FR-013, ADM-004 (modals and validation, 2026-10-03) | [DECISIONS.md D-022](../product/DECISIONS.md) | AC-34 | Implemented, locally verified | Validation rules: `admin-names.test.ts`. Local headless check of each modal with empty, duplicate and invalid values, keyboard open, Escape and focus return, and 390 px without modal overflow, on SYNTHETIC records deleted afterwards (screenshots in `test-results/product-modals`, not committed) |
+
+Rules and ready-made styles (TPL-001 – TPL-004) leave the v1 menu under D-022; their code and data remain. ADMIN-SCREENS.md still describes the full editors and needs a follow-up revision for the simplified screens.

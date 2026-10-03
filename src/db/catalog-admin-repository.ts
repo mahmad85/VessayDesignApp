@@ -255,7 +255,7 @@ export async function loadSnapshotIntoWorkingCopy(
     await put(
       'price_bands',
       { code: band.code },
-      { name: band.name, sort: band.sort },
+      { name: band.name, sort: band.sort, uplift_minor: band.upliftMinor ?? 0 },
       bands.get(band.code),
     );
 
@@ -518,6 +518,7 @@ export async function loadSnapshotIntoWorkingCopy(
         visual_model: product.visualModel,
         default_material_id: materialIds.get(product.defaultMaterialCode) ?? null,
         hero_media_id: media(product.heroMediaId),
+        base_price_minor: product.basePriceMinor ?? null,
         sort: product.sort,
         status: 'active',
         reference_only: product.referenceOnly,
@@ -560,11 +561,14 @@ export async function loadSnapshotIntoWorkingCopy(
     'product_id',
     snapshotProducts,
     ['product_id', 'band_code'],
+    // A product with a base price derives its tier prices (D-022); only older releases store them.
     snapshot.products.flatMap((product) =>
-      Object.entries(product.bandPrices).map(([band, price]) => ({
-        key: { product_id: productIds.get(product.code), band_code: band },
-        values: { price_minor: price },
-      })),
+      Object.entries(product.basePriceMinor == null ? product.bandPrices : {}).map(
+        ([band, price]) => ({
+          key: { product_id: productIds.get(product.code), band_code: band },
+          values: { price_minor: price },
+        }),
+      ),
     ),
   );
   const settingRows = await existing('product_option_settings');

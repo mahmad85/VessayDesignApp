@@ -116,7 +116,7 @@ describe('the live quote in studio responses', { timeout: PGLITE_TIMEOUT }, () =
       },
     });
     expect(e3.status).toBe(200);
-    expect(e3.body.quote.garments[0]).toMatchObject({ status: 'priced', unitMinor: 93400 });
+    expect(e3.body.quote.garments[0]).toMatchObject({ status: 'priced', unitMinor: 91800 });
     expect(
       Object.fromEntries(
         e3.body.quote.garments[0].byCategory.map((c: { category: string; amountMinor: number }) => [
@@ -124,7 +124,7 @@ describe('the live quote in studio responses', { timeout: PGLITE_TIMEOUT }, () =
           c.amountMinor,
         ]),
       ),
-    ).toEqual({ base: 79900, jacket: 1000, vest: 10000, accents: 2500 });
+    ).toEqual({ base: 79900, jacket: 1000, vest: 10000, accents: 900 });
     const reviewed = await check(cookie, 2);
     expect(reviewed.body.draft.review.findings.map((f: { id: string }) => f.id)).not.toContain(
       'quote_unavailable',

@@ -145,6 +145,9 @@ const productSchema = z.strictObject({
   defaultMaterialCode: z.string().max(180),
   referenceOnly: z.boolean(),
   components: z.array(productComponentSchema),
+  /** D-022: the entered base price; absent in releases published before it. */
+  basePriceMinor: minor.nullable().optional(),
+  /** The price per fabric tier, fixed at publish (PRC-002). */
   bandPrices: z.record(bandCode, minor),
   settings: z.strictObject({
     groups: z.record(
@@ -274,7 +277,15 @@ export const catalogSnapshotSchema = z.strictObject({
     shipCountries: z.array(z.string().regex(/^[A-Z]{2}$/)),
   }),
   lookups: z.record(codeSchema, z.array(lookupValueSchema)),
-  priceBands: z.array(z.strictObject({ code: bandCode, name: text(120), sort: z.number().int() })),
+  priceBands: z.array(
+    z.strictObject({
+      code: bandCode,
+      name: text(120),
+      sort: z.number().int(),
+      /** D-022: the tier's uplift; absent in releases published before it. */
+      upliftMinor: minor.optional(),
+    }),
+  ),
   media: z.record(z.string(), mediaSchema),
   components: z.array(componentSchema),
   products: z.array(productSchema),

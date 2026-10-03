@@ -1,5 +1,6 @@
 import { DomainError } from '@/modules/configuration/types';
-export const UPLOAD_MAX = 5_242_880;
+import { IMAGE_UPLOAD_MAX } from './admin-names';
+export const UPLOAD_MAX = IMAGE_UPLOAD_MAX;
 const invalid = (message: string): never => {
   throw new DomainError('upload_invalid', message, 415);
 };

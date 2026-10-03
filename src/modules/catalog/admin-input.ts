@@ -37,6 +37,8 @@ export const productInput = z.strictObject({
   defaultMaterialId: idInput.nullable().optional(),
   heroMediaId: idInput.nullable().optional(),
   fabricConsumptionCm: z.number().int().min(50).max(1000).nullable().optional(),
+  /** D-022: the price before the fabric tier uplift; null leaves the product unpriced. */
+  basePriceMinor: moneyInput.nullable().optional(),
 });
 export const componentInput = z.strictObject({
   ...common,
@@ -51,7 +53,6 @@ export const groupInput = z.strictObject({
   lineKind: z.enum(['construction', 'accessory']).optional(),
   iconMediaId: idInput.nullable().optional(),
   focusRegion: text(60),
-  surchargeMinor: moneyInput.optional(),
   visibleWhen: condition,
 });
 export const attributeInput = z.strictObject({
@@ -70,7 +71,6 @@ export const attributeInput = z.strictObject({
     .optional(),
   visualSlot: text(120).nullable().optional(),
   metadataFields: z.array(metadataFieldInput).max(30).optional(),
-  surchargeMinor: moneyInput.optional(),
   visibleWhen: condition,
 });
 export const valueInput = z.strictObject({
@@ -126,7 +126,6 @@ export const settingsInput = z.strictObject({
           targetId: idInput,
           available: z.boolean(),
           defaultValueId: idInput.nullable().optional(),
-          surchargeOverrideMinor: moneyInput.nullable().optional(),
         }),
         z.strictObject({
           scope: z.enum(['group', 'attribute', 'value']),
@@ -138,6 +137,10 @@ export const settingsInput = z.strictObject({
     .max(500),
 });
 export const duplicateInput = z.strictObject({ newCode: codeSchema, newName: name });
+/** D-022: a new product copied from an existing one; its code comes from the name. */
+export const copyProductInput = z.strictObject({ name });
+/** D-022: a subcategory is one option group holding one choice option of the same name. */
+export const subcategoryInput = z.strictObject({ name, kind: z.enum(['style', 'accent']) });
 export const bulkValuesInput = z.strictObject({
   items: z
     .array(

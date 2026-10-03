@@ -25,8 +25,8 @@ export function e2eHooksEnabled() {
 /**
  * SYNTHETIC prices mirroring the PRICING.md worked examples on the reference
  * catalog: band B (suit 79900, shirt 12900, blazer 59900), every fabric in band
- * B except `forest` (left unpriced), the vest 10000, the lining group 1600, the
- * Berck lining 900 and working buttonholes 1000. Not commercial data.
+ * B except `forest` (left unpriced), the vest 10000, the Berck lining 900 and
+ * working buttonholes 1000 (no group fees, D-022). Not commercial data.
  */
 export function withSyntheticPrices(snapshot: CatalogSnapshot): CatalogSnapshot {
   const next = structuredClone(snapshot);
@@ -46,7 +46,6 @@ export function withSyntheticPrices(snapshot: CatalogSnapshot): CatalogSnapshot 
   };
   for (const component of next.components)
     for (const group of component.groups) {
-      if (group.code === 'accents.jacket.lining') group.surchargeMinor = 1600;
       for (const attribute of group.attributes)
         for (const value of attribute.values) {
           const amount = surcharges[valueKey(attribute.code, value.code)];

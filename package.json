@@ -15,6 +15,8 @@
     "test:e2e": "playwright test",
     "seed:suit-customization": "node scripts/build-suit-customization-seed.mjs",
     "seed:lawrencepur": "node scripts/build-lawrencepur-seed.mjs",
+    "seed:demo": "node --import tsx scripts/apply-demo-catalog.ts",
+    "seed:demo-images": "node --import tsx scripts/build-demo-images.tsx",
     "db:migrate": "node --import tsx scripts/migrate.ts",
     "catalog:bootstrap": "node --import tsx scripts/catalog-bootstrap.ts",
     "staff:grant": "node --import tsx scripts/staff-grant.ts",

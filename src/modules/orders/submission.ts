@@ -304,7 +304,7 @@ export function buildSnapshot(
                   text: a.inputType === 'text' ? (selected ?? null) : null,
                   supplierCode: full?.supplierCode ?? null,
                   lineKind: group.lineKind,
-                  surchargeMinor: value ? valueSurcharge(p, a, value.code) : a.surchargeMinor,
+                  surchargeMinor: value ? valueSurcharge(p, a, value.code) : 0,
                 };
               }),
           ),

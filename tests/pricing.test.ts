@@ -7,7 +7,7 @@ import {
   quoteGarment,
   type GarmentQuote,
 } from '../src/modules/pricing/quote';
-import { doubleChargeWarning, explainCharge, priceEffect } from '../src/modules/pricing/explain';
+import { explainCharge, priceEffect } from '../src/modules/pricing/explain';
 import { formatPrice } from '../src/lib/money';
 import type { Garment } from '../src/modules/configuration/types';
 import {
@@ -78,7 +78,6 @@ describe('PRICING.md worked examples (SYNTHETIC)', () => {
     expect(amounts(quote)).toEqual([
       ['base', SYN.suit, 79900],
       ['option', `${SYN.buttonholes}::1`, 1000],
-      ['group', SYN.liningGroup, 1600],
       ['option', `${SYN.liningFabric}::98`, 900],
       ['component', 'vest', 10000],
     ]);
@@ -86,13 +85,12 @@ describe('PRICING.md worked examples (SYNTHETIC)', () => {
       { category: 'base', label: 'Base', amountMinor: 79900 },
       { category: 'jacket', label: 'Jacket', amountMinor: 1000 },
       { category: 'vest', label: 'Vest', amountMinor: 10000 },
-      { category: 'accents', label: 'Accents', amountMinor: 2500 },
+      { category: 'accents', label: 'Accents', amountMinor: 900 },
     ]);
     expect(quote.lines[0]).toMatchObject({ categoryLabel: 'Suit · Band B' });
-    expect(quote.lines.find((line) => line.kind === 'group')).toMatchObject({
+    expect(quote.lines.find((line) => line.ref === `${SYN.liningFabric}::98`)).toMatchObject({
       category: 'accents',
-      label: 'Lining (custom)',
-      lineKind: 'construction',
+      label: 'Lining fabrics: Berck',
     });
   });
 });
@@ -115,7 +113,7 @@ describe('charges (PRC-002, PRC-003)', () => {
     });
   });
 
-  it('applies product surcharge overrides, and charges a default choice its own price', () => {
+  it('honours a per-product choice price from an older release, and charges a default choice its own price', () => {
     // The blazer's default buttonholes choice costs 500 there (1000 elsewhere).
     const blazer = priced(quoteGarment(indexFor(), garment({}, SYN.blazer)));
     expect(amounts(blazer)).toEqual([
@@ -135,7 +133,7 @@ describe('charges (PRC-002, PRC-003)', () => {
     expect(quote.unitMinor).toBe(79900);
   });
 
-  it('charges a group once however many of its options are active', () => {
+  it('ignores a group fee stored in an older release (D-022)', () => {
     const selections = {
       ...garment().selections,
       [SYN.lining]: 'personalizado',
@@ -143,13 +141,10 @@ describe('charges (PRC-002, PRC-003)', () => {
       [SYN.liningPiping]: 'contrast',
     };
     const quote = priced(quoteGarment(indexFor(), garment({ selections })));
-    expect(amounts(quote)).toEqual([
-      ['base', SYN.suit, 79900],
-      ['group', SYN.liningGroup, 1600],
-    ]);
+    expect(amounts(quote)).toEqual([['base', SYN.suit, 79900]]);
   });
 
-  it('activates a text option only when it has text', () => {
+  it('never charges for an option, even a text option with text (D-022)', () => {
     const empty = priced(quoteGarment(indexFor(), garment()));
     expect(empty.unitMinor).toBe(79900);
     const initials = priced(
@@ -158,11 +153,7 @@ describe('charges (PRC-002, PRC-003)', () => {
         garment({ selections: { ...garment().selections, [SYN.initials]: 'AB' } }),
       ),
     );
-    expect(amounts(initials)).toEqual([
-      ['base', SYN.suit, 79900],
-      ['attribute', SYN.initials, 1000],
-    ]);
-    expect(initials.lines[1]).toMatchObject({ category: 'accents', label: 'Initials' });
+    expect(amounts(initials)).toEqual([['base', SYN.suit, 79900]]);
   });
 
   it('multiplies the unit price by the quantity', () => {
@@ -251,8 +242,8 @@ describe('price wording (PRC-003, ADMIN-SCREENS §5)', () => {
   });
 
   it('explains how each charge applies', () => {
-    expect(explainCharge('group', 1600, 'USD', 'Lining')).toBe(
-      'Customising Lining adds $16 once, however many of its options move away from the product default.',
+    expect(explainCharge('base', 79900, 'USD', 'the suit')).toBe(
+      'The base price is $799 for the suit.',
     );
     expect(explainCharge('option', 1000, 'USD', 'Working buttonholes')).toContain(
       'even as the product default',
@@ -260,24 +251,6 @@ describe('price wording (PRC-003, ADMIN-SCREENS §5)', () => {
     expect(explainCharge('component', 10000, 'USD', 'the vest')).toBe(
       'Adding the vest adds $100 once per garment.',
     );
-    expect(explainCharge('attribute', 0, 'USD', 'Lapel style')).toBe('Lapel style is included.');
-  });
-
-  it('warns when a group and every one of its choices carry a surcharge', () => {
-    const snapshot = syntheticSnapshot();
-    const index = indexSnapshot(snapshot);
-    const suit = index.products.get(SYN.suit)!;
-    const lining = index.groups.get(SYN.liningGroup)!.group;
-    expect(doubleChargeWarning(suit, lining)).toBe(false);
-    for (const attribute of snapshot.components[0].groups.find((g) => g.code === SYN.liningGroup)!
-      .attributes)
-      for (const value of attribute.values) value.surchargeMinor = 100;
-    const charged = indexSnapshot(snapshot);
-    expect(
-      doubleChargeWarning(
-        charged.products.get(SYN.suit)!,
-        charged.groups.get(SYN.liningGroup)!.group,
-      ),
-    ).toBe(true);
+    expect(explainCharge('option', 0, 'USD', 'Peak lapel')).toBe('Peak lapel is included.');
   });
 });
