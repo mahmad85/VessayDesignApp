@@ -15,6 +15,7 @@ import {
   type Field,
 } from './editor';
 import { identityFields } from './catalog-fields';
+import { PriceTiers } from './pricing';
 import { MEDIA_ROLES, USAGES } from '@/modules/catalog/snapshot';
 import { REFERENCE_CONFIRMATION } from '@/modules/catalog/material-input';
 type Lookups = { types: (Entry & { values: Entry[] })[] };
@@ -55,7 +56,7 @@ export function Fabrics({ canWrite }: { canWrite: boolean }) {
     },
     {
       key: 'band',
-      label: 'Price band',
+      label: 'Price tier',
       type: 'select',
       options: (pricing.data?.bands ?? []).map((b) => ({ value: b.code, label: b.name })),
     },
@@ -93,6 +94,7 @@ export function Fabrics({ canWrite }: { canWrite: boolean }) {
           </Link>
         )}
       </PageTitle>
+      <PriceTiers canWrite={canWrite} onSaved={() => void pricing.load()} />
       <div className="admin-filter-grid">
         {fields.map((f) => (
           <FieldInput
@@ -158,7 +160,7 @@ export function Fabrics({ canWrite }: { canWrite: boolean }) {
               <th>Select</th>
               <th>Fabric</th>
               <th>Colour / pattern</th>
-              <th>Band</th>
+              <th>Price tier</th>
               <th>Availability · live</th>
               <th>Supplier</th>
               <th>Products</th>
@@ -362,7 +364,7 @@ export function FabricEditor({
     },
     {
       key: 'priceBandCode',
-      label: 'Price band',
+      label: 'Price tier',
       type: 'select',
       options: (pricing.data?.bands ?? []).map((b) => ({ value: b.code, label: b.name })),
       nullable: true,

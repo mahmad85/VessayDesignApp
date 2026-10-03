@@ -3,12 +3,10 @@ import { isSelectable, materialAllowed, validateGarment } from '../catalog/garme
 import {
   valueKey,
   type RuntimeAttribute,
-  type RuntimeGroup,
   type RuntimeIndex,
   type RuntimeProduct,
   type RuntimeProductComponent,
 } from '../catalog/snapshot';
-import { productDefault } from '../catalog/structure';
 import type { DraftV2, Garment } from '../configuration/types';
 
 // The only price calculator (PRICING.md PRC-002 – PRC-005). Pure and
@@ -18,6 +16,7 @@ import type { DraftV2, Garment } from '../configuration/types';
 // the quote unavailable.
 
 export type QuoteLine = {
+  /** `group` and `attribute` lines appear only in quotes persisted before D-022. */
   kind: 'base' | 'component' | 'group' | 'attribute' | 'option';
   /** `base`, a component code, or `accents`. */
   category: string;
@@ -62,18 +61,11 @@ export type CartQuote = {
   totalMinor: number | null;
 };
 
-// Effective surcharges: the product setting's override if present, otherwise
-// the entity's own value (PRC-003).
+// Extra charges (PRC-003, D-022): an optional part and a chosen choice. Groups
+// and options carry no charge; a per-product choice override survives only in
+// releases published before D-022.
 export function componentSurcharge(link: RuntimeProductComponent) {
   return link.surchargeMinor;
-}
-export function groupSurcharge(product: RuntimeProduct, group: RuntimeGroup) {
-  return product.settings.groups[group.code]?.surchargeOverrideMinor ?? group.surchargeMinor;
-}
-export function attributeSurcharge(product: RuntimeProduct, attribute: RuntimeAttribute) {
-  return (
-    product.settings.attributes[attribute.code]?.surchargeOverrideMinor ?? attribute.surchargeMinor
-  );
 }
 export function valueSurcharge(
   product: RuntimeProduct,
@@ -94,16 +86,6 @@ export function basePrice(index: RuntimeIndex, product: RuntimeProduct, material
   if (material.priceBand && product.bandPrices[material.priceBand] !== undefined)
     return { amountMinor: product.bandPrices[material.priceBand], band: material.priceBand };
   return null;
-}
-
-/** PRC-003 `active(A)`: a visible option moved away from the product default (or a non-empty text). */
-export function attributeActive(
-  product: RuntimeProduct,
-  attribute: RuntimeAttribute,
-  value: string | undefined,
-) {
-  if (attribute.inputType === 'text') return !!value?.trim();
-  return value !== undefined && value !== productDefault(product, attribute);
 }
 
 const INVALID = new Set([
@@ -179,27 +161,8 @@ export function quoteGarment(
       const visible = group.attributes.filter((attribute) =>
         effective.visibleAttributes.has(attribute.code),
       );
-      const active = visible.filter((attribute) =>
-        attributeActive(product, attribute, effective.selections[attribute.code]),
-      );
-      const groupMinor = groupSurcharge(product, group);
-      if (active.length && groupMinor > 0)
-        line({
-          kind: 'group',
-          label: `${group.name} (custom)`,
-          ref: group.code,
-          amountMinor: groupMinor,
-        });
       for (const attribute of visible) {
         const value = effective.selections[attribute.code];
-        const attributeMinor = attributeSurcharge(product, attribute);
-        if (active.includes(attribute) && attributeMinor > 0)
-          line({
-            kind: 'attribute',
-            label: attribute.name,
-            ref: attribute.code,
-            amountMinor: attributeMinor,
-          });
         if (attribute.inputType !== 'choice' || value === undefined) continue;
         // A choice's own price applies whenever it is the effective value, even the default.
         const valueMinor = valueSurcharge(product, attribute, value);

@@ -61,7 +61,7 @@ test('SYNTHETIC purchase: cart, check, sign-off, verified test payment, tailor p
       })
     ).ok(),
   ).toBe(true);
-  await page.goto('/');
+  await page.goto('/studio');
   await start(page, 'Two-piece suit');
   await page.getByRole('button', { name: '+ Add garment', exact: true }).focus();
   await page.keyboard.press('Enter');

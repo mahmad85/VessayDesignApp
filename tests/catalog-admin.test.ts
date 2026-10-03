@@ -161,17 +161,28 @@ describe('SYNTHETIC catalog authoring WP-23–25', { timeout: PGLITE_TIMEOUT }, 
       (await db.query('SELECT surcharge_minor FROM option_values WHERE id=$1', [a.id]))[0]
         .surcharge_minor,
     ).toBe(0);
+    // D-022: per-product price overrides are no longer accepted.
+    await expect(
+      setProductSettings(
+        String(product.id),
+        {
+          items: [
+            {
+              scope: 'attribute',
+              targetId: attr.id,
+              available: true,
+              surchargeOverrideMinor: 1200,
+            },
+          ],
+        },
+        actor,
+      ),
+    ).rejects.toThrow();
     await setProductSettings(
       String(product.id),
       {
         items: [
-          {
-            scope: 'attribute',
-            targetId: attr.id,
-            available: true,
-            defaultValueId: a.id,
-            surchargeOverrideMinor: 1200,
-          },
+          { scope: 'attribute', targetId: attr.id, available: true, defaultValueId: a.id },
           { scope: 'value', targetId: b.id, available: false },
         ],
       },
@@ -181,7 +192,7 @@ describe('SYNTHETIC catalog authoring WP-23–25', { timeout: PGLITE_TIMEOUT }, 
     expect(tree.effective.attributes[String(attr.id)]).toEqual({
       available: true,
       default: a.id,
-      surchargeMinor: 1200,
+      surchargeMinor: 0,
     });
     expect(tree.effective.values[String(b.id)].available).toBe(false);
     await expect(

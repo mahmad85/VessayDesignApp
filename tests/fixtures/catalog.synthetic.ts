@@ -12,8 +12,10 @@ import type {
 // - every condition type: all, any, not, attr/in, attr/answered,
 //   component/included, material codes, material lookup and product;
 // - the PRICING.md E1–E7 fixture: band B, suit B = 79900, syn-navy in band B,
-//   syn-unpriced without a band, vest 10000, lining group 1600, lining fabric
-//   98 = 900, working buttonholes 1 = 1000, peak lapel 0.
+//   syn-unpriced without a band, vest 10000, lining fabric 98 = 900, working
+//   buttonholes 1 = 1000, peak lapel 0. The lining group fee (1600) and the
+//   initials option fee (1000) stand for a release published before D-022;
+//   the engine ignores them.
 
 export const SYN = {
   suit: 'suit',
@@ -755,9 +757,9 @@ export const PRICING_EXAMPLES: PricingExample[] = [
     quantity: 1,
     expected: {
       status: 'priced',
-      unitMinor: 93400,
-      totalMinor: 93400,
-      byCategory: { base: 79900, vest: 10000, jacket: 1000, accents: 2500 },
+      unitMinor: 91800,
+      totalMinor: 91800,
+      byCategory: { base: 79900, vest: 10000, jacket: 1000, accents: 900 },
     },
   },
   {
@@ -776,7 +778,7 @@ export const PRICING_EXAMPLES: PricingExample[] = [
     includedComponents: ['jacket', 'trousers', 'vest'],
     selections: e3Selections,
     quantity: 1,
-    expected: { status: 'priced', unitMinor: 143400, totalMinor: 143400 },
+    expected: { status: 'priced', unitMinor: 141800, totalMinor: 141800 },
   },
   {
     id: 'E6',
@@ -794,6 +796,6 @@ export const PRICING_EXAMPLES: PricingExample[] = [
     includedComponents: ['jacket', 'trousers', 'vest'],
     selections: e3Selections,
     quantity: 2,
-    expected: { status: 'priced', unitMinor: 93400, totalMinor: 186800 },
+    expected: { status: 'priced', unitMinor: 91800, totalMinor: 183600 },
   },
 ];

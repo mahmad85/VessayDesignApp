@@ -206,6 +206,8 @@ export const commandSchemaV2 = z.discriminatedUnion('type', [
     type: z.literal('add_garment'),
     productCode: codeSchema,
     templateCode: codeSchema.nullable().optional(),
+    /** Start in this fabric (from /fabrics); checked like a fabric change. */
+    materialCode: codeSchema.optional(),
   }),
   z.object({
     type: z.literal('remove_garment'),
@@ -213,6 +215,8 @@ export const commandSchemaV2 = z.discriminatedUnion('type', [
     confirm: z.boolean().optional(),
   }),
   z.object({ type: z.literal('select_garment'), garmentId }),
+  /** Clears the cart, measurements and conversation; submitted orders stay. */
+  z.object({ type: z.literal('start_over'), confirm: z.literal(true) }),
   z.object({
     type: z.literal('design'),
     garmentId: garmentId.optional(),

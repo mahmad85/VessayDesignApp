@@ -534,7 +534,7 @@ export function RulesEditor({ canWrite }: { canWrite: boolean }) {
     <>
       <PageTitle
         title="Compatibility rules"
-        description="Explain which combinations are allowed, and test their effects before publishing."
+        description="Block or require choices that only work together — for example, no double-breasted front with a single button. Test before publishing."
       />
       <div className="admin-toolbar">
         <FieldInput

@@ -7,6 +7,8 @@ export const MIGRATIONS = [
   '0004_staff',
   '0005_orders',
   '0006_payments',
+  '0007_lawrencepur_fabrics',
+  '0008_simple_pricing',
 ];
 import * as schema from './schema';
 import { drizzle as pgDrizzle } from 'drizzle-orm/node-postgres';

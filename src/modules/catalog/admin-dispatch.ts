@@ -3,7 +3,9 @@ import { adminBody, adminRoute, json } from '@/lib/admin-http';
 import { missing } from '@/db/admin-mutations';
 import {
   bulkValues,
+  copyProduct,
   createStructure,
+  createSubcategory,
   deleteCatalogEntity,
   duplicateGroup,
   editStructure,
@@ -151,6 +153,10 @@ export async function catalogDispatch(request: NextRequest, segments: string[]) 
         return json(await bulkValues(await input(), actor));
       if (entity === 'reorder' && method === 'POST')
         return json(await reorderStructure(await input(), actor));
+      if (entity === 'products' && id && action === 'copy' && method === 'POST')
+        return json(await copyProduct(id, await input(), actor), undefined, 201);
+      if (entity === 'components' && id && action === 'subcategories' && method === 'POST')
+        return json(await createSubcategory(id, await input(), actor), undefined, 201);
       if (entity === 'groups' && id && action === 'duplicate' && method === 'POST')
         return json(await duplicateGroup(id, await input(), actor), undefined, 201);
       const child =

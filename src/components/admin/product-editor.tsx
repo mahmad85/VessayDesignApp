@@ -178,7 +178,7 @@ export function ProductEditor({ canWrite }: { canWrite: boolean }) {
   return (
     <>
       <PageTitle
-        title="Products & options"
+        title="Structure editor"
         description="Build the choices your customers see. Changes stay in the working catalog until you publish."
       >
         <div className="admin-toolbar">
@@ -203,7 +203,7 @@ export function ProductEditor({ canWrite }: { canWrite: boolean }) {
           {canWrite && (
             <button onClick={() => setCreating({ kind: 'products' })}>New product</button>
           )}
-          <Link href={`/?catalog=working&product=${tree.data?.product.code ?? ''}`}>
+          <Link href={`/studio?catalog=working&product=${tree.data?.product.code ?? ''}`}>
             Preview as customer ↗
           </Link>
         </div>
@@ -293,7 +293,9 @@ export function ProductEditor({ canWrite }: { canWrite: boolean }) {
                 {canWrite && (
                   <>
                     {node.kind === 'products' && (
-                      <button onClick={() => setCreating({ kind: 'components' })}>New part</button>
+                      <button onClick={() => setCreating({ kind: 'components' })}>
+                        New part for this product
+                      </button>
                     )}
                     {node.kind === 'components' && (
                       <button
@@ -466,10 +468,19 @@ export function ProductEditor({ canWrite }: { canWrite: boolean }) {
             canWrite={canWrite}
             media={mediaOptions}
             materials={materialOptions}
-            onSaved={() => {
+            onSaved={(row) => {
+              const kind = creating.kind;
               setCreating(null);
-              void components.load();
-              void refresh();
+              void action(async () => {
+                // A part created from a product belongs to it — link it straight away.
+                if (kind === 'components' && tree.data)
+                  await adminFetch(
+                    `/api/admin/catalog/products/${tree.data.product.id}/components/${row.id}`,
+                    'PUT',
+                    { required: true, defaultIncluded: true, surchargeMinor: 0 },
+                  );
+                await components.load();
+              });
             }}
           />
         )}
@@ -493,7 +504,7 @@ function StructureForm({
   canWrite: boolean;
   media: { value: string; label: string }[];
   materials: { value: string; label: string }[];
-  onSaved: () => void;
+  onSaved: (row: Entry) => void;
   onDirty?: (d: boolean) => void;
 }) {
   const parent = nodes.find((n) => n.row.id === node.parentId)?.row;
@@ -531,34 +542,25 @@ function StructureForm({
       canWrite={canWrite}
       onSaved={onSaved}
       onDirty={onDirty}
-      transform={(draft) =>
-        Object.fromEntries(
+      transform={(input) => {
+        // Fill hidden set-up fields from the visible ones so a name is enough to save.
+        const draft = { ...input };
+        if (node.kind === 'products') {
+          draft.shortLabel ||= draft.name;
+          draft.visualModel ||= draft.measurementSet;
+        }
+        if (node.kind === 'groups') draft.shortName ||= draft.name;
+        return Object.fromEntries(
           [...fields.map((f) => f.key), ...extra]
             .filter(
               (k) =>
                 draft[k] !== undefined && !(node.kind === 'values' && k === 'code' && !draft[k]),
             )
             .map((k) => [k, draft[k]]),
-        )
-      }
-    >
-      {(draft, set) => (
+        );
+      }}
+      advanced={(draft, set) => (
         <>
-          {'surchargeMinor' in draft && (
-            <p className="admin-price-note">
-              {explainCharge(
-                node.kind === 'groups'
-                  ? 'group'
-                  : node.kind === 'attributes'
-                    ? 'attribute'
-                    : 'option',
-                Number(draft.surchargeMinor) || 0,
-                index.catalog.currency,
-                String(draft.name ?? draft.label),
-              )}{' '}
-              Currency: {index.catalog.currency}.
-            </p>
-          )}
           {['groups', 'attributes'].includes(node.kind) && (
             <ConditionBuilder
               value={(draft.visibleWhen as Condition | null) ?? null}
@@ -578,6 +580,22 @@ function StructureForm({
               onChange={(v) => set('metadataFields', v)}
               index={index}
             />
+          )}
+        </>
+      )}
+    >
+      {(draft, set) => (
+        <>
+          {node.kind === 'values' && Number(draft.surchargeMinor) > 0 && (
+            <p className="admin-price-note">
+              {explainCharge(
+                'option',
+                Number(draft.surchargeMinor) || 0,
+                index.catalog.currency,
+                String(draft.name ?? draft.label),
+              )}{' '}
+              Currency: {index.catalog.currency}.
+            </p>
           )}
           {node.kind === 'values' &&
             ((parent?.metadataFields as MetadataField[]) ?? []).map((field) => (
@@ -840,7 +858,6 @@ function ProductOverride({
   const [data, setData] = useState<Record<string, unknown>>({
     available: existing?.available ?? true,
     defaultValueId: existing?.defaultValueId ?? null,
-    surchargeOverrideMinor: existing?.surchargeOverrideMinor ?? null,
   });
   const [error, setError] = useState('');
   async function save(remove = false) {
@@ -854,48 +871,38 @@ function ProductOverride({
     }
   }
   return (
-    <fieldset disabled={!canWrite}>
-      <legend>This product only · {product.name}</legend>
-      {existing && <span className="admin-chip">Overridden for {product.name}</span>}
-      <p>
-        Effective surcharge: {((effective?.surchargeMinor ?? 0) / 100).toFixed(2)} ·{' '}
-        {effective?.available ? 'Available' : 'Unavailable'}
-      </p>
-      <FieldInput
-        field={{ key: 'available', label: 'Available for this product', type: 'checkbox' }}
-        value={data.available}
-        onChange={(v) => setData({ ...data, available: v })}
-      />
-      <FieldInput
-        field={{
-          key: 'override',
-          label: 'Surcharge override (blank uses global)',
-          type: 'money',
-          nullable: true,
-        }}
-        value={data.surchargeOverrideMinor}
-        onChange={(v) => setData({ ...data, surchargeOverrideMinor: v })}
-      />
-      {node.kind === 'attributes' && (
+    <details className="admin-advanced" open={!!existing || undefined}>
+      <summary>Different for {String(product.name)} only</summary>
+      <fieldset disabled={!canWrite}>
+        <legend>This product only · {product.name}</legend>
+        {existing && <span className="admin-chip">Overridden for {product.name}</span>}
+        <p>{effective?.available ? 'Available' : 'Unavailable'}</p>
         <FieldInput
-          field={{
-            key: 'default',
-            label: 'Default choice (blank uses global)',
-            type: 'select',
-            nullable: true,
-            options: ((node.row.values as Entry[]) ?? []).map((v) => ({
-              value: v.id,
-              label: String(v.label),
-            })),
-          }}
-          value={data.defaultValueId}
-          onChange={(v) => setData({ ...data, defaultValueId: v })}
+          field={{ key: 'available', label: 'Available for this product', type: 'checkbox' }}
+          value={data.available}
+          onChange={(v) => setData({ ...data, available: v })}
         />
-      )}
-      <button onClick={() => void save()}>Save product override</button>
-      {existing && <button onClick={() => void save(true)}>Use global settings</button>}
-      {error && <p role="alert">{error}</p>}
-    </fieldset>
+        {node.kind === 'attributes' && (
+          <FieldInput
+            field={{
+              key: 'default',
+              label: 'Default choice (blank uses global)',
+              type: 'select',
+              nullable: true,
+              options: ((node.row.values as Entry[]) ?? []).map((v) => ({
+                value: v.id,
+                label: String(v.label),
+              })),
+            }}
+            value={data.defaultValueId}
+            onChange={(v) => setData({ ...data, defaultValueId: v })}
+          />
+        )}
+        <button onClick={() => void save()}>Save product override</button>
+        {existing && <button onClick={() => void save(true)}>Use global settings</button>}
+        {error && <p role="alert">{error}</p>}
+      </fieldset>
+    </details>
   );
 }
 function ChoiceGrid({

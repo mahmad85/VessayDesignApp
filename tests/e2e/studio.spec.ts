@@ -30,7 +30,7 @@ test('design, chat, measurement and review journey', async ({ page }) => {
   test.setTimeout(120000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('/');
+  await page.goto('/studio');
   await startGarment(page, 'Two-piece suit');
   await page.getByRole('button', { name: 'Wedding', exact: true }).click();
   await page.getByRole('button', { name: 'All season', exact: true }).click();
@@ -95,7 +95,7 @@ test('design, chat, measurement and review journey', async ({ page }) => {
 test('category changes need confirmation and update the available fabric controls', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('/studio');
   await startGarment(page, 'Two-piece suit');
   await page.getByLabel('Garment', { exact: true }).selectOption('shirt');
   await expect(page.getByRole('dialog')).toBeVisible();
@@ -120,7 +120,7 @@ test('category changes need confirmation and update the available fabric control
 });
 test('mobile layout and unconfigured 3DLOOK capture remain usable', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/');
+  await page.goto('/studio');
   await expect(page.getByRole('heading', { name: 'Choose a garment' })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
@@ -191,7 +191,7 @@ test('the API prevents cross-origin mutation and guest data access', async ({ br
 test('verification, sign-in, guest claim and sign-out use real database sessions', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('/studio');
   await expect(page.getByRole('heading', { name: 'Choose a garment' })).toBeVisible();
   const before = await (await page.request.get('/api/studio')).json();
   const email = `test-${crypto.randomUUID()}@vessy.invalid`;
@@ -242,7 +242,7 @@ test('verification, sign-in, guest claim and sign-out use real database sessions
 test('keyboard controls and accessibility checks across desktop and small layouts', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('/studio');
   await expect(page.getByRole('heading', { name: 'Choose a garment' })).toBeVisible();
   const start = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
@@ -292,7 +292,7 @@ test('keyboard controls and accessibility checks across desktop and small layout
 test('field choices and the 2D drawing stay in sync across 2D/3D switches', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('/');
+  await page.goto('/studio');
   await startGarment(page, 'Two-piece suit');
   const svg = page.locator('.sketch-svg');
   await expect(svg).toHaveAttribute('viewBox', '0 0 400 800');
@@ -348,7 +348,7 @@ test('the start screen fits every customer width and starts the chosen garment',
     [320, 740],
   ]) {
     await page.setViewportSize({ width, height });
-    await page.goto('/');
+    await page.goto('/studio');
     await expect(page.getByRole('heading', { name: 'Choose a garment' })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,

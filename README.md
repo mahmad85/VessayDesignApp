@@ -17,6 +17,8 @@ The development server binds to port 3000. Without `DATABASE_URL`, development u
 
 For external PostgreSQL, configure `DATABASE_URL` in environment secrets, run `npm run db:migrate` once, then `npm run catalog:bootstrap` to publish catalog release v1 from the reference data (it does nothing once a release exists), then start the application. In development the first readiness check publishes v1 automatically (`CATALOG_AUTO_BOOTSTRAP`). `.env.example` documents available configuration; do not commit secrets. See [Replit deployment](docs/implementation/REPLIT.md).
 
+For a demo, run `npm run seed:demo` after the catalog exists: it fills prices, suppliers, image rights and missing images so a publish has no warnings, keeps anything already entered, and can run again safely (D-023). `npm run seed:demo-images` regenerates the drawings it uses in `public/reference-assets/demo`. Then publish from the admin.
+
 ## What works now
 
 - Men’s two-piece suit, dress shirt and blazer configuration; eight explicitly labeled reference fabrics plus 434 supplied suit Style and Accents reference options grouped by jacket, pants and vest.

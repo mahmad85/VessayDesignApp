@@ -6,6 +6,7 @@ import {
   useAdminData,
   RecordEditor,
   FieldInput,
+  MoneyField,
   PageTitle,
   options,
   type Entry,
@@ -13,182 +14,139 @@ import {
 import { Simulator } from './catalog-tools';
 type Pricing = {
   currency: string;
-  bands: Entry[];
-  matrix: {
-    productId: string;
-    productCode: string;
-    productName: string;
-    prices: Record<string, number | null>;
-  }[];
+  bands: (Entry & { upliftMinor: number; materialCount: number; description: string })[];
 };
 export function PricingEditor({ canWrite }: { canWrite: boolean }) {
-  const data = useAdminData<Pricing>('/api/admin/pricing');
   return (
     <>
       <PageTitle
         title="Pricing"
-        description="Set a base price for each product and fabric band. Empty cells stay unpriced."
+        description="A product's price is its base price plus the amount its fabric tier adds."
       />
-      {data.error && <p role="alert">{data.error}</p>}
-      {data.data && (
-        <PriceMatrix
-          key={JSON.stringify(data.data)}
-          initial={data.data}
-          canWrite={canWrite}
-          saved={data.load}
-        />
-      )}
+      <PriceTiers canWrite={canWrite} />
       <Simulator />
     </>
   );
 }
-function PriceMatrix({
+/**
+ * D-022: each fabric price tier adds one fixed amount to a product's base
+ * price. Tiers themselves are fixed; only their names and amounts change here.
+ */
+export function PriceTiers({ canWrite, onSaved }: { canWrite: boolean; onSaved?: () => void }) {
+  const data = useAdminData<Pricing>('/api/admin/pricing');
+  if (data.error) return <p role="alert">{data.error}</p>;
+  if (!data.data) return <p role="status">Loading price tiers…</p>;
+  return (
+    <TierForm
+      key={JSON.stringify(data.data.bands)}
+      initial={data.data}
+      canWrite={canWrite}
+      saved={async () => {
+        await data.load();
+        onSaved?.();
+      }}
+    />
+  );
+}
+function TierForm({
   initial,
   canWrite,
   saved,
 }: {
   initial: Pricing;
   canWrite: boolean;
-  saved: () => Promise<unknown>;
+  saved: () => Promise<void>;
 }) {
-  const [bands, setBands] = useState(
-      initial.bands.map((b) => ({
-        code: b.code,
-        name: b.name,
-        description: String(b.description ?? ''),
-        sort: Number(b.sort),
-      })),
-    ),
-    [matrix, setMatrix] = useState(initial.matrix),
-    [message, setMessage] = useState('');
-  async function saveBands() {
+  const [bands, setBands] = useState(initial.bands),
+    [message, setMessage] = useState(''),
+    [busy, setBusy] = useState(false);
+  const dirty = JSON.stringify(bands) !== JSON.stringify(initial.bands);
+  const change = (code: string, patch: Partial<Pricing['bands'][number]>) =>
+    setBands((all) => all.map((b) => (b.code === code ? { ...b, ...patch } : b)));
+  async function save() {
+    setBusy(true);
+    setMessage('');
     try {
-      await adminFetch('/api/admin/pricing/bands', 'PUT', { items: bands });
+      await adminFetch('/api/admin/pricing/bands', 'PUT', {
+        items: bands.map((b) => ({
+          code: b.code,
+          name: b.name,
+          description: b.description,
+          sort: Number(b.sort),
+          upliftMinor: b.upliftMinor,
+        })),
+      });
+      window.dispatchEvent(new Event('catalog-saved'));
       await saved();
+      setMessage('Price tiers saved.');
     } catch (e) {
       setMessage((e as Error).message);
+    } finally {
+      setBusy(false);
     }
   }
   return (
-    <fieldset disabled={!canWrite} className="admin-card">
-      <legend>{initial.currency} · Catalog prices</legend>
-      <details>
-        <summary>Manage price bands</summary>
-        {bands.map((b, i) => (
-          <div className="admin-inline-fields" key={i}>
-            <FieldInput
-              field={{ key: 'code', label: 'Band code', max: 8 }}
-              value={b.code}
-              onChange={(v) =>
-                setBands((s) => s.map((x, j) => (i === j ? { ...x, code: String(v) } : x)))
-              }
-            />
-            <FieldInput
-              field={{ key: 'name', label: 'Band name' }}
-              value={b.name}
-              onChange={(v) =>
-                setBands((s) => s.map((x, j) => (i === j ? { ...x, name: String(v) } : x)))
-              }
-            />
-            <FieldInput
-              field={{ key: 'description', label: 'Band description' }}
-              value={b.description}
-              onChange={(v) =>
-                setBands((s) => s.map((x, j) => (i === j ? { ...x, description: String(v) } : x)))
-              }
-            />
-            <FieldInput
-              field={{ key: 'sort', label: 'Position', type: 'number' }}
-              value={b.sort}
-              onChange={(v) =>
-                setBands((s) => s.map((x, j) => (i === j ? { ...x, sort: Number(v) } : x)))
-              }
-            />
-            <button onClick={() => setBands((s) => s.filter((_, j) => j !== i))}>
-              Remove band {b.code || i + 1}
-            </button>
-          </div>
-        ))}
-        <button
-          onClick={() =>
-            setBands((s) => [...s, { code: '', name: '', description: '', sort: s.length * 10 }])
-          }
-        >
-          Add band
-        </button>
-        <button onClick={() => void saveBands()}>Save bands</button>
-      </details>
-      <p>Not priced means customers see “Price not yet available”. Zero is a deliberate price.</p>
-      <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Product band prices">
-        <table>
-          <thead>
-            <tr>
-              <th>Product</th>
-              {initial.bands.map((b) => (
-                <th key={b.code}>
-                  {b.name} · {initial.currency}
-                </th>
-              ))}
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {matrix.map((row, i) => (
-              <tr key={row.productId}>
-                <th>{row.productName}</th>
-                {initial.bands.map((b) => (
-                  <td key={b.code}>
-                    <FieldInput
-                      field={{
-                        key: `${row.productCode}-${b.code}`,
-                        label: `${row.productName} · ${b.code} (${initial.currency})`,
-                        type: 'money',
-                        nullable: true,
-                      }}
-                      value={row.prices[b.code]}
-                      onChange={(v) =>
-                        setMatrix((s) =>
-                          s.map((x, j) =>
-                            i === j
-                              ? { ...x, prices: { ...x.prices, [b.code]: v as number | null } }
-                              : x,
-                          ),
-                        )
-                      }
-                    />
-                  </td>
+    <section className="admin-card pb-section" id="price-tiers" aria-labelledby="price-tiers-title">
+      <h2 id="price-tiers-title">Fabric price tiers</h2>
+      <p>
+        Every fabric belongs to one tier. A product costs its base price plus the amount its
+        fabric’s tier adds.
+      </p>
+      {bands.length ? (
+        <fieldset disabled={!canWrite || busy}>
+          <div className="admin-table-wrap" role="region" aria-label="Tier amounts" tabIndex={0}>
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Tier</th>
+                  <th scope="col">Adds ({initial.currency})</th>
+                  <th scope="col">Fabrics</th>
+                </tr>
+              </thead>
+              <tbody>
+                {bands.map((band) => (
+                  <tr key={band.code}>
+                    <td>
+                      <input
+                        aria-label={`Name of tier ${band.code}`}
+                        required
+                        maxLength={200}
+                        value={band.name}
+                        onChange={(e) => change(band.code, { name: e.target.value })}
+                      />
+                    </td>
+                    <td>
+                      <MoneyField
+                        label={`Amount ${band.name} adds`}
+                        value={band.upliftMinor}
+                        onChange={(v) => change(band.code, { upliftMinor: Number(v) || 0 })}
+                      />
+                    </td>
+                    <td>{band.materialCount}</td>
+                  </tr>
                 ))}
-                <td>
-                  <button
-                    onClick={async () => {
-                      try {
-                        await adminFetch(
-                          `/api/admin/pricing/products/${row.productId}/band-prices`,
-                          'PUT',
-                          {
-                            items: Object.entries(row.prices).map(([bandCode, priceMinor]) => ({
-                              bandCode,
-                              priceMinor,
-                            })),
-                          },
-                        );
-                        setMessage(`Saved prices for ${row.productName}.`);
-                        window.dispatchEvent(new Event('catalog-saved'));
-                      } catch (e) {
-                        setMessage((e as Error).message);
-                      }
-                    }}
-                  >
-                    Save {row.productName} prices
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+              </tbody>
+            </table>
+          </div>
+          {canWrite && (
+            <div className="admin-form-actions">
+              <button
+                className="admin-primary"
+                type="button"
+                disabled={!dirty || bands.some((b) => !b.name.trim())}
+                onClick={() => void save()}
+              >
+                {busy ? 'Saving…' : 'Save tiers'}
+              </button>
+              {dirty && <small>Unsaved changes</small>}
+            </div>
+          )}
+        </fieldset>
+      ) : (
+        <p>No price tiers exist yet.</p>
+      )}
       {message && <p role="status">{message}</p>}
-    </fieldset>
+    </section>
   );
 }
 export function CommerceSettings({ canWrite }: { canWrite: boolean }) {

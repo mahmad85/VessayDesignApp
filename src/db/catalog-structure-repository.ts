@@ -5,6 +5,8 @@ import {
   linkInput,
   settingsInput,
   duplicateInput,
+  copyProductInput,
+  subcategoryInput,
   bulkValuesInput,
   reorderInput,
   type StructureEntity,
@@ -200,7 +202,9 @@ export async function listStructure(
     const templates = await db.query(
       'SELECT product_id,count(*)::int AS count FROM templates GROUP BY product_id',
     );
-    const prices = await db.query('SELECT DISTINCT product_id FROM product_band_prices');
+    const prices = await db.query(
+      'SELECT id AS product_id FROM products WHERE base_price_minor IS NOT NULL UNION SELECT product_id FROM product_band_prices',
+    );
     return rows.map((r) => ({
       ...dto(r),
       componentCount: links.find((x) => x.product_id === r.id)?.count ?? 0,
@@ -388,7 +392,6 @@ export async function setProductSettings(productId: string, input: unknown, acto
             [column]: item.targetId,
             available: item.available,
             default_value_id: item.defaultValueId ?? null,
-            surcharge_override_minor: item.surchargeOverrideMinor ?? null,
           },
           actor,
         );
@@ -555,7 +558,127 @@ export const deleteCatalogEntity = (
         'This record is used by a rule or condition. Archive it instead.',
         409,
       );
+    // An unpublished product owns its part links, on/off choices, fabric links and prices.
+    if (entity === 'products')
+      for (const owned of [
+        'product_components',
+        'product_option_settings',
+        'material_products',
+        'product_band_prices',
+        'material_price_overrides',
+      ])
+        await query(`DELETE FROM ${owned} WHERE product_id=$1`, [id]);
     await query(`DELETE FROM ${table} WHERE id=$1`, [id]);
     await audit(query, actor, `${table}.deleted`, table, id, ['id']);
     return { ok: true };
   });
+
+/** A code from a name that no row in `table` uses yet: `base`, then `base-2`, `base-3`… */
+async function freeCode(query: Query, table: string, base: string) {
+  let code = base;
+  for (let n = 2; (await query(`SELECT 1 FROM ${table} WHERE code=$1`, [code])).length; n++)
+    code = `${base.slice(0, 170)}-${n}`;
+  return code;
+}
+const nextSort = async (query: Query, table: string, parent: string, id: string) => {
+  const [row] = await query(
+    `SELECT coalesce(max(sort),0)+10 AS sort FROM ${table} WHERE ${parent}=$1`,
+    [id],
+  );
+  return Number(row.sort);
+};
+
+/**
+ * D-022: a new product starts as a draft copy of an existing one — its parts,
+ * per-product on/off choices, fabrics and base price — so it is sellable once
+ * shown. Positions and codes are set automatically.
+ */
+export const copyProduct = (sourceId: string, input: unknown, actor: string) => {
+  const { name } = copyProductInput.parse(input);
+  return mutate(async (query) => {
+    const source = await current(query, 'products', sourceId);
+    const [last] = await query('SELECT coalesce(max(sort),0)+10 AS sort FROM products');
+    const product = await insert(
+      query,
+      'products',
+      {
+        ...copyFields(source),
+        id: crypto.randomUUID(),
+        code: await freeCode(query, 'products', slug(name).replace(/^choice$/, 'product')),
+        name,
+        short_label: name.slice(0, 80),
+        sort: Number(last.sort),
+        status: 'draft',
+        reference_only: false,
+      },
+      actor,
+    );
+    await query(
+      'INSERT INTO product_components(product_id,component_id,required,default_included,surcharge_minor,include_label,sort,metadata) SELECT $1,component_id,required,default_included,surcharge_minor,include_label,sort,metadata FROM product_components WHERE product_id=$2',
+      [product.id, sourceId],
+    );
+    await query(
+      'INSERT INTO product_option_settings(id,product_id,scope,group_id,attribute_id,value_id,available,default_value_id) SELECT gen_random_uuid()::text,$1,scope,group_id,attribute_id,value_id,available,default_value_id FROM product_option_settings WHERE product_id=$2',
+      [product.id, sourceId],
+    );
+    await query(
+      'INSERT INTO material_products(material_id,product_id) SELECT material_id,$1 FROM material_products WHERE product_id=$2',
+      [product.id, sourceId],
+    );
+    await audit(query, actor, 'products.copied', 'products', String(product.id), [
+      'components',
+      'settings',
+      'materials',
+    ]);
+    return dto(product);
+  });
+};
+
+/**
+ * D-022: a subcategory is one option group holding one choice option of the
+ * same name, created together so the customer always sees it complete.
+ */
+export const createSubcategory = (componentId: string, input: unknown, actor: string) => {
+  const { name, kind } = subcategoryInput.parse(input);
+  return mutate(async (query) => {
+    const component = await current(query, 'components', componentId);
+    const code = await freeCode(
+      query,
+      'option_groups',
+      `${kind === 'accent' ? 'accents' : 'style'}.${component.code}.${slug(name)}`,
+    );
+    const group = await insert(
+      query,
+      'option_groups',
+      {
+        id: crypto.randomUUID(),
+        code,
+        component_id: componentId,
+        name,
+        short_name: name.slice(0, 120),
+        kind,
+        line_kind: kind === 'accent' ? 'accessory' : 'construction',
+        focus_region: '',
+        sort: await nextSort(query, 'option_groups', 'component_id', componentId),
+        status: 'active',
+      },
+      actor,
+    );
+    const attribute = await insert(
+      query,
+      'attributes',
+      {
+        id: crypto.randomUUID(),
+        code: await freeCode(query, 'attributes', `${code}.${slug(name)}`.slice(0, 170)),
+        group_id: group.id,
+        name,
+        input_type: 'choice',
+        required: true,
+        sort: 0,
+        status: 'active',
+      },
+      actor,
+    );
+    return { group: dto(group), attribute: dto(attribute) };
+  });
+};

@@ -31,7 +31,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return new Response(null, {
       status: 308,
       headers: {
-        Location: new URL(staticPath(media.storageKey), request.url).toString(),
+        // Relative, so the browser keeps the host it used: behind `next dev --hostname
+        // 0.0.0.0` an absolute URL from request.url points at 0.0.0.0, which browsers refuse.
+        Location: staticPath(media.storageKey),
         'Cache-Control': 'public, max-age=31536000, immutable',
       },
     });

@@ -22,7 +22,7 @@ export function OrdersList() {
       {!state.data && !state.error && <p>Loading orders…</p>}
       {state.data?.items.length === 0 && (
         <p>
-          You have no orders yet. <Link href="/">Start a garment</Link>
+          You have no orders yet. <Link href="/studio">Start a garment</Link>
         </p>
       )}
       <div className="order-cards">
@@ -208,7 +208,7 @@ export function OrderDetail({ number }: { number: string }) {
           </button>
         )}
         {o.actions.includes('resubmit') && (
-          <Link href={'/?resubmit=' + o.number}>Update and resubmit</Link>
+          <Link href={'/studio?resubmit=' + o.number}>Update and resubmit</Link>
         )}
         {o.actions.includes('cancel') && (
           <button disabled={busy} onClick={() => setCancel(true)}>

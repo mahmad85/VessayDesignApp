@@ -93,7 +93,17 @@ export type Field = {
   nullable?: boolean;
   section?: string;
   disabled?: boolean;
+  /** Set-up detail most staff never need; shown under "Advanced settings". */
+  advanced?: boolean;
 };
+/** Turns a name into a catalog code, e.g. "Peak Lapel" → "peak-lapel". */
+export const codeFromName = (name: string) =>
+  name
+    .normalize('NFKD')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 180);
 export const options = (values: readonly string[]): Option[] =>
   values.map((value) => ({ value, label: value.replaceAll('_', ' ') }));
 export const entryOptions = (rows: Entry[]): Option[] =>
@@ -210,18 +220,21 @@ export function FieldInput({
     </div>
   );
 }
-function MoneyField({
+/** A money input in minor units; `label` names it when no visible label is beside it. */
+export function MoneyField({
   id,
   value,
   onChange,
   disabled,
   nullable,
+  label,
 }: {
-  id: string;
+  id?: string;
   value: number | null;
   onChange: (v: unknown) => void;
   disabled?: boolean;
   nullable?: boolean;
+  label?: string;
 }) {
   const [text, setText] = useState(value === null ? '' : (value / 100).toFixed(2));
   const [committed, setCommitted] = useState(value);
@@ -230,6 +243,7 @@ function MoneyField({
     <>
       <input
         id={id}
+        aria-label={label}
         inputMode="decimal"
         disabled={disabled}
         value={value === committed ? text : value === null ? '' : (value / 100).toFixed(2)}
@@ -321,6 +335,7 @@ export function RecordEditor({
   children,
   transform,
   onDirty,
+  advanced,
 }: {
   record: Entry;
   fields: Field[];
@@ -331,6 +346,8 @@ export function RecordEditor({
   children?: (draft: Entry, set: (key: string, value: unknown) => void) => ReactNode;
   transform?: (draft: Entry) => Record<string, unknown>;
   onDirty?: (dirty: boolean) => void;
+  /** Extra controls rendered inside "Advanced settings". */
+  advanced?: (draft: Entry, set: (key: string, value: unknown) => void) => ReactNode;
 }) {
   const [draft, setDraft] = useState(record),
     [error, setError] = useState(''),
@@ -347,12 +364,16 @@ export function RecordEditor({
     setBusy(true);
     setError('');
     try {
+      const source =
+        fields.some((f) => f.key === 'code') && !draft.code && typeof draft.name === 'string'
+          ? { ...draft, code: codeFromName(draft.name) }
+          : draft;
       const data = transform
-        ? transform(draft)
+        ? transform(source)
         : Object.fromEntries(
             fields
               .filter((f) => !f.disabled)
-              .map((f) => [f.key, draft[f.key]])
+              .map((f) => [f.key, source[f.key]])
               .filter(([, v]) => v !== undefined),
           );
       const saved = await adminFetch<Entry>(url, method, {
@@ -375,6 +396,24 @@ export function RecordEditor({
       setBusy(false);
     }
   }
+  const renderFields = (list: Field[]) => (
+    <div className="admin-fields">
+      {list.map((field, i) => (
+        <div key={field.key} className={field.type === 'textarea' ? 'admin-field-wide' : undefined}>
+          {field.section && field.section !== list[i - 1]?.section && <h3>{field.section}</h3>}
+          <FieldInput
+            field={{
+              ...field,
+              disabled: field.disabled || (field.key === 'code' && !!record.firstPublishedVersion),
+            }}
+            value={draft[field.key]}
+            onChange={(value) => change(field.key, value)}
+            error={fieldErrors[field.key]}
+          />
+        </div>
+      ))}
+    </div>
+  );
   return (
     <>
       <form
@@ -385,29 +424,18 @@ export function RecordEditor({
         }}
       >
         <fieldset disabled={busy || !canWrite}>
-          <div className="admin-fields">
-            {fields.map((field, i) => (
-              <div
-                key={field.key}
-                className={field.type === 'textarea' ? 'admin-field-wide' : undefined}
-              >
-                {field.section && field.section !== fields[i - 1]?.section && (
-                  <h3>{field.section}</h3>
-                )}
-                <FieldInput
-                  field={{
-                    ...field,
-                    disabled:
-                      field.disabled || (field.key === 'code' && !!record.firstPublishedVersion),
-                  }}
-                  value={draft[field.key]}
-                  onChange={(value) => change(field.key, value)}
-                  error={fieldErrors[field.key]}
-                />
-              </div>
-            ))}
-          </div>
+          {renderFields(fields.filter((f) => !f.advanced))}
           {children?.(draft, change)}
+          {(fields.some((f) => f.advanced) || advanced) && (
+            <details
+              className="admin-advanced"
+              open={fields.some((f) => f.advanced && fieldErrors[f.key]) || undefined}
+            >
+              <summary>Advanced settings</summary>
+              {renderFields(fields.filter((f) => f.advanced))}
+              {advanced?.(draft, change)}
+            </details>
+          )}
           {canWrite && (
             <div className="admin-form-actions">
               <button className="admin-primary" type="submit">

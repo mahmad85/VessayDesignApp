@@ -164,7 +164,7 @@ test('SYNTHETIC M6: publish → look → sign-off → signed payment → accepte
   };
   expect(size.jsonBytes).toBeLessThan(size.releaseLimitBytes);
   await writeFile('test-results/fulfillment/catalog-size.json', JSON.stringify(size, null, 2));
-  await page.goto('/');
+  await page.goto('/studio');
   await page.getByRole('button', { name: /Two-piece suit/ }).click();
   await page
     .getByRole('article')
@@ -342,7 +342,8 @@ test('SYNTHETIC M6: publish → look → sign-off → signed payment → accepte
   await expect(support.getByRole('button', { name: 'Measurements', exact: true })).toHaveCount(0);
   const safe = await ok(await support.request.get('/api/admin/orders/' + id));
   expect(safe.snapshot.measurements).toBeNull();
-  expect(JSON.stringify(safe)).not.toContain('1030');
+  // The chest value as a standalone JSON value, not "1030" inside a random id.
+  expect(JSON.stringify(safe)).not.toMatch(/(?<![\w-])1030(?![\w-])/);
   await capture(support, 'support-order');
   await page.reload();
   await expect(page.getByRole('link', { name: 'Track shipment' })).toHaveAttribute(

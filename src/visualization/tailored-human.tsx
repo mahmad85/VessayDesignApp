@@ -21,7 +21,7 @@ export function TailoredHuman({
   const geometries = useMemo(
     () =>
       Object.fromEntries(
-        ['Body', 'ExposedSkin', 'Hair', 'Eyes', 'Trousers', 'Shorts'].map((name) => [
+        ['Body', 'ExposedSkin', 'Hair', 'Eyes', 'Trousers'].map((name) => [
           name,
           (nodes[name] as THREE.Mesh).geometry.clone(),
         ]),
@@ -66,9 +66,7 @@ export function TailoredHuman({
         castShadow
         receiveShadow
       />
-      {measure ? (
-        <mesh geometry={mesh('Shorts')} material={dummy} castShadow receiveShadow />
-      ) : (
+      {!measure && (
         <>
           <mesh geometry={mesh('Eyes')}>
             <meshStandardMaterial map={eyes} roughness={0.35} />

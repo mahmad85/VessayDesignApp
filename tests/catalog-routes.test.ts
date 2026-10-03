@@ -97,9 +97,7 @@ describe('public catalog routes', { timeout: PGLITE_TIMEOUT }, () => {
     const id = nameBasedId('static:/reference-assets/fabrics/navy-twill.svg');
     const response = await getMedia(apiRequest(`/api/media/${id}`), params({ id }));
     expect(response.status).toBe(308);
-    expect(response.headers.get('location')).toBe(
-      'http://localhost:3000/reference-assets/fabrics/navy-twill.svg',
-    );
+    expect(response.headers.get('location')).toBe('/reference-assets/fabrics/navy-twill.svg');
     expect(response.headers.get('cache-control')).toBe('public, max-age=31536000, immutable');
     for (const unknown of [crypto.randomUUID(), '../etc/passwd'])
       expect(

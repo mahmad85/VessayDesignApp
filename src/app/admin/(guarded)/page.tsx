@@ -28,7 +28,7 @@ export default async function Dashboard() {
         <article className="admin-card">
           <p className="admin-eyebrow">CATALOG</p>
           <h2>Design the collection</h2>
-          <p>Shape products, fabrics, prices and looks, then check and publish the collection.</p>
+          <p>Set up products, prices and fabrics, then publish them to customers.</p>
           {staff.permissions.includes('catalog.read') && (
             <Link className="admin-action" href="/admin/catalog/products">
               Open catalog →

@@ -29,12 +29,12 @@ export function Looks({ canWrite }: { canWrite: boolean }) {
   return (
     <>
       <PageTitle
-        title="Looks"
-        description="Curated starting points. Customers can change every available choice."
+        title="Ready-made styles"
+        description="Complete outfits customers can start from, then change any choice."
       >
         {canWrite && (
           <Link className="admin-action" href="/admin/catalog/templates/new">
-            New look →
+            New style →
           </Link>
         )}
       </PageTitle>
@@ -161,14 +161,14 @@ export function LookEditor({ id, canWrite }: { id: string; canWrite: boolean }) 
   return (
     <>
       <PageTitle
-        title={record.id === 'new' ? 'New look' : record.name}
+        title={record.id === 'new' ? 'New style' : record.name}
         description="Design the starting configuration, then add imagery and publish it with the catalog."
       >
         <Link href="/admin/catalog/templates">← All looks</Link>
       </PageTitle>
       <div className="admin-toolbar">
         <Link
-          href={`/?catalog=working&product=${products.data.items.find((p) => p.id === record.productId)?.code ?? ''}`}
+          href={`/studio?catalog=working&product=${products.data.items.find((p) => p.id === record.productId)?.code ?? ''}`}
         >
           Preview as customer ↗
         </Link>
@@ -176,7 +176,7 @@ export function LookEditor({ id, canWrite }: { id: string; canWrite: boolean }) 
           <>
             <button
               onClick={async () => {
-                const code = window.prompt('Code for the new look');
+                const code = window.prompt('Code for the new style');
                 if (code)
                   try {
                     const row = await adminFetch(
@@ -185,7 +185,7 @@ export function LookEditor({ id, canWrite }: { id: string; canWrite: boolean }) 
                       { newCode: code, newName: `${record.name} copy` },
                     );
                     setSaved(row);
-                    setMessage('Copied as a draft look.');
+                    setMessage('Copied as a draft style.');
                   } catch (e) {
                     setMessage((e as Error).message);
                   }

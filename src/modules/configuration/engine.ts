@@ -171,12 +171,19 @@ export function applyCommand(draft: DraftV2, command: CommandV2, context: Engine
           422,
         );
       const before = new Set(requiredIds(context, next));
-      const garment = newGarment(
+      let garment = newGarment(
         context.current,
         command.productCode,
         context.newId?.() ?? crypto.randomUUID(),
         command.templateCode ?? null,
       );
+      if (command.materialCode)
+        garment = applyGarmentPatch(
+          context.current,
+          garment,
+          { materialCode: command.materialCode },
+          { availability: context.availability },
+        ).garment;
       next.garments.push(garment);
       next.activeGarmentId = garment.id;
       // CRT-004: a garment needing fields the profile lacks unconfirms it.
@@ -197,6 +204,22 @@ export function applyCommand(draft: DraftV2, command: CommandV2, context: Engine
       next.garments.splice(index, 1);
       if (next.activeGarmentId === command.garmentId)
         next.activeGarmentId = next.garments.at(-1)?.id ?? null;
+      next.review = null;
+      break;
+    }
+    case 'start_over': {
+      // A fresh draft's content under the same id and revision history, so the
+      // reset is a normal saved revision. Submitted orders stay linked.
+      const fresh = createDraft(now);
+      next.activeGarmentId = null;
+      next.garments = [];
+      next.skinTone = fresh.skinTone;
+      next.measurements = {
+        ...fresh.measurements,
+        version: draft.measurements.version + 1,
+        updatedAt: now,
+      };
+      next.messages = fresh.messages;
       next.review = null;
       break;
     }

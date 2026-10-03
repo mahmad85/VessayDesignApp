@@ -1,15 +1,23 @@
 'use client';
-import { Canvas, useThree } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import {
   OrbitControls,
   ContactShadows,
   Environment,
   Lightformer,
   Line,
-  Html,
   useProgress,
 } from '@react-three/drei';
-import { useEffect, useMemo, useRef, useState, Suspense, Component, type ReactNode } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  Suspense,
+  Component,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 import * as THREE from 'three';
 import Image from 'next/image';
 import type { OrbitControls as Controls } from 'three-stdlib';
@@ -17,16 +25,52 @@ import { RotateCcw, ZoomIn, ZoomOut, Move, Box } from 'lucide-react';
 import type { RenderInput } from './binding';
 import { TailoredHuman } from './tailored-human';
 const SKIN = { porcelain: '#e2cbb6', warm: '#b99779', tan: '#987456', deep: '#604436' };
+const LABELS: Record<string, string> = {
+  hips: 'Seat',
+  inseam: 'Inside leg',
+  jacketLength: 'Jacket length',
+  frontRise: 'Front rise',
+  backRise: 'Back rise',
+};
+const labelText = (highlight: string, value?: string) =>
+  (LABELS[highlight] ?? highlight.charAt(0).toUpperCase() + highlight.slice(1)) +
+  (value ? ` · ${value}` : '');
+
+/**
+ * Moves a plain DOM label (rendered outside the canvas) to the screen position
+ * of a 3D point each frame. Replaces drei's <Html>, whose own React root is
+ * unmounted synchronously during a render and makes React warn.
+ */
+function LabelAnchor({
+  position,
+  target,
+}: {
+  position: [number, number, number];
+  target: RefObject<HTMLSpanElement | null>;
+}) {
+  const { camera, size, invalidate } = useThree();
+  const point = useMemo(() => new THREE.Vector3(), []);
+  const [x, y, z] = position;
+  useEffect(() => invalidate(), [x, y, z, invalidate]);
+  useFrame(() => {
+    const el = target.current;
+    if (!el) return;
+    point.set(x, y, z).project(camera);
+    el.style.transform = `translate(${((point.x + 1) / 2) * size.width}px, ${((1 - point.y) / 2) * size.height}px)`;
+    el.style.visibility = point.z < 1 ? 'visible' : 'hidden';
+  });
+  return null;
+}
 function Mannequin({
   render,
   measure,
   highlight,
-  measurementValue,
+  labelRef,
 }: {
   render: RenderInput;
   measure: boolean;
   highlight?: string;
-  measurementValue?: string;
+  labelRef: RefObject<HTMLSpanElement | null>;
 }) {
   const skin = useMemo(
     () =>
@@ -90,13 +134,6 @@ function Mannequin({
       [0.035, 1.65, 0.2],
     ],
   };
-  const LABELS: Record<string, string> = {
-    hips: 'Seat',
-    inseam: 'Inside leg',
-    jacketLength: 'Jacket length',
-    frontRise: 'Front rise',
-    backRise: 'Back rise',
-  };
   const LABEL_POSITION: Record<string, [number, number, number]> = {
     height: [-0.85, 3.38, 0],
     inseam: [0.2, 0.5, 0.3],
@@ -112,12 +149,10 @@ function Mannequin({
       {measure && highlight && (
         <>
           <Line points={path[highlight] || ellipse} color="#937340" lineWidth={2.5} />
-          <Html position={LABEL_POSITION[highlight] ?? [cx + rx + 0.1, y, cz]} center>
-            <span className="model-label">
-              {LABELS[highlight] ?? highlight.charAt(0).toUpperCase() + highlight.slice(1)}
-              {measurementValue ? ` · ${measurementValue}` : ''}
-            </span>
-          </Html>
+          <LabelAnchor
+            position={LABEL_POSITION[highlight] ?? [cx + rx + 0.1, y, cz]}
+            target={labelRef}
+          />
         </>
       )}
     </group>
@@ -127,7 +162,7 @@ function Scene({
   render,
   measure,
   highlight,
-  measurementValue,
+  labelRef,
   view,
   zoom,
   reset,
@@ -135,7 +170,7 @@ function Scene({
   render: RenderInput;
   measure: boolean;
   highlight?: string;
-  measurementValue?: string;
+  labelRef: RefObject<HTMLSpanElement | null>;
   view: string;
   zoom: number;
   reset: number;
@@ -189,12 +224,7 @@ function Scene({
         shadow-normalBias={0.025}
       />
       <directionalLight position={[-3, 3, -2]} intensity={0.9} />
-      <Mannequin
-        render={render}
-        measure={measure}
-        highlight={highlight}
-        measurementValue={measurementValue}
-      />
+      <Mannequin render={render} measure={measure} highlight={highlight} labelRef={labelRef} />
       <ContactShadows
         position={[0, 0.02, 0]}
         opacity={0.28}
@@ -261,6 +291,10 @@ export default function GarmentView({
   const [view, setView] = useState('front');
   const [zoom, setZoom] = useState(1);
   const [reset, setReset] = useState(0);
+  const labelRef = useRef<HTMLSpanElement>(null);
+  // The label sits beside its anchor, never on the line: left of the height
+  // line (which stands left of the body), right of everything else.
+  const labelSide = highlight === 'height' ? 'left' : 'right';
   return (
     <div
       className="model-stage"
@@ -286,12 +320,19 @@ export default function GarmentView({
             render={render}
             measure={measure}
             highlight={highlight}
-            measurementValue={measurementValue}
+            labelRef={labelRef}
             view={view}
             zoom={zoom}
             reset={reset}
           />
         </Canvas>
+        {measure && highlight && (
+          <span ref={labelRef} className="model-label-anchor" style={{ visibility: 'hidden' }}>
+            <span className={`model-label model-label-${labelSide}`}>
+              {labelText(highlight, measurementValue)}
+            </span>
+          </span>
+        )}
         <ModelLoading />
       </ViewError>
       {photo && (

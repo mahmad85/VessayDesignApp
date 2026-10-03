@@ -240,6 +240,14 @@ function Trousers({
             stroke={stroke}
             strokeWidth={1.2}
           />
+          <Shade id={id} points={pts(leg(side as -1 | 1))} />
+          {!bermuda && (
+            // Soft drag lines where the leg meets the knee and the shoe.
+            <path
+              d={`M${200 + side * 41 - legW + 4},${hemY - 210} q${legW - 4},6 ${2 * legW - 8},-2 M${200 + side * 41 - legW + 6},${hemY - 40} q${legW - 6},-8 ${2 * legW - 12},2`}
+              className="sk-drape"
+            />
+          )}
           <line
             x1={200 + side * 44}
             y1={bermuda ? 470 : 420}
@@ -525,10 +533,19 @@ function Figure({ spec, id, back }: { spec: SketchSpec; id: string; back?: boole
   const skin = SKIN[spec.skinTone];
   const shadow = shade(skin, -0.22);
   const hair = '#2a221d';
+  const head = back
+    ? 'M200,34 C225,34 229,54 228,72 C227,86 222,96 214,102 L186,102 C178,96 173,86 172,72 C171,54 175,34 200,34 Z'
+    : 'M200,34 C225,34 229,54 228,72 C227,86 225,94 221,99 C216,105 210,110 206,112 L194,112 C190,110 184,105 179,99 C175,94 173,86 172,72 C171,54 175,34 200,34 Z';
   return (
     <g>
       {/* Neck with trapezius, wider and shorter than a female croquis. */}
       <path d="M182,96 C183,118 182,134 178,148 L222,148 C218,134 217,118 218,96 Z" fill={skin} />
+      <path
+        d="M182,112 C192,126 208,126 218,112 L218,132 C208,138 192,138 182,132 Z"
+        fill={shadow}
+        opacity={0.45}
+        filter={`url(#${id}-soft)`}
+      />
       {/* Head sits low on a short, strong neck. */}
       <g transform="translate(0 6)">
         {/* Ears */}
@@ -546,14 +563,8 @@ function Figure({ spec, id, back }: { spec: SketchSpec; id: string; back?: boole
           />
         ))}
         {/* Squarer skull, angular jaw and a broad chin. */}
-        <path
-          d={
-            back
-              ? 'M200,34 C225,34 229,54 228,72 C227,86 222,96 214,102 L186,102 C178,96 173,86 172,72 C171,54 175,34 200,34 Z'
-              : 'M200,34 C225,34 229,54 228,72 C227,86 225,94 221,99 C216,105 210,110 206,112 L194,112 C190,110 184,105 179,99 C175,94 173,86 172,72 C171,54 175,34 200,34 Z'
-          }
-          fill={skin}
-        />
+        <path d={head} fill={skin} />
+        <path d={head} fill={`url(#${id}-face)`} pointerEvents="none" />
         {!back && (
           <path
             d="M183,103 C188,108 191,110 194,112 L206,112 C209,110 212,108 217,103 C213,114 206,118 200,118 C194,118 187,114 183,103 Z"
@@ -847,10 +858,10 @@ function JacketFront({ spec, id, stroke }: { spec: SketchSpec; id: string; strok
     const m = (list: P[]) => (side < 0 ? list : mirror(list));
     return m([
       [110, 160],
-      [87, 306],
+      [81, 306],
       [76, 452],
       [114, 457],
-      [108, 318],
+      [117, 318],
       [200 - w.chest + 2, 262],
     ]);
   };
@@ -864,6 +875,13 @@ function JacketFront({ spec, id, stroke }: { spec: SketchSpec; id: string; strok
         stroke={stroke}
         strokeWidth={1.4}
         strokeLinejoin="round"
+        filter={`url(#${id}-cast)`}
+      />
+      <Shade id={id} d={jacketBody(spec)} />
+      {/* Pull lines from the fastened button and the waist suppression. */}
+      <path
+        d={`M${200 - w.waist + 22},372 Q186,${layout.buttons.at(-1)! - 6} 198,${layout.buttons.at(-1)!} M${200 + w.waist - 22},372 Q214,${layout.buttons.at(-1)! - 6} 202,${layout.buttons.at(-1)!}`}
+        className="sk-drape"
       />
       <path
         d={`M${200 - w.chest + 14},258 Q${200 - w.waist + 16},340 ${200 - w.hem + 24},476`}
@@ -880,6 +898,13 @@ function JacketFront({ spec, id, stroke }: { spec: SketchSpec; id: string; strok
             fill={`url(#${id}-fabric)`}
             stroke={stroke}
             strokeWidth={1.3}
+            filter={`url(#${id}-cast)`}
+          />
+          <Shade id={id} points={pts(sleeve(side as -1 | 1))} />
+          {/* Elbow creases. */}
+          <path
+            d={`M${200 + side * 109},300 q${-side * 8},6 ${-side * 18},4 M${200 + side * 110},318 q${-side * 7},4 ${-side * 15},2`}
+            className="sk-drape"
           />
           <rect
             x={200 + side * 105 - 18}
@@ -931,6 +956,7 @@ function JacketFront({ spec, id, stroke }: { spec: SketchSpec; id: string; strok
               key={`c${i}`}
               points={pts(c)}
               fill={`url(#${id}-lapel)`}
+              filter={`url(#${id}-cast)`}
               stroke={stroke}
               strokeWidth={1.2}
               strokeLinejoin="round"
@@ -941,6 +967,7 @@ function JacketFront({ spec, id, stroke }: { spec: SketchSpec; id: string; strok
               key={`l${i}`}
               points={pts(l)}
               fill={`url(#${id}-lapel)`}
+              filter={`url(#${id}-cast)`}
               stroke={stroke}
               strokeWidth={1.2}
               strokeLinejoin="round"
@@ -951,6 +978,7 @@ function JacketFront({ spec, id, stroke }: { spec: SketchSpec; id: string; strok
               key={`s${i}`}
               d={d}
               fill={`url(#${id}-lapel)`}
+              filter={`url(#${id}-cast)`}
               stroke={stroke}
               strokeWidth={1.2}
             />
@@ -1061,10 +1089,10 @@ function JacketBack({ spec, id, stroke }: { spec: SketchSpec; id: string; stroke
   const sleeve = (side: -1 | 1): P[] => {
     const list: P[] = [
       [110, 160],
-      [87, 306],
+      [81, 306],
       [76, 452],
       [114, 457],
-      [108, 318],
+      [117, 318],
       [200 - w.chest + 2, 262],
     ];
     return side < 0 ? list : mirror(list);
@@ -1257,6 +1285,64 @@ function ImagePattern({ id, href, zoom = 1 }: { id: string; href?: string; zoom?
         preserveAspectRatio="xMidYMid slice"
       />
     </pattern>
+  );
+}
+
+/**
+ * Shared lighting for the drawing. One key light from the upper left: rounded
+ * parts (torso, sleeves, legs) get a cylinder falloff, cloth gets a fine grain
+ * and overlapping layers cast a soft shadow. Overlays are drawn on top of the
+ * flat fabric fill so the chosen colour stays readable.
+ */
+function ShadingDefs({ id }: { id: string }) {
+  return (
+    <>
+      <linearGradient id={`${id}-cyl`} x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stopColor="#000" stopOpacity={0.34} />
+        <stop offset="0.16" stopColor="#000" stopOpacity={0.08} />
+        <stop offset="0.36" stopColor="#fff" stopOpacity={0.1} />
+        <stop offset="0.6" stopColor="#000" stopOpacity={0} />
+        <stop offset="0.86" stopColor="#000" stopOpacity={0.16} />
+        <stop offset="1" stopColor="#000" stopOpacity={0.4} />
+      </linearGradient>
+      <linearGradient id={`${id}-fall`} x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="#fff" stopOpacity={0.06} />
+        <stop offset="0.55" stopColor="#000" stopOpacity={0} />
+        <stop offset="1" stopColor="#000" stopOpacity={0.16} />
+      </linearGradient>
+      <radialGradient id={`${id}-face`} cx="0.42" cy="0.4" r="0.7">
+        <stop offset="0" stopColor="#fff" stopOpacity={0.14} />
+        <stop offset="0.55" stopColor="#000" stopOpacity={0} />
+        <stop offset="1" stopColor="#000" stopOpacity={0.24} />
+      </radialGradient>
+      <filter id={`${id}-grain`} x="0" y="0" width="1" height="1">
+        <feTurbulence type="fractalNoise" baseFrequency="1.4 0.9" numOctaves={2} seed={7} />
+        <feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.2 1.05" />
+        <feComposite in2="SourceGraphic" operator="in" />
+      </filter>
+      <filter id={`${id}-cast`} x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx={1.2} dy={2.2} stdDeviation={1.8} floodColor="#000" floodOpacity={0.32} />
+      </filter>
+      <filter id={`${id}-soft`} x="-10%" y="-10%" width="120%" height="120%">
+        <feGaussianBlur stdDeviation={1.2} />
+      </filter>
+    </>
+  );
+}
+
+/** Light and grain over a shape that is already filled with fabric. */
+function Shade({ id, d, points }: { id: string; d?: string; points?: string }) {
+  const layers = [
+    { fill: `url(#${id}-cyl)` },
+    { fill: `url(#${id}-fall)` },
+    { fill: '#000', opacity: 0.22, filter: `url(#${id}-grain)` },
+  ];
+  return (
+    <g pointerEvents="none">
+      {layers.map((props, i) =>
+        d ? <path key={i} d={d} {...props} /> : <polygon key={i} points={points} {...props} />,
+      )}
+    </g>
   );
 }
 
@@ -1487,6 +1573,7 @@ export default function GarmentSketch({
         }}
       >
         <defs>
+          <ShadingDefs id={id} />
           <FabricPattern
             id={`${id}-fabric`}
             color={spec.fabric.color}

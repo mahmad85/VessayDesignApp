@@ -45,7 +45,7 @@ export type WorkingRows = {
     active: boolean;
     metadata: Record<string, unknown>;
   }[];
-  priceBands: { code: string; name: string; sort: number }[];
+  priceBands: { code: string; name: string; sort: number; uplift_minor: number }[];
   media: {
     id: string;
     storage_driver: string;
@@ -130,6 +130,7 @@ export type WorkingRows = {
     visual_model: SnapshotProduct['visualModel'];
     default_material_id: string | null;
     hero_media_id: string | null;
+    base_price_minor: number | null;
     sort: number;
     status: Status;
     reference_only: boolean;
@@ -415,8 +416,17 @@ export function compileWorkingCopy(rows: WorkingRows): CatalogSnapshot {
           sort: link.sort,
           metadata: link.metadata,
         })),
+      // Written only when set, so a catalog priced before D-022 keeps its checksum.
+      ...(product.base_price_minor !== null && { basePriceMinor: product.base_price_minor }),
+      // PRC-002 (D-022): base price plus each tier's uplift; stored band prices
+      // remain for a product priced before D-022.
       bandPrices: Object.fromEntries(
-        (pricesByProduct.get(product.id) ?? []).map((row) => [row.band_code, row.price_minor]),
+        product.base_price_minor !== null
+          ? rows.priceBands.map((band) => [
+              band.code,
+              product.base_price_minor! + band.uplift_minor,
+            ])
+          : (pricesByProduct.get(product.id) ?? []).map((row) => [row.band_code, row.price_minor]),
       ),
       settings,
     };
@@ -602,7 +612,12 @@ export function compileWorkingCopy(rows: WorkingRows): CatalogSnapshot {
     lookups,
     priceBands: rows.priceBands
       .filter((row) => usedBands.has(row.code))
-      .map((row) => ({ code: row.code, name: row.name, sort: row.sort })),
+      .map((row) => ({
+        code: row.code,
+        name: row.name,
+        sort: row.sort,
+        ...(row.uplift_minor > 0 && { upliftMinor: row.uplift_minor }),
+      })),
     media,
     components,
     products,
